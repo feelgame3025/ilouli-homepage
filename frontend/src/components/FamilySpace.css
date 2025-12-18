@@ -1,0 +1,61 @@
+.family-space-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.family-space-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.family-space-header h1 {
+  font-size: 2.5rem;
+  font-weight: 600;
+}
+
+.family-space-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.widgets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.widget-card {
+  background-color: #fdfdfd;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.widget-card h2 {
+  font-size: 1.8rem;
+  font-weight: 500;
+  margin-top: 0;
+}
+
+.widget-placeholder {
+  flex-grow: 1;
+  background-color: #f9f9f9;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  color: #777;
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.widget-card button {
+  margin-top: 1rem;
+  align-self: flex-start;
+}

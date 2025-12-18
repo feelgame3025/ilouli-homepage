@@ -1,0 +1,693 @@
+/* Apple Style - Test Lab */
+
+.test-lab-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 헤더 - Apple 스타일 대형 타이포그래피 */
+.test-lab-header {
+  text-align: center;
+  margin-bottom: 4rem;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.test-lab-header h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #1d1d1f;
+  margin-bottom: 1rem;
+  line-height: 1.1;
+}
+
+.test-lab-header p {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #86868b;
+  line-height: 1.4;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.test-lab-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+/* 드롭존 - Apple 미니멀 스타일 */
+.dropzone {
+  background-color: #fbfbfd;
+  border: none;
+  border-radius: 24px;
+  padding: 5rem 3rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.dropzone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px dashed #d2d2d7;
+  border-radius: 24px;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.dropzone:hover {
+  background-color: #f5f5f7;
+  transform: scale(1.01);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.dropzone:hover::before {
+  border-color: #0071e3;
+}
+
+.dropzone-active {
+  background-color: #f0f5ff;
+  transform: scale(1.02);
+  box-shadow: 0 8px 32px rgba(0, 113, 227, 0.15);
+}
+
+.dropzone-active::before {
+  border-color: #0071e3;
+  border-width: 3px;
+}
+
+.dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dropzone-icon {
+  font-size: 4rem;
+  margin-bottom: 0.5rem;
+  filter: grayscale(0.2);
+  transition: transform 0.3s ease;
+}
+
+.dropzone:hover .dropzone-icon {
+  transform: scale(1.1);
+}
+
+.dropzone-text {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  letter-spacing: -0.01em;
+}
+
+.dropzone-hint {
+  font-size: 1rem;
+  color: #86868b;
+  font-weight: 400;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+/* 파일 목록 컨테이너 - Apple 카드 스타일 */
+.file-list-container {
+  background-color: #ffffff;
+  border: none;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.file-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #f5f5f7;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.file-list-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.file-list-title h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  letter-spacing: -0.01em;
+}
+
+.file-count {
+  background-color: #0071e3;
+  color: white;
+  padding: 0.35rem 0.85rem;
+  border-radius: 980px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.file-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.select-all-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #1d1d1f;
+  font-weight: 400;
+}
+
+.select-all-checkbox input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #0071e3;
+}
+
+/* 버튼 - Apple 스타일 */
+.btn {
+  padding: 0.65rem 1.25rem;
+  border-radius: 980px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.btn-primary {
+  background-color: #0071e3;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0077ed;
+  transform: scale(1.02);
+}
+
+.btn-secondary {
+  background-color: #f5f5f7;
+  color: #1d1d1f;
+}
+
+.btn-secondary:hover {
+  background-color: #e8e8ed;
+}
+
+.btn-danger {
+  background-color: #ff3b30;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #ff453a;
+  transform: scale(1.02);
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f7;
+  border-radius: 50%;
+  font-size: 1rem;
+}
+
+.btn-icon:hover {
+  background-color: #e8e8ed;
+  transform: scale(1.1);
+}
+
+.btn-icon.btn-danger {
+  background-color: transparent;
+  color: #ff3b30;
+}
+
+.btn-icon.btn-danger:hover {
+  background-color: #fff0f0;
+}
+
+/* 파일 목록 */
+.file-list {
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid #f5f5f7;
+  transition: background-color 0.3s ease;
+}
+
+.file-item:last-child {
+  border-bottom: none;
+}
+
+.file-item:hover {
+  background-color: #fbfbfd;
+}
+
+.file-item.selected {
+  background-color: #f0f5ff;
+}
+
+/* 파일 순번 - Apple 스타일 배지 */
+.file-number {
+  flex-shrink: 0;
+}
+
+.number-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  background: linear-gradient(135deg, #0071e3 0%, #00c7be 100%);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 980px;
+  letter-spacing: -0.01em;
+}
+
+.file-checkbox {
+  flex-shrink: 0;
+}
+
+.file-checkbox input {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #0071e3;
+}
+
+.file-preview {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f7;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.file-item:hover .file-preview {
+  transform: scale(1.05);
+}
+
+.file-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.file-icon {
+  font-size: 1.75rem;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 파일 라벨 - Apple 스타일 */
+.file-label-row {
+  margin-bottom: 0.35rem;
+}
+
+.file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.75rem;
+  background-color: #f5f5f7;
+  border-radius: 980px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1d1d1f;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-label:hover {
+  background-color: #e8e8ed;
+}
+
+.file-label .edit-icon {
+  font-size: 0.7rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.file-label:hover .edit-icon {
+  opacity: 1;
+}
+
+.label-input {
+  padding: 0.3rem 0.75rem;
+  border: 2px solid #0071e3;
+  border-radius: 980px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1d1d1f;
+  outline: none;
+  width: 160px;
+  max-width: 100%;
+  background-color: #fff;
+}
+
+.file-name {
+  margin: 0 0 0.25rem 0;
+  font-weight: 500;
+  color: #1d1d1f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+.file-meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #86868b;
+  font-weight: 400;
+}
+
+/* 업로드 진행률 - Apple 스타일 */
+.upload-progress {
+  margin-top: 0.6rem;
+  position: relative;
+  height: 4px;
+  background-color: #e8e8ed;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.upload-progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #0071e3 0%, #00c7be 100%);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.upload-progress-text {
+  position: absolute;
+  right: 0;
+  top: -20px;
+  font-size: 0.75rem;
+  color: #0071e3;
+  font-weight: 600;
+}
+
+/* 상태 배지 - Apple 스타일 */
+.file-status {
+  flex-shrink: 0;
+}
+
+.status-badge {
+  padding: 0.4rem 0.9rem;
+  border-radius: 980px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.status-pending {
+  background-color: #f5f5f7;
+  color: #86868b;
+}
+
+.status-uploading {
+  background-color: #fff8e6;
+  color: #bf8700;
+}
+
+.status-completed {
+  background-color: #e8f7ef;
+  color: #1d8348;
+}
+
+.status-error {
+  background-color: #fff0f0;
+  color: #ff3b30;
+}
+
+.file-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* 업로드 결과 - Apple 갤러리 스타일 */
+.upload-results {
+  background-color: #ffffff;
+  border: none;
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.upload-results h3 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.result-item {
+  background-color: #fbfbfd;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  position: relative;
+}
+
+.result-item:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+.result-number {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, #0071e3 0%, #00c7be 100%);
+  color: white;
+  padding: 0.3rem 0.65rem;
+  border-radius: 980px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+}
+
+.result-item img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.result-item:hover img {
+  transform: scale(1.05);
+}
+
+.result-label {
+  padding: 0.75rem 1rem 0.25rem;
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.result-name {
+  padding: 0.25rem 1rem 0.75rem;
+  margin: 0;
+  font-size: 0.75rem;
+  color: #86868b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+/* 반응형 - Apple 스타일 */
+@media (max-width: 1068px) {
+  .test-lab-header h1 {
+    font-size: 2.75rem;
+  }
+
+  .test-lab-header p {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .test-lab-container {
+    padding: 2rem 1rem;
+  }
+
+  .test-lab-header {
+    margin-bottom: 2.5rem;
+  }
+
+  .test-lab-header h1 {
+    font-size: 2rem;
+  }
+
+  .test-lab-header p {
+    font-size: 1.1rem;
+  }
+
+  .dropzone {
+    padding: 3rem 1.5rem;
+  }
+
+  .dropzone-icon {
+    font-size: 3rem;
+  }
+
+  .dropzone-text {
+    font-size: 1.1rem;
+  }
+
+  .file-list-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .file-list-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .file-item {
+    flex-wrap: wrap;
+    padding: 1rem 1.5rem;
+    gap: 1rem;
+  }
+
+  .file-info {
+    flex-basis: calc(100% - 120px);
+  }
+
+  .file-status {
+    order: 5;
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+
+  .file-actions {
+    order: 6;
+    margin-left: auto;
+    margin-top: 0.5rem;
+  }
+
+  .results-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+  }
+
+  .upload-results {
+    padding: 1.5rem;
+  }
+}
+
+/* 스크롤바 - Apple 스타일 */
+.file-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.file-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.file-list::-webkit-scrollbar-thumb {
+  background: #d2d2d7;
+  border-radius: 4px;
+}
+
+.file-list::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a6;
+}
+
+/* 부드러운 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.file-item {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.result-item {
+  animation: fadeIn 0.4s ease forwards;
+}

@@ -1,0 +1,33 @@
+/* Apple Style - App Container */
+
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/*
+  Main content area
+  Accounts for the fixed navigation bar height (52px)
+*/
+.main-content {
+  flex-grow: 1;
+  padding-top: calc(var(--nav-height, 52px) + 1rem);
+  min-height: calc(100vh - var(--nav-height, 52px));
+}
+
+/* Page transition animation */
+.main-content > * {
+  animation: pageEnter 0.4s ease-out;
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

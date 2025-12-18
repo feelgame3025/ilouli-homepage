@@ -1,0 +1,369 @@
+{
+  "nav": {
+    "aiStoryboard": "AI Storyboard",
+    "community": "Community",
+    "announcements": "Announcements",
+    "freeBoard": "Free Board",
+    "about": "About",
+    "familySpace": "Family Space",
+    "profile": "Profile",
+    "admin": "Admin",
+    "adminLab": "Admin Lab",
+    "testZone": "Test Zone",
+    "fileUpload": "File Upload"
+  },
+  "adminLab": {
+    "title": "Admin Lab",
+    "subtitle": "A space for testing new features and managing files."
+  },
+  "testZone": {
+    "title": "Test Zone",
+    "subtitle": "A place for testing new features.",
+    "welcome": "Welcome to the Test Zone! New components and features will be tested here."
+  },
+  "fileUpload": {
+    "title": "File Upload",
+    "subtitle": "Drag and drop files for AI analysis.",
+    "dropzone": {
+      "text": "Drop files here to upload automatically",
+      "hint": "Supports images, PDF, Word, Excel, PowerPoint files",
+      "uploading": "Uploading..."
+    },
+    "analysis": {
+      "title": "AI Analysis Results",
+      "waiting": "Upload a file to start AI analysis.",
+      "analyzing": "Analyzing...",
+      "complete": "Analysis Complete"
+    },
+    "fileInfo": {
+      "name": "File Name",
+      "size": "Size",
+      "type": "Type",
+      "uploadedAt": "Uploaded At"
+    }
+  },
+  "auth": {
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "name": "Name",
+    "namePlaceholder": "Enter your name",
+    "logout": "Log out",
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your account",
+      "button": "Sign In",
+      "loading": "Signing in...",
+      "error": "Invalid email or password",
+      "errorPending": "Your account is pending approval. Please wait for admin confirmation.",
+      "errorRejected": "Your account has been rejected. Please contact support.",
+      "noAccount": "Don't have an account?",
+      "signupLink": "Sign up"
+    },
+    "signup": {
+      "title": "Create Account",
+      "subtitle": "Join ilouli.com today",
+      "button": "Sign Up",
+      "loading": "Creating account...",
+      "error": "This email is already registered",
+      "passwordMismatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Sign in",
+      "pendingTitle": "Registration Complete!",
+      "pendingMessage": "Your account is pending admin approval. You will be able to log in once your account is approved.",
+      "backToHome": "Back to Home"
+    },
+    "tiers": {
+      "guest": "Guest",
+      "general": "General Member",
+      "subscriber": "Subscriber",
+      "family": "Family Member",
+      "admin": "Administrator"
+    }
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "subtitle": "Manage users and content",
+    "you": "You",
+    "tabs": {
+      "users": "User Management",
+      "moderation": "Content Moderation"
+    },
+    "stats": {
+      "totalUsers": "Total Users",
+      "pendingUsers": "Pending Approval",
+      "familyMembers": "Family Members",
+      "admins": "Administrators"
+    },
+    "pending": {
+      "title": "Pending Approval",
+      "appliedOn": "Applied on",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "members": {
+      "title": "Approved Members"
+    },
+    "table": {
+      "name": "Name",
+      "email": "Email",
+      "tier": "Tier",
+      "joinDate": "Join Date",
+      "actions": "Actions",
+      "delete": "Delete"
+    },
+    "confirm": {
+      "delete": "Are you sure you want to delete {{name}}?",
+      "reject": "Are you sure you want to reject {{name}}?"
+    },
+    "success": {
+      "tierUpdated": "Tier updated successfully",
+      "deleted": "User deleted successfully",
+      "approved": "{{name}} has been approved",
+      "rejected": "{{name}} has been rejected"
+    },
+    "error": {
+      "loadFailed": "Failed to load users",
+      "updateFailed": "Failed to update tier",
+      "deleteFailed": "Failed to delete user",
+      "cannotDeleteSelf": "You cannot delete yourself",
+      "approveFailed": "Failed to approve user",
+      "rejectFailed": "Failed to reject user"
+    },
+    "moderation": {
+      "stats": {
+        "pending": "Pending Reports",
+        "total": "Total Reports",
+        "hidden": "Hidden Posts"
+      },
+      "reports": "Report List",
+      "noReports": "No reports yet",
+      "hiddenPosts": "Hidden Posts",
+      "type": {
+        "post": "Post",
+        "comment": "Comment"
+      },
+      "status": {
+        "pending": "Pending",
+        "reviewed": "Reviewed",
+        "dismissed": "Dismissed",
+        "actioned": "Actioned"
+      },
+      "reason": "Reason",
+      "reportedBy": "Reported by",
+      "author": "Author",
+      "reportCount": "Report count",
+      "actions": {
+        "hide": "Hide Content",
+        "dismiss": "Dismiss",
+        "restore": "Restore"
+      },
+      "success": {
+        "hide": "Content has been hidden",
+        "dismiss": "Report has been dismissed",
+        "restored": "Post has been restored"
+      },
+      "error": {
+        "actionFailed": "Failed to process report",
+        "restoreFailed": "Failed to restore post"
+      }
+    }
+  },
+  "community": {
+    "title": "Community",
+    "subtitle": "Share ideas and connect with others",
+    "tabs": {
+      "announcements": "Announcements",
+      "community": "Community"
+    },
+    "write": "Write Post",
+    "titlePlaceholder": "Enter title",
+    "contentPlaceholder": "Enter content",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "delete": "Delete",
+    "back": "Back to List",
+    "noPosts": "No posts yet",
+    "badge": {
+      "announcement": "Announcement"
+    },
+    "categoryTitle": "Categories",
+    "categories": {
+      "all": "All Posts",
+      "general": "General",
+      "question": "Question",
+      "discussion": "Discussion",
+      "showcase": "Showcase",
+      "tip": "Tips"
+    },
+    "comments": "Comments",
+    "commentsCount": "{{count}} comments",
+    "noComments": "No comments yet",
+    "commentPlaceholder": "Write a comment...",
+    "submitComment": "Post Comment",
+    "report": {
+      "button": "Report",
+      "title": "Report Content",
+      "placeholder": "Please describe the reason for reporting...",
+      "submit": "Submit Report"
+    },
+    "confirm": {
+      "deletePost": "Are you sure you want to delete this post?",
+      "deleteComment": "Are you sure you want to delete this comment?"
+    },
+    "success": {
+      "posted": "Post created successfully",
+      "deleted": "Post deleted successfully",
+      "reported": "Report submitted successfully"
+    },
+    "error": {
+      "deleteFailed": "Failed to delete post",
+      "commentDeleteFailed": "Failed to delete comment",
+      "reportFailed": "Failed to submit report",
+      "alreadyReported": "You have already reported this content"
+    },
+    "attachments": "Attachments"
+  },
+  "assetLibrary": {
+    "title": "Asset Library",
+    "dropzone": "Click or drag files here to upload",
+    "delete": "Delete Asset",
+    "confirmDelete": "Are you sure you want to delete {{name}}?"
+  },
+  "landing": {
+    "subtitle": "Creativity, Connection, and Legacy",
+    "aiStoryboard": {
+      "title": "AI Storyboard",
+      "description": "Bring your ideas to life. Our AI-powered pipeline helps you create compelling visual stories from a simple concept to a full-fledged storyboard."
+    },
+    "familySpace": {
+      "title": "Family Space",
+      "description": "A private, secure digital archive for your family. Share memories, organize events with a smart calendar, and build a lasting legacy together."
+    },
+    "brandUniverse": {
+      "title": "Brand Universe",
+      "description": "Explore the ecosystem of our parent company and its innovative ventures. Discover the vision and projects shaping our future."
+    }
+  },
+  "storyboard": {
+    "title": "AI Storyboard Pipeline",
+    "subtitle": "From idea to visual story, step by step.",
+    "step1": {
+      "title": "Core Settings",
+      "description": "Register the core settings of your work. (Family tier or higher)",
+      "button": "Manage Settings"
+    },
+    "step2": {
+      "title": "Scene Input",
+      "description": "Describe the scene you want to create.",
+      "placeholder": "e.g., A detective inspects a clue in a dimly lit office."
+    },
+    "step3": {
+      "title": "AI Generated Script",
+      "description": "Our AI will generate a script based on your settings and scene description.",
+      "placeholder": "Generated dialogue and script will appear here.",
+      "button": "Generate"
+    },
+    "step4": {
+      "title": "Visualization",
+      "description": "The final step. AI will generate visuals based on the confirmed script.",
+      "placeholder": "Visual results (X, Y, Z) will be displayed here.",
+      "button": "Visualize"
+    },
+    "options": {
+      "title": "Pipeline Options",
+      "imageStyle": "Image Style",
+      "tone": "Tone & Manner",
+      "characterLock": "Character Lock",
+      "styles": {
+        "webtoon": "Webtoon",
+        "photorealistic": "Photorealistic",
+        "watercolor": "Watercolor"
+      },
+      "tones": {
+        "humorous": "Humorous",
+        "tragic": "Tragic",
+        "serious": "Serious"
+      }
+    }
+  },
+  "family": {
+    "title": "Family Space",
+    "subtitle": "A private digital hub for our family.",
+    "calendar": {
+      "title": "Smart Calendar",
+      "description": "Upcoming family events and reminders will be displayed here.",
+      "button": "View Calendar"
+    },
+    "gallery": {
+      "title": "AI Photo Gallery",
+      "description": "An intelligent gallery of our shared memories will be displayed here.",
+      "button": "Explore Gallery"
+    }
+  },
+  "profile": {
+    "title": "User Profile",
+    "subtitle": "Manage your account and view your activity.",
+    "email": "Email",
+    "membership": "Membership",
+    "memberSince": "Member Since",
+    "creations": {
+      "title": "My AI Creations",
+      "placeholder": "Your generated storyboards and content will appear here."
+    },
+    "settings": {
+      "title": "Settings",
+      "placeholder": "Account and notification settings will be available here."
+    }
+  },
+  "about": {
+    "hero": {
+      "title": "ilouli.com",
+      "subtitle": "Creativity, Connection, and Legacy"
+    },
+    "vision": {
+      "title": "Our Vision",
+      "description": "We are building a unified brand portal centered on innovation. Our platform combines cutting-edge AI technology to support creative activities with secure digital archives for families, creating a space where creativity meets connection."
+    },
+    "values": {
+      "title": "Our Values",
+      "innovation": {
+        "title": "Innovation",
+        "description": "Pushing boundaries with AI-powered creative tools that transform ideas into visual stories."
+      },
+      "connection": {
+        "title": "Connection",
+        "description": "Building bridges between creators, families, and communities through meaningful interactions."
+      },
+      "legacy": {
+        "title": "Legacy",
+        "description": "Preserving memories and stories for generations through secure digital archives."
+      }
+    },
+    "ventures": {
+      "title": "Our Ventures",
+      "description": "Explore our ecosystem of innovative projects designed to empower creativity and connection.",
+      "flagship": "Flagship",
+      "comingSoon": "Coming Soon",
+      "aiStoryboard": "Transform your ideas into compelling visual stories with our AI-powered storyboard pipeline.",
+      "creativeStudio": "A comprehensive suite of creative tools for content creators and storytellers.",
+      "digitalArchive": "Secure, intelligent storage for your precious memories and family history."
+    },
+    "contact": {
+      "title": "Get in Touch",
+      "description": "Have questions or want to learn more? We'd love to hear from you.",
+      "email": "Email"
+    }
+  },
+  "language": {
+    "select": "Language",
+    "en": "English",
+    "ko": "한국어",
+    "ja": "日本語",
+    "zh": "中文"
+  }
+}

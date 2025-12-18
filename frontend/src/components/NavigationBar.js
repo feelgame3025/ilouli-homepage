@@ -1,0 +1,265 @@
+import React, { useState, useEffect } from 'react';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useAuth, USER_TIERS } from '../contexts/AuthContext';
+import LanguageSelector from './LanguageSelector';
+import './NavigationBar.css';
+
+const NavigationBar = () => {
+  const { t } = useTranslation();
+  const {
+    user,
+    isAuthenticated,
+    logout,
+    hasAccess,
+    setViewAs,
+    resetViewAs,
+    viewAsTier,
+    getActualTier
+  } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const showFamilySpace = hasAccess([USER_TIERS.FAMILY, USER_TIERS.ADMIN]);
+  const isActualAdmin = getActualTier && getActualTier() === USER_TIERS.ADMIN;
+  const showAdminLab = hasAccess([USER_TIERS.ADMIN, USER_TIERS.FAMILY]);
+
+  const isAdminLabActive = location.pathname.startsWith('/admin-lab');
+  const isCommunityActive = location.pathname.startsWith('/community');
+
+  const tierLabels = {
+    [USER_TIERS.GUEST]: '방문객',
+    [USER_TIERS.GENERAL]: '일반 회원',
+    [USER_TIERS.SUBSCRIBER]: '구독자',
+    [USER_TIERS.FAMILY]: '가족 구성원',
+    [USER_TIERS.ADMIN]: '관리자'
+  };
+
+  const handleViewAsTier = (tier) => {
+    if (tier === null) {
+      resetViewAs();
+    } else {
+      setViewAs(tier);
+    }
+  };
+
+  return (
+    <header className={`app-header ${isScrolled ? 'scrolled' : ''}`}>
+      <div className="nav-container">
+        <Link to="/" className="logo">ilouli.com</Link>
+
+        <nav className="main-nav">
+          <ul>
+            {showFamilySpace && (
+              <li>
+                <NavLink to="/storyboard" className={({ isActive }) => isActive ? 'active' : ''}>
+                  {t('nav.aiStoryboard')}
+                </NavLink>
+              </li>
+            )}
+            <li className="has-dropdown">
+              <span className={`dropdown-trigger ${isCommunityActive ? 'active' : ''}`}>
+                {t('nav.community')}
+                <svg className="dropdown-arrow" width="10" height="6" viewBox="0 0 10 6">
+                  <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                </svg>
+              </span>
+              <div className="dropdown-menu">
+                <div className="dropdown-content">
+                  <NavLink
+                    to="/community/announcements"
+                    className={({ isActive }) => `dropdown-item ${isActive ? 'active' : ''}`}
+                  >
+                    <span className="dropdown-icon">📢</span>
+                    <div className="dropdown-item-content">
+                      <span className="dropdown-item-title">{t('nav.announcements')}</span>
+                      <span className="dropdown-item-desc">중요한 소식 확인</span>
+                    </div>
+                  </NavLink>
+                  <NavLink
+                    to="/community/free-board"
+                    className={({ isActive }) => `dropdown-item ${isActive ? 'active' : ''}`}
+                  >
+                    <span className="dropdown-icon">💬</span>
+                    <div className="dropdown-item-content">
+                      <span className="dropdown-item-title">{t('nav.freeBoard')}</span>
+                      <span className="dropdown-item-desc">자유롭게 소통하기</span>
+                    </div>
+                  </NavLink>
+                </div>
+              </div>
+            </li>
+            <li>
+              <NavLink to="/about" className={({ isActive }) => isActive ? 'active' : ''}>
+                {t('nav.about')}
+              </NavLink>
+            </li>
+            {showFamilySpace && (
+              <li>
+                <NavLink to="/family" className={({ isActive }) => isActive ? 'active' : ''}>
+                  {t('nav.familySpace')}
+                </NavLink>
+              </li>
+            )}
+            {showAdminLab && (
+              <li className="has-dropdown">
+                <span className={`dropdown-trigger ${isAdminLabActive ? 'active' : ''}`}>
+                  {t('nav.adminLab')}
+                  <svg className="dropdown-arrow" width="10" height="6" viewBox="0 0 10 6">
+                    <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                  </svg>
+                </span>
+                <div className="dropdown-menu">
+                  <div className="dropdown-content">
+                    <NavLink
+                      to="/admin-lab/test-zone"
+                      className={({ isActive }) => `dropdown-item ${isActive ? 'active' : ''}`}
+                    >
+                      <span className="dropdown-icon">🧪</span>
+                      <div className="dropdown-item-content">
+                        <span className="dropdown-item-title">{t('nav.testZone')}</span>
+                        <span className="dropdown-item-desc">새로운 기능 테스트</span>
+                      </div>
+                    </NavLink>
+                    <NavLink
+                      to="/admin-lab/file-upload"
+                      className={({ isActive }) => `dropdown-item ${isActive ? 'active' : ''}`}
+                    >
+                      <span className="dropdown-icon">📁</span>
+                      <div className="dropdown-item-content">
+                        <span className="dropdown-item-title">{t('nav.fileUpload')}</span>
+                        <span className="dropdown-item-desc">AI 파일 분석</span>
+                      </div>
+                    </NavLink>
+                  </div>
+                </div>
+              </li>
+            )}
+          </ul>
+        </nav>
+
+        <div className="nav-actions">
+          <LanguageSelector />
+          {isAuthenticated ? (
+            <div className="user-menu-dropdown">
+              <button className="user-menu-trigger">
+                <span className="user-avatar-small">{user.name?.charAt(0).toUpperCase()}</span>
+                <span className="user-name">{user.name}</span>
+                {viewAsTier && <span className="viewing-as-indicator">👁</span>}
+                <svg className="dropdown-arrow" width="10" height="6" viewBox="0 0 10 6">
+                  <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                </svg>
+              </button>
+              <div className="user-dropdown-menu">
+                <div className="user-dropdown-content">
+                  {/* 내 정보 섹션 */}
+                  <div className="admin-user-info">
+                    <div className="user-info-header">
+                      <span className="user-avatar">{user.name?.charAt(0).toUpperCase()}</span>
+                      <div className="user-details">
+                        <span className="user-name-display">{user.name}</span>
+                        <span className="user-email-display">{user.email}</span>
+                        <span className="user-tier-badge">{tierLabels[user.tier]}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="dropdown-divider"></div>
+
+                  {/* 프로필 링크 */}
+                  <Link to="/profile" className="user-dropdown-item">
+                    <span className="dropdown-icon">👤</span>
+                    <span>내 프로필</span>
+                  </Link>
+
+                  {/* 관리자 전용 메뉴 */}
+                  {isActualAdmin && (
+                    <>
+                      <Link to="/admin" className="user-dropdown-item">
+                        <span className="dropdown-icon">⚙️</span>
+                        <span>관리자 대시보드</span>
+                      </Link>
+
+                      <div className="dropdown-divider"></div>
+
+                      {/* 등급 시뮬레이션 섹션 */}
+                      <div className="tier-simulation-section">
+                        <span className="tier-simulation-label">다른 등급으로 보기</span>
+                        <div className="tier-buttons">
+                          <button
+                            className={`tier-btn ${viewAsTier === null ? 'active' : ''}`}
+                            onClick={() => handleViewAsTier(null)}
+                          >
+                            관리자 (기본)
+                          </button>
+                          <button
+                            className={`tier-btn ${viewAsTier === USER_TIERS.FAMILY ? 'active' : ''}`}
+                            onClick={() => handleViewAsTier(USER_TIERS.FAMILY)}
+                          >
+                            가족 구성원
+                          </button>
+                          <button
+                            className={`tier-btn ${viewAsTier === USER_TIERS.SUBSCRIBER ? 'active' : ''}`}
+                            onClick={() => handleViewAsTier(USER_TIERS.SUBSCRIBER)}
+                          >
+                            구독자
+                          </button>
+                          <button
+                            className={`tier-btn ${viewAsTier === USER_TIERS.GENERAL ? 'active' : ''}`}
+                            onClick={() => handleViewAsTier(USER_TIERS.GENERAL)}
+                          >
+                            일반 회원
+                          </button>
+                          <button
+                            className={`tier-btn ${viewAsTier === USER_TIERS.GUEST ? 'active' : ''}`}
+                            onClick={() => handleViewAsTier(USER_TIERS.GUEST)}
+                          >
+                            방문객
+                          </button>
+                        </div>
+                        {viewAsTier && (
+                          <div className="viewing-as-notice">
+                            현재 <strong>{tierLabels[viewAsTier]}</strong> 등급으로 보는 중
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  <div className="dropdown-divider"></div>
+
+                  {/* 로그아웃 */}
+                  <button onClick={handleLogout} className="user-dropdown-item logout">
+                    <span className="dropdown-icon">🚪</span>
+                    <span>{t('auth.logout')}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <Link to="/login" className="login-btn">
+              {t('auth.login.button')}
+            </Link>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default NavigationBar;
