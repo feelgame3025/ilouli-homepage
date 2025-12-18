@@ -63,13 +63,24 @@ const NavigationBar = () => {
   // 모바일 메뉴 닫기 (페이지 이동 시)
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setExpandedDropdown(null);
+    document.body.style.overflow = '';
   }, [location.pathname]);
 
   const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-    if (isMobileMenuOpen) {
+    const newState = !isMobileMenuOpen;
+    setIsMobileMenuOpen(newState);
+    if (!newState) {
       setExpandedDropdown(null);
     }
+    // 모바일 메뉴 열릴 때 body 스크롤 방지
+    document.body.style.overflow = newState ? 'hidden' : '';
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+    setExpandedDropdown(null);
+    document.body.style.overflow = '';
   };
 
   const toggleDropdown = (name) => {
@@ -81,16 +92,10 @@ const NavigationBar = () => {
       <div className="nav-container">
         <Link to="/" className="logo">ilouli.com</Link>
 
-        {/* 모바일 햄버거 버튼 */}
-        <button
-          className={`mobile-menu-btn ${isMobileMenuOpen ? 'active' : ''}`}
-          onClick={toggleMobileMenu}
-          aria-label="메뉴 열기"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+        {/* 모바일 오버레이 */}
+        {isMobileMenuOpen && (
+          <div className="mobile-overlay" onClick={closeMobileMenu}></div>
+        )}
 
         <nav className={`main-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
           <ul>
@@ -291,6 +296,17 @@ const NavigationBar = () => {
               {t('auth.login.button')}
             </Link>
           )}
+
+          {/* 모바일 햄버거 버튼 - 가장 오른쪽 */}
+          <button
+            className={`mobile-menu-btn ${isMobileMenuOpen ? 'active' : ''}`}
+            onClick={toggleMobileMenu}
+            aria-label="메뉴 열기"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
         </div>
       </div>
     </header>
