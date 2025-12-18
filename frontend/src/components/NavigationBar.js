@@ -20,6 +20,8 @@ const NavigationBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedDropdown, setExpandedDropdown] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,12 +60,39 @@ const NavigationBar = () => {
     }
   };
 
+  // 모바일 메뉴 닫기 (페이지 이동 시)
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    if (isMobileMenuOpen) {
+      setExpandedDropdown(null);
+    }
+  };
+
+  const toggleDropdown = (name) => {
+    setExpandedDropdown(expandedDropdown === name ? null : name);
+  };
+
   return (
     <header className={`app-header ${isScrolled ? 'scrolled' : ''}`}>
       <div className="nav-container">
         <Link to="/" className="logo">ilouli.com</Link>
 
-        <nav className="main-nav">
+        {/* 모바일 햄버거 버튼 */}
+        <button
+          className={`mobile-menu-btn ${isMobileMenuOpen ? 'active' : ''}`}
+          onClick={toggleMobileMenu}
+          aria-label="메뉴 열기"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <nav className={`main-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
           <ul>
             {showFamilySpace && (
               <li>
@@ -72,8 +101,11 @@ const NavigationBar = () => {
                 </NavLink>
               </li>
             )}
-            <li className="has-dropdown">
-              <span className={`dropdown-trigger ${isCommunityActive ? 'active' : ''}`}>
+            <li className={`has-dropdown ${expandedDropdown === 'community' ? 'mobile-expanded' : ''}`}>
+              <span
+                className={`dropdown-trigger ${isCommunityActive ? 'active' : ''}`}
+                onClick={() => toggleDropdown('community')}
+              >
                 {t('nav.community')}
                 <svg className="dropdown-arrow" width="10" height="6" viewBox="0 0 10 6">
                   <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" />
@@ -117,8 +149,11 @@ const NavigationBar = () => {
               </li>
             )}
             {showAdminLab && (
-              <li className="has-dropdown">
-                <span className={`dropdown-trigger ${isAdminLabActive ? 'active' : ''}`}>
+              <li className={`has-dropdown ${expandedDropdown === 'adminlab' ? 'mobile-expanded' : ''}`}>
+                <span
+                  className={`dropdown-trigger ${isAdminLabActive ? 'active' : ''}`}
+                  onClick={() => toggleDropdown('adminlab')}
+                >
                   {t('nav.adminLab')}
                   <svg className="dropdown-arrow" width="10" height="6" viewBox="0 0 10 6">
                     <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" />
