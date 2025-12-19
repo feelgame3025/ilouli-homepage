@@ -6,6 +6,38 @@ const KAKAO_APP_KEY = process.env.REACT_APP_KAKAO_APP_KEY;
 let googleAuthInitialized = false;
 let kakaoInitialized = false;
 
+// 인앱 브라우저 감지
+export const isInAppBrowser = () => {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+  // 일반적인 인앱 브라우저 패턴
+  const inAppPatterns = [
+    /KAKAOTALK/i,          // 카카오톡
+    /NAVER/i,              // 네이버 앱
+    /Instagram/i,          // 인스타그램
+    /FBAN|FBAV/i,          // 페이스북
+    /Twitter/i,            // 트위터
+    /Line\//i,             // 라인
+    /wv\)/i,               // 안드로이드 웹뷰
+    /WebView/i,            // 일반 웹뷰
+  ];
+
+  return inAppPatterns.some(pattern => pattern.test(ua));
+};
+
+// 외부 브라우저로 열기 안내
+export const getExternalBrowserUrl = () => {
+  const currentUrl = window.location.href;
+
+  // iOS Safari로 열기
+  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    return `x-safari-${currentUrl}`;
+  }
+
+  // Android Chrome으로 열기
+  return `intent://${currentUrl.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+};
+
 // ==================== Google 로그인 ====================
 
 // Google Identity Services 스크립트 로드

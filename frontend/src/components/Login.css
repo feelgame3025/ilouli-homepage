@@ -226,3 +226,74 @@
   color: #666;
   line-height: 1.6;
 }
+
+/* In-app Browser Warning */
+.inapp-warning {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.inapp-warning-icon {
+  width: 24px;
+  height: 24px;
+  background: #ffc107;
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.inapp-warning-content {
+  flex: 1;
+}
+
+.inapp-warning-content strong {
+  display: block;
+  color: #856404;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.inapp-warning-content p {
+  color: #856404;
+  font-size: 13px;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.inapp-warning-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.copy-url-btn {
+  padding: 10px 16px;
+  background: #ffc107;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.copy-url-btn:hover {
+  background: #e0a800;
+}
+
+.inapp-tip {
+  font-size: 12px;
+  color: #856404;
+  text-align: center;
+}
