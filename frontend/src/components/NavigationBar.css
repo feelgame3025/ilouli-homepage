@@ -548,8 +548,29 @@
 }
 
 @media (max-width: 833px) {
+  .app-header {
+    z-index: 9999; /* 모바일에서 최상위 레이어 보장 */
+  }
+
   .nav-container {
     padding: 0 16px;
+    pointer-events: auto;
+  }
+
+  .logo {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 10;
+  }
+
+  .nav-actions {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 10;
+  }
+
+  .nav-actions > * {
+    pointer-events: auto !important;
   }
 
   /* Mobile Overlay - 헤더 아래에서 시작 */
