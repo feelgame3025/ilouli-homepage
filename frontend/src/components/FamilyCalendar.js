@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCalendar, EVENT_CATEGORIES } from '../contexts/CalendarContext';
 import './FamilyCalendar.css';
@@ -9,6 +9,7 @@ const FamilyCalendar = () => {
     currentMonth,
     selectedDate,
     setSelectedDate,
+    setCurrentMonth,
     goToPreviousMonth,
     goToNextMonth,
     goToToday,
@@ -19,6 +20,7 @@ const FamilyCalendar = () => {
     updateEvent,
     deleteEvent,
     getCategoryColor,
+    searchEvents,
     EVENT_CATEGORIES: categories,
     // Google 관련
     googleConnected,
@@ -31,6 +33,8 @@ const FamilyCalendar = () => {
 
   const [showEventModal, setShowEventModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const [eventForm, setEventForm] = useState({
     title: '',
     date: '',
@@ -181,6 +185,35 @@ const FamilyCalendar = () => {
     currentMonth.getMonth()
   );
 
+  // 검색 결과
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return searchEvents(searchQuery);
+  }, [searchQuery, searchEvents]);
+
+  // 검색 결과에서 일정 클릭 시
+  const handleSearchResultClick = (event) => {
+    const [year, month, day] = event.date.split('-').map(Number);
+    const eventDate = new Date(year, month - 1, day);
+    setSelectedDate(eventDate);
+    setCurrentMonth(eventDate);
+    setShowSearchResults(false);
+    setSearchQuery('');
+  };
+
+  // 검색 입력 처리
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setShowSearchResults(value.trim().length > 0);
+  };
+
+  // 검색 초기화
+  const clearSearch = () => {
+    setSearchQuery('');
+    setShowSearchResults(false);
+  };
+
   return (
     <div className="family-calendar">
       <div className="calendar-layout">
@@ -197,6 +230,66 @@ const FamilyCalendar = () => {
                 ›
               </button>
             </div>
+
+            {/* 검색 */}
+            <div className="calendar-search">
+              <div className="search-input-wrapper">
+                <span className="search-icon">🔍</span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  placeholder={t('calendar.search.placeholder') || '일정 검색...'}
+                  className="search-input"
+                />
+                {searchQuery && (
+                  <button onClick={clearSearch} className="search-clear-btn">×</button>
+                )}
+              </div>
+              {showSearchResults && (
+                <div className="search-results">
+                  {searchResults.length === 0 ? (
+                    <div className="search-no-results">
+                      {t('calendar.search.noResults') || '검색 결과가 없습니다'}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="search-results-header">
+                        {searchResults.length}개의 일정
+                      </div>
+                      {searchResults.slice(0, 10).map((event) => (
+                        <div
+                          key={event.id}
+                          className="search-result-item"
+                          onClick={() => handleSearchResultClick(event)}
+                        >
+                          <div
+                            className="search-result-color"
+                            style={{ backgroundColor: getCategoryColor(event.category, event.isGoogleEvent) }}
+                          />
+                          <div className="search-result-info">
+                            <span className="search-result-title">{event.title}</span>
+                            <span className="search-result-date">
+                              {new Date(event.date + 'T00:00:00').toLocaleDateString('ko-KR', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      {searchResults.length > 10 && (
+                        <div className="search-more">
+                          +{searchResults.length - 10}개 더 있음
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="calendar-actions">
               {/* Google 캘린더 연결 버튼 */}
               {googleConnected ? (

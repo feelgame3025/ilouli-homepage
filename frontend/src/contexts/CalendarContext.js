@@ -319,6 +319,18 @@ export const CalendarProvider = ({ children }) => {
     }
   };
 
+  // 이벤트 검색
+  const searchEvents = (query) => {
+    if (!query || query.trim() === '') return [];
+    const searchTerm = query.toLowerCase().trim();
+    return allEvents
+      .filter(event =>
+        event.title?.toLowerCase().includes(searchTerm) ||
+        event.description?.toLowerCase().includes(searchTerm)
+      )
+      .sort((a, b) => parseEventDate(a.date) - parseEventDate(b.date));
+  };
+
   const value = {
     events: allEvents,
     localEvents: events,
@@ -337,6 +349,7 @@ export const CalendarProvider = ({ children }) => {
     goToNextMonth,
     goToToday,
     getCategoryColor,
+    searchEvents,
     EVENT_CATEGORIES,
     EVENT_COLORS,
     // Google 관련
