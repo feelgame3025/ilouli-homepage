@@ -98,10 +98,19 @@ const FamilyCalendar = () => {
     setSelectedDate(date);
   };
 
+  // 날짜를 로컬 YYYY-MM-DD 형식으로 변환
+  const toLocalDateString = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleAddEvent = () => {
     const dateStr = selectedDate
-      ? selectedDate.toISOString().split('T')[0]
-      : new Date().toISOString().split('T')[0];
+      ? toLocalDateString(selectedDate)
+      : toLocalDateString(new Date());
 
     setEventForm({
       title: '',

@@ -234,19 +234,32 @@ export const CalendarProvider = ({ children }) => {
     }
   };
 
+  // 날짜를 로컬 YYYY-MM-DD 형식으로 변환 (타임존 문제 방지)
+  const toLocalDateString = (date) => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // 이벤트 날짜 문자열을 로컬 Date로 파싱 (타임존 문제 방지)
+  const parseEventDate = (dateStr) => {
+    // "YYYY-MM-DD" 형식의 문자열을 로컬 시간으로 파싱
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   // 특정 날짜의 이벤트 가져오기
   const getEventsForDate = (date) => {
-    const dateStr = new Date(date).toISOString().split('T')[0];
-    return allEvents.filter(event => {
-      const eventDate = new Date(event.date).toISOString().split('T')[0];
-      return eventDate === dateStr;
-    });
+    const dateStr = toLocalDateString(date);
+    return allEvents.filter(event => event.date === dateStr);
   };
 
   // 특정 월의 이벤트 가져오기
   const getEventsForMonth = (year, month) => {
     return allEvents.filter(event => {
-      const eventDate = new Date(event.date);
+      const eventDate = parseEventDate(event.date);
       return eventDate.getFullYear() === year && eventDate.getMonth() === month;
     });
   };
@@ -260,11 +273,11 @@ export const CalendarProvider = ({ children }) => {
 
     return allEvents
       .filter(event => {
-        const eventDate = new Date(event.date);
+        const eventDate = parseEventDate(event.date);
         eventDate.setHours(0, 0, 0, 0);
         return eventDate >= today && eventDate <= endDate;
       })
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
+      .sort((a, b) => parseEventDate(a.date) - parseEventDate(b.date));
   };
 
   // 이전 달로 이동
