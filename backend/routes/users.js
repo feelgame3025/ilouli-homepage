@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', authMiddleware, adminMiddleware, (req, res) => {
   try {
     const users = db.prepare(`
-      SELECT id, name, email, social_id, social_provider, picture, tier, status, join_date, created_at
+      SELECT id, name, email, social_id, social_provider, picture, tier, status, join_date, last_login, created_at
       FROM users
       WHERE status = 'approved' OR status IS NULL
       ORDER BY created_at DESC
