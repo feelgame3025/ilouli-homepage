@@ -29,18 +29,25 @@ jobs:
         working-directory: frontend
         run: CI=false npm run build
 
-      - name: Deploy via SSH
+      - name: Deploy build files via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "frontend/build/*"
+          target: "/tmp/deploy-build"
+          strip_components: 2
+
+      - name: Set permissions and move files
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/feel3025/myproject/homepage
-            git pull origin main
-            cd frontend
-            npm ci --legacy-peer-deps
-            npm run build
-            sudo cp -r build/* /var/www/html/
+            # Move files to web root with sudo
+            sudo rsync -av --delete /tmp/deploy-build/ /var/www/html/
             sudo chown -R www-data:www-data /var/www/html
+            rm -rf /tmp/deploy-build
             echo "Deployed at $(date)"
