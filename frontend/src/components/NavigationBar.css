@@ -623,17 +623,22 @@
     background: #ffffff;
     transform: translateX(100%);
     opacity: 1;
-    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+                visibility 0s linear 0.3s;
     z-index: 1002;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
-    pointer-events: none; /* 닫혀있을 때 클릭 이벤트 통과 */
+    pointer-events: none;
+    visibility: hidden; /* iOS Safari 호환성 - 완전히 숨김 */
   }
 
   .main-nav.mobile-open {
     transform: translateX(0);
-    pointer-events: auto; /* 열렸을 때 클릭 이벤트 받기 */
+    pointer-events: auto;
+    visibility: visible;
+    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1),
+                visibility 0s linear 0s;
   }
 
   .nav-menu {
