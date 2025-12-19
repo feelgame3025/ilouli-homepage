@@ -85,6 +85,13 @@
       "subscriber": "구독자",
       "family": "가족 구성원",
       "admin": "관리자"
+    },
+    "social": {
+      "kakao": "카카오로 시작하기",
+      "google": "Google로 시작하기",
+      "or": "또는",
+      "loading": "로그인 중...",
+      "error": "소셜 로그인에 실패했습니다. 다시 시도해주세요."
     }
   },
   "admin": {
@@ -416,6 +423,16 @@
       "cancel": "취소",
       "save": "저장",
       "update": "수정"
+    },
+    "google": {
+      "connect": "Google 연결",
+      "connected": "연결됨",
+      "disconnect": "연결 해제",
+      "refresh": "새로고침",
+      "syncToGoogle": "Google 캘린더에도 저장",
+      "googleEventNotice": "Google 캘린더의 일정입니다",
+      "openInGoogle": "Google에서 열기",
+      "syncError": "Google 캘린더 동기화 실패"
     }
   },
   "notification": {

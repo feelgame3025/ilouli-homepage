@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authAPI, usersAPI, getToken, removeToken } from '../services/api';
+import { signInWithGoogle, signInWithKakao } from '../services/socialAuth';
 
 export const USER_TIERS = {
   GUEST: 'guest',
@@ -14,57 +16,6 @@ export const USER_STATUS = {
   REJECTED: 'rejected'
 };
 
-const AUTH_COOKIE_NAME = 'ilouli_auth';
-const USERS_STORAGE_KEY = 'ilouli_users';
-
-// 쿠키 유틸리티 함수들 (서브도메인 공유용)
-const getCookieDomain = () => {
-  const hostname = window.location.hostname;
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return hostname;
-  }
-  // .ilouli.com 형식으로 설정하여 모든 서브도메인에서 공유
-  return '.ilouli.com';
-};
-
-const setCookie = (name, value, days = 30) => {
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  const domain = getCookieDomain();
-  const domainStr = domain.startsWith('.') ? `domain=${domain};` : '';
-  const secureStr = window.location.protocol === 'https:' ? 'Secure;' : '';
-  document.cookie = `${name}=${encodeURIComponent(JSON.stringify(value))};expires=${expires};path=/;${domainStr}${secureStr}SameSite=Lax`;
-};
-
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    try {
-      return JSON.parse(decodeURIComponent(parts.pop().split(';').shift()));
-    } catch (e) {
-      return null;
-    }
-  }
-  return null;
-};
-
-const deleteCookie = (name) => {
-  const domain = getCookieDomain();
-  const domainStr = domain.startsWith('.') ? `domain=${domain};` : '';
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;${domainStr}`;
-};
-
-// 기본 관리자 계정 설정
-const DEFAULT_ADMIN = {
-  id: 'admin-001',
-  name: 'Administrator',
-  email: 'admin@ilouli.com',
-  password: 'admin123',
-  tier: 'admin',
-  status: 'approved',
-  joinDate: '2025-01-01'
-};
-
 const AuthContext = createContext(null);
 
 export const useAuth = () => {
@@ -78,207 +29,127 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [viewAsTier, setViewAsTier] = useState(null); // 관리자 등급 시뮬레이션용
+  const [viewAsTier, setViewAsTier] = useState(null);
 
+  // 토큰으로 세션 복원
   useEffect(() => {
-    // 기본 관리자 계정 초기화
-    const users = localStorage.getItem(USERS_STORAGE_KEY);
-    const existingUsers = users ? JSON.parse(users) : [];
-    const adminExists = existingUsers.some(u => u.email === DEFAULT_ADMIN.email);
-
-    if (!adminExists) {
-      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify([...existingUsers, DEFAULT_ADMIN]));
-    }
-
-    // 쿠키에서 세션 복원
-    let storedAuth = getCookie(AUTH_COOKIE_NAME);
-
-    // 쿠키에 없으면 localStorage에서 확인 (마이그레이션)
-    if (!storedAuth) {
-      const localStoredAuth = localStorage.getItem(AUTH_COOKIE_NAME);
-      if (localStoredAuth) {
+    const restoreSession = async () => {
+      const token = getToken();
+      if (token) {
         try {
-          storedAuth = JSON.parse(localStoredAuth);
-          // 쿠키로 마이그레이션
-          setCookie(AUTH_COOKIE_NAME, storedAuth);
-          // localStorage 정리
-          localStorage.removeItem(AUTH_COOKIE_NAME);
-        } catch (e) {
-          localStorage.removeItem(AUTH_COOKIE_NAME);
+          const userData = await authAPI.getMe();
+          setUser(userData);
+        } catch (err) {
+          console.error('Failed to restore session:', err);
+          removeToken();
         }
       }
-    }
+      setLoading(false);
+    };
 
-    if (storedAuth) {
-      setUser(storedAuth);
-    }
-    setLoading(false);
+    restoreSession();
   }, []);
 
-  const getUsers = () => {
-    const users = localStorage.getItem(USERS_STORAGE_KEY);
-    return users ? JSON.parse(users) : [];
-  };
-
-  const saveUsers = (users) => {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-  };
-
   const login = async (email, password) => {
-    const users = getUsers();
-    const foundUser = users.find(
-      u => u.email === email && u.password === password
-    );
-
-    if (!foundUser) {
-      throw new Error('Invalid email or password');
-    }
-
-    // 승인 대기 중인 회원은 로그인 불가
-    if (foundUser.status === USER_STATUS.PENDING) {
-      throw new Error('Account pending approval');
-    }
-
-    // 거절된 회원은 로그인 불가
-    if (foundUser.status === USER_STATUS.REJECTED) {
-      throw new Error('Account rejected');
-    }
-
-    const { password: _, ...userWithoutPassword } = foundUser;
-    setUser(userWithoutPassword);
-    setCookie(AUTH_COOKIE_NAME, userWithoutPassword);
-    return userWithoutPassword;
+    const userData = await authAPI.login(email, password);
+    setUser(userData);
+    return userData;
   };
 
   const signup = async (name, email, password) => {
-    const users = getUsers();
-
-    if (users.some(u => u.email === email)) {
-      throw new Error('Email already exists');
-    }
-
-    const newUser = {
-      id: Date.now().toString(),
-      name,
-      email,
-      password,
-      tier: USER_TIERS.GENERAL,
-      status: USER_STATUS.PENDING,
-      joinDate: new Date().toISOString().split('T')[0]
-    };
-
-    saveUsers([...users, newUser]);
-
-    // 회원가입 후 자동 로그인하지 않음 (승인 대기)
+    const result = await authAPI.signup(name, email, password);
     return { pending: true };
   };
 
+  const socialLogin = async (provider) => {
+    let socialUser;
+
+    if (provider === 'google') {
+      socialUser = await signInWithGoogle();
+    } else if (provider === 'kakao') {
+      socialUser = await signInWithKakao();
+    } else {
+      throw new Error('Unknown provider');
+    }
+
+    const userData = await authAPI.socialLogin(provider, socialUser);
+    setUser(userData);
+    return userData;
+  };
+
   const logout = () => {
+    authAPI.logout();
     setUser(null);
-    deleteCookie(AUTH_COOKIE_NAME);
   };
 
   const hasAccess = (requiredTiers) => {
     if (!user) return false;
-    // 등급 시뮬레이션 중이면 해당 등급으로 체크
     const effectiveTier = viewAsTier || user.tier;
     return requiredTiers.includes(effectiveTier);
   };
 
-  // 관리자 전용: 다른 등급으로 보기 (시뮬레이션)
-  const setViewAs = (tier) => {
-    if (!user || user.tier !== USER_TIERS.ADMIN) {
-      return;
-    }
-    setViewAsTier(tier);
-  };
-
-  // 등급 시뮬레이션 해제
-  const resetViewAs = () => {
-    setViewAsTier(null);
-  };
-
-  // 현재 시뮬레이션 중인 등급 가져오기
-  const getCurrentViewTier = () => {
-    return viewAsTier;
-  };
-
-  // 실제 사용자 등급 (시뮬레이션 무관)
-  const getActualTier = () => {
-    return user?.tier;
-  };
-
-  // 관리자 전용: 모든 회원 목록 조회
-  const getAllUsers = () => {
+  // 관리자 기능
+  const getAllUsers = async () => {
     if (!user || user.tier !== USER_TIERS.ADMIN) {
       throw new Error('Admin access required');
     }
-    return getUsers().map(({ password, ...u }) => u);
+    return await usersAPI.getAll();
   };
 
-  // 관리자 전용: 회원 티어 변경
-  const updateUserTier = (userId, newTier) => {
+  const getPendingUsers = async () => {
     if (!user || user.tier !== USER_TIERS.ADMIN) {
       throw new Error('Admin access required');
     }
-    const users = getUsers();
-    const updatedUsers = users.map(u =>
-      u.id === userId ? { ...u, tier: newTier } : u
-    );
-    saveUsers(updatedUsers);
+    return await usersAPI.getPending();
   };
 
-  // 관리자 전용: 회원 삭제
-  const deleteUser = (userId) => {
+  const approveUser = async (userId) => {
     if (!user || user.tier !== USER_TIERS.ADMIN) {
       throw new Error('Admin access required');
     }
-    // 자기 자신은 삭제 불가
+    await usersAPI.approve(userId);
+  };
+
+  const rejectUser = async (userId) => {
+    if (!user || user.tier !== USER_TIERS.ADMIN) {
+      throw new Error('Admin access required');
+    }
+    await usersAPI.reject(userId);
+  };
+
+  const updateUserTier = async (userId, newTier) => {
+    if (!user || user.tier !== USER_TIERS.ADMIN) {
+      throw new Error('Admin access required');
+    }
+    await usersAPI.updateTier(userId, newTier);
+  };
+
+  const deleteUser = async (userId) => {
+    if (!user || user.tier !== USER_TIERS.ADMIN) {
+      throw new Error('Admin access required');
+    }
     if (userId === user.id) {
       throw new Error('Cannot delete yourself');
     }
-    const users = getUsers();
-    const updatedUsers = users.filter(u => u.id !== userId);
-    saveUsers(updatedUsers);
+    await usersAPI.delete(userId);
   };
 
-  // 관리자 전용: 대기 중인 회원 목록 조회
-  const getPendingUsers = () => {
-    if (!user || user.tier !== USER_TIERS.ADMIN) {
-      throw new Error('Admin access required');
-    }
-    return getUsers()
-      .filter(u => u.status === USER_STATUS.PENDING)
-      .map(({ password, ...u }) => u);
+  // 등급 시뮬레이션
+  const setViewAs = (tier) => {
+    if (!user || user.tier !== USER_TIERS.ADMIN) return;
+    setViewAsTier(tier);
   };
 
-  // 관리자 전용: 회원 승인
-  const approveUser = (userId) => {
-    if (!user || user.tier !== USER_TIERS.ADMIN) {
-      throw new Error('Admin access required');
-    }
-    const users = getUsers();
-    const updatedUsers = users.map(u =>
-      u.id === userId ? { ...u, status: USER_STATUS.APPROVED } : u
-    );
-    saveUsers(updatedUsers);
-  };
-
-  // 관리자 전용: 회원 거절
-  const rejectUser = (userId) => {
-    if (!user || user.tier !== USER_TIERS.ADMIN) {
-      throw new Error('Admin access required');
-    }
-    const users = getUsers();
-    const updatedUsers = users.filter(u => u.id !== userId);
-    saveUsers(updatedUsers);
-  };
+  const resetViewAs = () => setViewAsTier(null);
+  const getCurrentViewTier = () => viewAsTier;
+  const getActualTier = () => user?.tier;
 
   const value = {
     user,
     loading,
     login,
     signup,
+    socialLogin,
     logout,
     hasAccess,
     isAuthenticated: !!user,
@@ -290,7 +161,6 @@ export const AuthProvider = ({ children }) => {
     getPendingUsers,
     approveUser,
     rejectUser,
-    // 등급 시뮬레이션 기능
     setViewAs,
     resetViewAs,
     getCurrentViewTier,

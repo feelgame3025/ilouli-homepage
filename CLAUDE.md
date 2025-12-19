@@ -56,71 +56,87 @@ npm run build
 
 ## Deployment
 
-Production server uses nginx with subdomain support:
+**자동 배포:** GitHub에 커밋하면 자동으로 빌드 및 배포됩니다.
 ```bash
-# Build and deploy
-npm run build
-sudo cp -r build/* /var/www/html/
-sudo cp nginx/ilouli.com.conf /etc/nginx/sites-available/ilouli.com
-sudo ln -sf /etc/nginx/sites-available/ilouli.com /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
+# 변경사항 커밋 → 자동 배포
+git add .
+git commit -m "변경 내용"
+git push
 ```
 
-**DNS 설정 필요:**
-- A 레코드: `ilouli.com`, `www.ilouli.com` → 서버 IP
-- A 레코드: `ai.ilouli.com`, `community.ilouli.com`, `family.ilouli.com`, `admin.ilouli.com`, `lab.ilouli.com` → 서버 IP
-- 또는 와일드카드: `*.ilouli.com` → 서버 IP
+**수동 배포 (필요시):**
+```bash
+npm run build
+sudo cp -r build/* /var/www/html/
+```
+
+**DNS 설정:**
+- A 레코드: `ilouli.com`, `*.ilouli.com`, `api.ilouli.com` → 서버 IP (125.242.20.78)
+
+## Backend API
+
+Express.js + SQLite 백엔드 서버:
+
+**서버 관리:**
+```bash
+# PM2로 관리
+pm2 status              # 상태 확인
+pm2 restart ilouli-api  # 재시작
+pm2 logs ilouli-api     # 로그 확인
+```
+
+**API 엔드포인트 (https://api.ilouli.com):**
+- `POST /api/auth/login` - 로그인
+- `POST /api/auth/signup` - 회원가입
+- `POST /api/auth/social-login` - 소셜 로그인 (Google/Kakao)
+- `GET /api/auth/me` - 현재 사용자 정보
+- `GET /api/users` - 전체 회원 목록 (Admin)
+- `GET /api/users/pending` - 승인 대기 회원 (Admin)
+- `POST /api/users/:id/approve` - 회원 승인 (Admin)
+- `POST /api/users/:id/reject` - 회원 거절 (Admin)
+- `PUT /api/users/:id/tier` - 등급 변경 (Admin)
+- `DELETE /api/users/:id` - 회원 삭제 (Admin)
+
+**데이터베이스:** `backend/ilouli.db` (SQLite)
+
+**기본 관리자 계정:**
+- 이메일: admin@ilouli.com
+- 비밀번호: admin123
 
 ## Architecture
 
 **Tech Stack:**
-- React 19 with Create React App
-- React Router v6 for client-side routing
-- i18next for internationalization (English, Korean)
+- **Frontend:** React 19, React Router v6, i18next
+- **Backend:** Express.js, SQLite (better-sqlite3), JWT 인증
+- **인프라:** Nginx (리버스 프록시), PM2 (프로세스 관리), Let's Encrypt (SSL)
 - Host-based routing for subdomains
 - Standard CSS (component-level `.css` files)
-- React Testing Library for tests
 
 **Project Structure:**
 ```
-frontend/
-├── src/
-│   ├── App.js              # Host-based router selection
-│   ├── i18n.js             # i18next configuration
-│   ├── index.js            # Entry point
-│   ├── components/         # Feature components
-│   │   ├── About.js
-│   │   ├── Admin.js
-│   │   ├── AIStoryboard.js
-│   │   ├── AIContentTools.js
-│   │   ├── Community.js
-│   │   ├── FamilySpace.js
-│   │   ├── FileUpload.js
-│   │   ├── LandingPage.js
-│   │   ├── NavigationBar.js  # Host-aware navigation
-│   │   ├── Profile.js
-│   │   ├── ProtectedRoute.js
-│   │   └── TestZone.js
-│   ├── routers/            # Host-specific routers
-│   │   ├── MainRouter.js
-│   │   ├── AIRouter.js
-│   │   ├── CommunityRouter.js
-│   │   ├── FamilyRouter.js
-│   │   ├── AdminRouter.js
-│   │   └── LabRouter.js
-│   ├── utils/
-│   │   └── hostConfig.js   # Subdomain detection & URL generation
-│   ├── contexts/
-│   │   ├── AppProvider.js
-│   │   ├── AuthContext.js
-│   │   ├── CommunityContext.js
-│   │   ├── NotificationContext.js
-│   │   └── AssetContext.js
-│   └── locales/
-│       ├── en.json
-│       └── ko.json
-├── nginx/
-│   └── ilouli.com.conf     # Nginx subdomain configuration
+homepage/
+├── frontend/
+│   ├── src/
+│   │   ├── App.js              # Host-based router selection
+│   │   ├── components/         # Feature components
+│   │   ├── routers/            # Host-specific routers
+│   │   ├── contexts/           # React contexts (Auth, Community, Notification)
+│   │   ├── services/           # API services
+│   │   │   ├── api.js          # Backend API client
+│   │   │   └── socialAuth.js   # Google/Kakao OAuth
+│   │   └── locales/            # i18n translations
+│   └── .env                    # Frontend environment variables
+├── backend/
+│   ├── server.js               # Express server entry
+│   ├── database.js             # SQLite database setup
+│   ├── routes/
+│   │   ├── auth.js             # Authentication routes
+│   │   └── users.js            # User management routes
+│   ├── middleware/
+│   │   └── auth.js             # JWT middleware
+│   ├── ilouli.db               # SQLite database file
+│   └── .env                    # Backend environment variables
+└── CLAUDE.md
 ```
 
 ## Host-based Routing
@@ -183,13 +199,17 @@ Follow Apple-inspired minimalism: clean layouts, generous whitespace, smooth ani
 ## Development Status
 
 **Completed:**
+- Backend API (Express.js + SQLite)
 - Authentication (Login/Signup with tier-based access)
-- Admin Dashboard (User management, content moderation)
+- Social Login (Google, Kakao OAuth)
+- Admin Dashboard (User management with provider filter, last login tracking)
 - Community (Posts, comments, reports, announcements)
 - Notification System (In-app notifications with settings)
+- Family Calendar (Google Calendar integration)
 - Internationalization (English/Korean)
 - Responsive navigation with mobile menu
-- **Subdomain-based architecture**
+- Subdomain-based architecture
+- Cross-subdomain authentication (cookie-based)
 
 **In Progress / TODO:**
 | 기능 | 상태 | 현재 위치 | 목표 서브도메인 |
@@ -197,7 +217,5 @@ Follow Apple-inspired minimalism: clean layouts, generous whitespace, smooth ani
 | AI Storyboard Pipeline | 개발 중 | ai.ilouli.com | ai.ilouli.com |
 | AI Content Tools | 개발 중 | ai.ilouli.com | ai.ilouli.com |
 | Character Lock | 대기 | - | AI Storyboard 내 |
-| Smart Calendar | 대기 | - | family.ilouli.com |
 | AI Photo Gallery | 대기 | - | family.ilouli.com |
 | AI Usage Statistics | 대기 | - | admin.ilouli.com |
-| Email Notifications | 대기 | - | Backend 연동 |

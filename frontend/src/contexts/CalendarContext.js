@@ -1,5 +1,15 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
+import {
+  loadGoogleScripts,
+  signInToGoogle,
+  signOutFromGoogle,
+  restoreGoogleSession,
+  fetchGoogleEvents,
+  addGoogleEvent,
+  deleteGoogleEvent,
+  updateGoogleEvent
+} from '../services/googleCalendar';
 
 const CALENDAR_STORAGE_KEY = 'ilouli_family_calendar';
 
@@ -10,7 +20,8 @@ export const EVENT_COLORS = {
   TRAVEL: '#5856d6',
   HEALTH: '#ff3b30',
   WORK: '#007aff',
-  OTHER: '#8e8e93'
+  OTHER: '#8e8e93',
+  GOOGLE: '#4285f4'
 };
 
 export const EVENT_CATEGORIES = {
@@ -35,8 +46,12 @@ export const useCalendar = () => {
 export const CalendarProvider = ({ children }) => {
   const { user } = useAuth();
   const [events, setEvents] = useState([]);
+  const [googleEvents, setGoogleEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [googleConnected, setGoogleConnected] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleError, setGoogleError] = useState(null);
 
   // 로컬 스토리지에서 이벤트 로드
   useEffect(() => {
@@ -51,46 +66,178 @@ export const CalendarProvider = ({ children }) => {
     }
   }, []);
 
-  // 이벤트 저장
-  const saveEvents = (newEvents) => {
-    setEvents(newEvents);
-    localStorage.setItem(CALENDAR_STORAGE_KEY, JSON.stringify(newEvents));
+  // Google API 초기화 및 세션 복원
+  useEffect(() => {
+    const initGoogle = async () => {
+      try {
+        await loadGoogleScripts();
+        const restored = await restoreGoogleSession();
+        if (restored) {
+          setGoogleConnected(true);
+        }
+      } catch (err) {
+        console.error('Failed to init Google API:', err);
+      }
+    };
+    initGoogle();
+  }, []);
+
+  // Google 이벤트 새로고침
+  const refreshGoogleEvents = useCallback(async () => {
+    if (!googleConnected) return;
+
+    setGoogleLoading(true);
+    setGoogleError(null);
+    try {
+      const events = await fetchGoogleEvents();
+      setGoogleEvents(events);
+    } catch (err) {
+      console.error('Failed to fetch Google events:', err);
+      setGoogleError('Google 캘린더 동기화 실패');
+      // 토큰 만료 시 연결 해제
+      if (err.status === 401) {
+        setGoogleConnected(false);
+        signOutFromGoogle();
+      }
+    } finally {
+      setGoogleLoading(false);
+    }
+  }, [googleConnected]);
+
+  // Google 연결 상태 변경 시 이벤트 새로고침
+  useEffect(() => {
+    if (googleConnected) {
+      refreshGoogleEvents();
+    } else {
+      setGoogleEvents([]);
+    }
+  }, [googleConnected, refreshGoogleEvents]);
+
+  // Google 계정 연결
+  const connectGoogle = async () => {
+    setGoogleLoading(true);
+    setGoogleError(null);
+    try {
+      await signInToGoogle();
+      setGoogleConnected(true);
+    } catch (err) {
+      console.error('Google sign in failed:', err);
+      setGoogleError('Google 로그인 실패');
+    } finally {
+      setGoogleLoading(false);
+    }
   };
 
+  // Google 계정 연결 해제
+  const disconnectGoogle = () => {
+    signOutFromGoogle();
+    setGoogleConnected(false);
+    setGoogleEvents([]);
+  };
+
+  // 이벤트 저장 (로컬)
+  const saveEvents = (newEvents) => {
+    const localEvents = newEvents.filter(e => !e.isGoogleEvent);
+    setEvents(localEvents);
+    localStorage.setItem(CALENDAR_STORAGE_KEY, JSON.stringify(localEvents));
+  };
+
+  // 모든 이벤트 (로컬 + Google)
+  const allEvents = [...events, ...googleEvents];
+
   // 이벤트 추가
-  const addEvent = (eventData) => {
+  const addEvent = async (eventData, syncToGoogle = false) => {
     const newEvent = {
       id: Date.now().toString(),
       ...eventData,
       createdBy: user?.id,
       createdByName: user?.name,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      isGoogleEvent: false
     };
+
+    // Google에도 동기화
+    if (syncToGoogle && googleConnected) {
+      try {
+        const googleResult = await addGoogleEvent(eventData);
+        newEvent.googleId = googleResult.id;
+        newEvent.syncedToGoogle = true;
+      } catch (err) {
+        console.error('Failed to sync to Google:', err);
+      }
+    }
+
     const newEvents = [...events, newEvent];
     saveEvents(newEvents);
     return newEvent;
   };
 
   // 이벤트 수정
-  const updateEvent = (eventId, eventData) => {
-    const newEvents = events.map(event =>
-      event.id === eventId
-        ? { ...event, ...eventData, updatedAt: new Date().toISOString() }
-        : event
+  const updateEvent = async (eventId, eventData) => {
+    const event = allEvents.find(e => e.id === eventId);
+
+    // Google 이벤트인 경우
+    if (event?.isGoogleEvent && event.googleId) {
+      try {
+        await updateGoogleEvent(event.googleId, eventData);
+        await refreshGoogleEvents();
+      } catch (err) {
+        console.error('Failed to update Google event:', err);
+      }
+      return;
+    }
+
+    // 로컬 이벤트 수정
+    const newEvents = events.map(e =>
+      e.id === eventId
+        ? { ...e, ...eventData, updatedAt: new Date().toISOString() }
+        : e
     );
     saveEvents(newEvents);
+
+    // Google에 동기화된 이벤트인 경우
+    if (event?.syncedToGoogle && event.googleId) {
+      try {
+        await updateGoogleEvent(event.googleId, eventData);
+      } catch (err) {
+        console.error('Failed to sync update to Google:', err);
+      }
+    }
   };
 
   // 이벤트 삭제
-  const deleteEvent = (eventId) => {
-    const newEvents = events.filter(event => event.id !== eventId);
+  const deleteEvent = async (eventId) => {
+    const event = allEvents.find(e => e.id === eventId);
+
+    // Google 이벤트인 경우
+    if (event?.isGoogleEvent && event.googleId) {
+      try {
+        await deleteGoogleEvent(event.googleId);
+        await refreshGoogleEvents();
+      } catch (err) {
+        console.error('Failed to delete Google event:', err);
+      }
+      return;
+    }
+
+    // 로컬 이벤트 삭제
+    const newEvents = events.filter(e => e.id !== eventId);
     saveEvents(newEvents);
+
+    // Google에 동기화된 이벤트인 경우
+    if (event?.syncedToGoogle && event.googleId) {
+      try {
+        await deleteGoogleEvent(event.googleId);
+      } catch (err) {
+        console.error('Failed to delete from Google:', err);
+      }
+    }
   };
 
   // 특정 날짜의 이벤트 가져오기
   const getEventsForDate = (date) => {
     const dateStr = new Date(date).toISOString().split('T')[0];
-    return events.filter(event => {
+    return allEvents.filter(event => {
       const eventDate = new Date(event.date).toISOString().split('T')[0];
       return eventDate === dateStr;
     });
@@ -98,7 +245,7 @@ export const CalendarProvider = ({ children }) => {
 
   // 특정 월의 이벤트 가져오기
   const getEventsForMonth = (year, month) => {
-    return events.filter(event => {
+    return allEvents.filter(event => {
       const eventDate = new Date(event.date);
       return eventDate.getFullYear() === year && eventDate.getMonth() === month;
     });
@@ -111,7 +258,7 @@ export const CalendarProvider = ({ children }) => {
     const endDate = new Date(today);
     endDate.setDate(endDate.getDate() + days);
 
-    return events
+    return allEvents
       .filter(event => {
         const eventDate = new Date(event.date);
         eventDate.setHours(0, 0, 0, 0);
@@ -146,7 +293,8 @@ export const CalendarProvider = ({ children }) => {
   };
 
   // 카테고리 색상 가져오기
-  const getCategoryColor = (category) => {
+  const getCategoryColor = (category, isGoogleEvent = false) => {
+    if (isGoogleEvent) return EVENT_COLORS.GOOGLE;
     switch (category) {
       case EVENT_CATEGORIES.FAMILY: return EVENT_COLORS.FAMILY;
       case EVENT_CATEGORIES.BIRTHDAY: return EVENT_COLORS.BIRTHDAY;
@@ -159,7 +307,9 @@ export const CalendarProvider = ({ children }) => {
   };
 
   const value = {
-    events,
+    events: allEvents,
+    localEvents: events,
+    googleEvents,
     selectedDate,
     setSelectedDate,
     currentMonth,
@@ -175,7 +325,14 @@ export const CalendarProvider = ({ children }) => {
     goToToday,
     getCategoryColor,
     EVENT_CATEGORIES,
-    EVENT_COLORS
+    EVENT_COLORS,
+    // Google 관련
+    googleConnected,
+    googleLoading,
+    googleError,
+    connectGoogle,
+    disconnectGoogle,
+    refreshGoogleEvents
   };
 
   return (

@@ -85,6 +85,13 @@
       "subscriber": "Subscriber",
       "family": "Family Member",
       "admin": "Administrator"
+    },
+    "social": {
+      "kakao": "Continue with Kakao",
+      "google": "Continue with Google",
+      "or": "or",
+      "loading": "Signing in...",
+      "error": "Social login failed. Please try again."
     }
   },
   "admin": {
@@ -416,6 +423,16 @@
       "cancel": "Cancel",
       "save": "Save",
       "update": "Update"
+    },
+    "google": {
+      "connect": "Connect Google",
+      "connected": "Connected",
+      "disconnect": "Disconnect",
+      "refresh": "Refresh",
+      "syncToGoogle": "Also save to Google Calendar",
+      "googleEventNotice": "This is a Google Calendar event",
+      "openInGoogle": "Open in Google",
+      "syncError": "Failed to sync with Google Calendar"
     }
   },
   "notification": {

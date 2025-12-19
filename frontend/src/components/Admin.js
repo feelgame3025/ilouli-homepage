@@ -17,19 +17,20 @@ const Admin = () => {
   const [reports, setReports] = useState([]);
   const [hiddenPosts, setHiddenPosts] = useState([]);
   const [message, setMessage] = useState('');
+  const [providerFilter, setProviderFilter] = useState('all'); // all, google, kakao, email
 
-  const loadUsers = () => {
+  const loadUsers = async () => {
     try {
-      const allUsers = getAllUsers();
+      const allUsers = await getAllUsers();
       setUsers(allUsers.filter(u => u.status === 'approved' || !u.status));
     } catch (err) {
       setMessage(t('admin.error.loadFailed'));
     }
   };
 
-  const loadPendingUsers = () => {
+  const loadPendingUsers = async () => {
     try {
-      const pending = getPendingUsers();
+      const pending = await getPendingUsers();
       setPendingUsers(pending);
     } catch (err) {
       console.error('Failed to load pending users');
@@ -55,29 +56,31 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    loadUsers();
-    loadPendingUsers();
-    loadReports();
-    loadHiddenPosts();
-  }, []);
-
-  const handleTierChange = (userId, newTier) => {
-    try {
-      updateUserTier(userId, newTier);
-      setMessage(t('admin.success.tierUpdated'));
+    if (user && user.tier === 'admin') {
       loadUsers();
+      loadPendingUsers();
+      loadReports();
+      loadHiddenPosts();
+    }
+  }, [user]);
+
+  const handleTierChange = async (userId, newTier) => {
+    try {
+      await updateUserTier(userId, newTier);
+      setMessage(t('admin.success.tierUpdated'));
+      await loadUsers();
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {
       setMessage(t('admin.error.updateFailed'));
     }
   };
 
-  const handleDelete = (userId, userName) => {
+  const handleDelete = async (userId, userName) => {
     if (window.confirm(t('admin.confirm.delete', { name: userName }))) {
       try {
-        deleteUser(userId);
+        await deleteUser(userId);
         setMessage(t('admin.success.deleted'));
-        loadUsers();
+        await loadUsers();
         setTimeout(() => setMessage(''), 3000);
       } catch (err) {
         setMessage(err.message === 'Cannot delete yourself'
@@ -87,12 +90,12 @@ const Admin = () => {
     }
   };
 
-  const handleApprove = (userId, userName) => {
+  const handleApprove = async (userId, userName) => {
     try {
-      approveUser(userId);
+      await approveUser(userId);
       setMessage(t('admin.success.approved', { name: userName }));
-      loadUsers();
-      loadPendingUsers();
+      await loadUsers();
+      await loadPendingUsers();
       setTimeout(() => setMessage(''), 3000);
 
       // 승인된 회원에게 알림 발송
@@ -108,7 +111,7 @@ const Admin = () => {
     }
   };
 
-  const handleReject = (userId, userName) => {
+  const handleReject = async (userId, userName) => {
     if (window.confirm(t('admin.confirm.reject', { name: userName }))) {
       try {
         // 거절 전에 알림 발송 (거절되면 사용자가 삭제되므로)
@@ -120,9 +123,9 @@ const Admin = () => {
           null
         );
 
-        rejectUser(userId);
+        await rejectUser(userId);
         setMessage(t('admin.success.rejected', { name: userName }));
-        loadPendingUsers();
+        await loadPendingUsers();
         setTimeout(() => setMessage(''), 3000);
       } catch (err) {
         setMessage(t('admin.error.rejectFailed'));
@@ -180,6 +183,24 @@ const Admin = () => {
     };
     return tierMap[tier] || tier;
   };
+
+  const getProviderInfo = (socialProvider) => {
+    if (socialProvider === 'google') {
+      return { name: 'Google', icon: '🔵', className: 'provider-google' };
+    } else if (socialProvider === 'kakao') {
+      return { name: 'Kakao', icon: '🟡', className: 'provider-kakao' };
+    } else {
+      return { name: '이메일', icon: '✉️', className: 'provider-email' };
+    }
+  };
+
+  const filteredUsers = users.filter(u => {
+    if (providerFilter === 'all') return true;
+    if (providerFilter === 'google') return u.social_provider === 'google';
+    if (providerFilter === 'kakao') return u.social_provider === 'kakao';
+    if (providerFilter === 'email') return !u.social_provider;
+    return true;
+  });
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -289,51 +310,90 @@ const Admin = () => {
           )}
 
           <div className="users-section">
-            <h2>{t('admin.members.title')}</h2>
+            <div className="users-header">
+              <h2>{t('admin.members.title')}</h2>
+              <div className="provider-filter">
+                <button
+                  className={`filter-btn ${providerFilter === 'all' ? 'active' : ''}`}
+                  onClick={() => setProviderFilter('all')}
+                >
+                  전체 ({users.length})
+                </button>
+                <button
+                  className={`filter-btn ${providerFilter === 'google' ? 'active' : ''}`}
+                  onClick={() => setProviderFilter('google')}
+                >
+                  🔵 Google ({users.filter(u => u.social_provider === 'google').length})
+                </button>
+                <button
+                  className={`filter-btn ${providerFilter === 'kakao' ? 'active' : ''}`}
+                  onClick={() => setProviderFilter('kakao')}
+                >
+                  🟡 Kakao ({users.filter(u => u.social_provider === 'kakao').length})
+                </button>
+                <button
+                  className={`filter-btn ${providerFilter === 'email' ? 'active' : ''}`}
+                  onClick={() => setProviderFilter('email')}
+                >
+                  ✉️ 이메일 ({users.filter(u => !u.social_provider).length})
+                </button>
+              </div>
+            </div>
             <div className="users-table-container">
               <table className="users-table">
                 <thead>
                   <tr>
+                    <th>가입방법</th>
                     <th>{t('admin.table.name')}</th>
                     <th>{t('admin.table.email')}</th>
                     <th>{t('admin.table.tier')}</th>
-                    <th>{t('admin.table.joinDate')}</th>
+                    <th>가입일</th>
+                    <th>마지막 접속</th>
                     <th>{t('admin.table.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((u) => (
-                    <tr key={u.id} className={u.id === user.id ? 'current-user' : ''}>
-                      <td>
-                        {u.name}
-                        {u.id === user.id && <span className="you-badge">{t('admin.you')}</span>}
-                      </td>
-                      <td>{u.email}</td>
-                      <td>
-                        <select
-                          value={u.tier}
-                          onChange={(e) => handleTierChange(u.id, e.target.value)}
-                          className="tier-select"
-                        >
-                          <option value={USER_TIERS.GUEST}>{getTierDisplayName('guest')}</option>
-                          <option value={USER_TIERS.GENERAL}>{getTierDisplayName('general')}</option>
-                          <option value={USER_TIERS.SUBSCRIBER}>{getTierDisplayName('subscriber')}</option>
-                          <option value={USER_TIERS.FAMILY}>{getTierDisplayName('family')}</option>
-                          <option value={USER_TIERS.ADMIN}>{getTierDisplayName('admin')}</option>
-                        </select>
-                      </td>
-                      <td>{u.joinDate}</td>
-                      <td>
-                        <button
-                          onClick={() => handleDelete(u.id, u.name)}
-                          className="delete-btn"
-                          disabled={u.id === user.id}
-                        >
-                          {t('admin.table.delete')}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredUsers.map((u) => {
+                    const providerInfo = getProviderInfo(u.social_provider);
+                    return (
+                      <tr key={u.id} className={u.id === user.id ? 'current-user' : ''}>
+                        <td>
+                          <span className={`provider-badge ${providerInfo.className}`}>
+                            {providerInfo.icon} {providerInfo.name}
+                          </span>
+                        </td>
+                        <td>
+                          {u.name}
+                          {u.id === user.id && <span className="you-badge">{t('admin.you')}</span>}
+                        </td>
+                        <td>{u.email}</td>
+                        <td>
+                          <select
+                            value={u.tier}
+                            onChange={(e) => handleTierChange(u.id, e.target.value)}
+                            className="tier-select"
+                          >
+                            <option value={USER_TIERS.GUEST}>{getTierDisplayName('guest')}</option>
+                            <option value={USER_TIERS.GENERAL}>{getTierDisplayName('general')}</option>
+                            <option value={USER_TIERS.SUBSCRIBER}>{getTierDisplayName('subscriber')}</option>
+                            <option value={USER_TIERS.FAMILY}>{getTierDisplayName('family')}</option>
+                            <option value={USER_TIERS.ADMIN}>{getTierDisplayName('admin')}</option>
+                          </select>
+                        </td>
+                        <td>{u.join_date || '-'}</td>
+                        <td>{u.last_login ? formatDate(u.last_login) : '-'}</td>
+                        <td>
+                          <button
+                            onClick={() => handleDelete(u.id, u.name)}
+                            className="delete-btn"
+                            disabled={u.id === user.id}
+                          >
+                            {t('admin.table.delete')}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

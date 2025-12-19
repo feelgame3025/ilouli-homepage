@@ -19,7 +19,14 @@ const FamilyCalendar = () => {
     updateEvent,
     deleteEvent,
     getCategoryColor,
-    EVENT_CATEGORIES: categories
+    EVENT_CATEGORIES: categories,
+    // Google 관련
+    googleConnected,
+    googleLoading,
+    googleError,
+    connectGoogle,
+    disconnectGoogle,
+    refreshGoogleEvents
   } = useCalendar();
 
   const [showEventModal, setShowEventModal] = useState(false);
@@ -30,7 +37,8 @@ const FamilyCalendar = () => {
     time: '',
     category: EVENT_CATEGORIES.FAMILY,
     description: '',
-    allDay: true
+    allDay: true,
+    syncToGoogle: false
   });
 
   // 월의 날짜 배열 생성
@@ -101,7 +109,8 @@ const FamilyCalendar = () => {
       time: '',
       category: EVENT_CATEGORIES.FAMILY,
       description: '',
-      allDay: true
+      allDay: true,
+      syncToGoogle: googleConnected
     });
     setEditingEvent(null);
     setShowEventModal(true);
@@ -114,7 +123,8 @@ const FamilyCalendar = () => {
       time: event.time || '',
       category: event.category,
       description: event.description || '',
-      allDay: event.allDay
+      allDay: event.allDay,
+      syncToGoogle: event.syncedToGoogle || event.isGoogleEvent || false
     });
     setEditingEvent(event);
     setShowEventModal(true);
@@ -126,14 +136,16 @@ const FamilyCalendar = () => {
     }
   };
 
-  const handleSubmitEvent = (e) => {
+  const handleSubmitEvent = async (e) => {
     e.preventDefault();
     if (!eventForm.title.trim() || !eventForm.date) return;
 
+    const { syncToGoogle, ...eventData } = eventForm;
+
     if (editingEvent) {
-      updateEvent(editingEvent.id, eventForm);
+      await updateEvent(editingEvent.id, eventData);
     } else {
-      addEvent(eventForm);
+      await addEvent(eventData, syncToGoogle);
     }
     setShowEventModal(false);
     setEditingEvent(null);
@@ -177,6 +189,36 @@ const FamilyCalendar = () => {
               </button>
             </div>
             <div className="calendar-actions">
+              {/* Google 캘린더 연결 버튼 */}
+              {googleConnected ? (
+                <div className="google-connected">
+                  <button
+                    onClick={refreshGoogleEvents}
+                    className="refresh-btn"
+                    disabled={googleLoading}
+                    title={t('calendar.google.refresh')}
+                  >
+                    {googleLoading ? '...' : '↻'}
+                  </button>
+                  <button
+                    onClick={disconnectGoogle}
+                    className="google-btn connected"
+                    title={t('calendar.google.disconnect')}
+                  >
+                    <span className="google-icon">G</span>
+                    {t('calendar.google.connected')}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={connectGoogle}
+                  className="google-btn"
+                  disabled={googleLoading}
+                >
+                  <span className="google-icon">G</span>
+                  {googleLoading ? '...' : t('calendar.google.connect')}
+                </button>
+              )}
               <button onClick={goToToday} className="today-btn">
                 {t('calendar.today')}
               </button>
@@ -185,6 +227,12 @@ const FamilyCalendar = () => {
               </button>
             </div>
           </div>
+          {/* Google 에러 메시지 */}
+          {googleError && (
+            <div className="google-error">
+              {googleError}
+            </div>
+          )}
 
           {/* 요일 헤더 */}
           <div className="calendar-weekdays">
@@ -252,21 +300,35 @@ const FamilyCalendar = () => {
             ) : (
               <div className="event-list">
                 {selectedDateEvents.map((event) => (
-                  <div key={event.id} className="event-item">
+                  <div key={event.id} className={`event-item ${event.isGoogleEvent ? 'google-event' : ''}`}>
                     <div
                       className="event-color"
-                      style={{ backgroundColor: getCategoryColor(event.category) }}
+                      style={{ backgroundColor: getCategoryColor(event.category, event.isGoogleEvent) }}
                     />
                     <div className="event-info">
-                      <span className="event-title">{event.title}</span>
+                      <span className="event-title">
+                        {event.title}
+                        {event.isGoogleEvent && <span className="google-badge">G</span>}
+                      </span>
                       {!event.allDay && event.time && (
                         <span className="event-time">{event.time}</span>
                       )}
                       <span className="event-category">
-                        {getCategoryLabel(event.category)}
+                        {event.isGoogleEvent ? 'Google Calendar' : getCategoryLabel(event.category)}
                       </span>
                     </div>
                     <div className="event-actions">
+                      {event.isGoogleEvent && event.googleLink && (
+                        <a
+                          href={event.googleLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="google-link-btn"
+                          title={t('calendar.google.openInGoogle')}
+                        >
+                          ↗
+                        </a>
+                      )}
                       <button
                         className="edit-btn"
                         onClick={() => handleEditEvent(event)}
@@ -388,6 +450,29 @@ const FamilyCalendar = () => {
                   rows={3}
                 />
               </div>
+
+              {/* Google 동기화 옵션 */}
+              {googleConnected && !editingEvent?.isGoogleEvent && (
+                <div className="form-group">
+                  <label className="checkbox-label google-sync-label">
+                    <input
+                      type="checkbox"
+                      checked={eventForm.syncToGoogle}
+                      onChange={(e) => setEventForm({ ...eventForm, syncToGoogle: e.target.checked })}
+                    />
+                    <span className="google-icon small">G</span>
+                    {t('calendar.google.syncToGoogle')}
+                  </label>
+                </div>
+              )}
+
+              {/* Google 이벤트 표시 */}
+              {editingEvent?.isGoogleEvent && (
+                <div className="google-event-notice">
+                  <span className="google-icon small">G</span>
+                  {t('calendar.google.googleEventNotice')}
+                </div>
+              )}
 
               <div className="modal-actions">
                 <button
