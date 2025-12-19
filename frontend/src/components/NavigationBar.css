@@ -539,41 +539,37 @@
    Mobile Styles
    ============================================= */
 
+/* 모바일 오버레이 - 기본 숨김 (데스크톱) */
 .mobile-overlay {
   display: none;
 }
 
+/* 햄버거 버튼 - 기본 숨김 (데스크톱) */
 .mobile-menu-btn {
   display: none;
 }
 
+/* 모바일 네비게이션 패널 - 기본 숨김 (데스크톱) */
+.mobile-nav-panel {
+  display: none;
+}
+
 @media (max-width: 833px) {
+  /* 헤더 - 높은 z-index로 모든 요소 위에 */
   .app-header {
-    z-index: 9999; /* 모바일에서 최상위 레이어 보장 */
+    z-index: 9999;
   }
 
   .nav-container {
     padding: 0 16px;
-    pointer-events: auto;
   }
 
-  .logo {
-    pointer-events: auto !important;
-    position: relative;
-    z-index: 10;
+  /* 데스크톱 메인 네비게이션 완전 숨김 */
+  .main-nav {
+    display: none !important;
   }
 
-  .nav-actions {
-    pointer-events: auto !important;
-    position: relative;
-    z-index: 10;
-  }
-
-  .nav-actions > * {
-    pointer-events: auto !important;
-  }
-
-  /* Mobile Overlay - 헤더 아래에서 시작 */
+  /* 모바일 오버레이 */
   .mobile-overlay {
     display: block;
     position: fixed;
@@ -582,17 +578,17 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.4);
-    z-index: 1001;
+    z-index: 10000;
     -webkit-tap-highlight-color: transparent;
-    animation: fadeIn 0.2s ease;
+    animation: mobileOverlayFadeIn 0.2s ease;
   }
 
-  @keyframes fadeIn {
+  @keyframes mobileOverlayFadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
   }
 
-  /* Hamburger Button */
+  /* 햄버거 버튼 */
   .mobile-menu-btn {
     display: flex !important;
     flex-direction: column;
@@ -605,7 +601,6 @@
     border: none;
     cursor: pointer;
     padding: 10px;
-    z-index: 1003;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
@@ -631,53 +626,45 @@
     transform: rotate(-45deg) translate(5px, -5px);
   }
 
-  /* Mobile Navigation Panel - Right side slide */
-  .main-nav {
-    /* 데스크톱 스타일 완전 무효화 */
-    flex: none !important;
-    display: none !important; /* Hide it by default on mobile */
-    justify-content: initial !important;
-    /* Ensure no event interaction when hidden */
-    pointer-events: none;
-    visibility: hidden;
-  }
-
-  .main-nav.mobile-open {
-    display: flex !important;
-    flex-direction: column;
-    transform: translateX(0);
-    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
-    /* Add previously conflicting styles here */
-    position: fixed !important;
+  /* 모바일 네비게이션 패널 - 화면 오른쪽에서 슬라이드 */
+  .mobile-nav-panel {
+    display: block;
+    position: fixed;
     top: 44px;
     right: 0;
-    left: auto;
     width: 280px;
     max-width: 80%;
     height: calc(100vh - 44px);
     height: calc(100dvh - 44px);
     background: #ffffff;
-    opacity: 1;
-    z-index: 1002;
+    z-index: 10001;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
-    pointer-events: auto; /* Enable event interaction when open */
-    visibility: visible;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    pointer-events: none;
   }
 
-  .nav-menu {
+  .mobile-nav-panel.open {
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  /* 모바일 메뉴 리스트 */
+  .mobile-nav-panel .nav-menu {
     display: flex;
     flex-direction: column;
     padding: 8px 0;
     margin: 0;
+    list-style: none;
   }
 
-  .nav-item {
+  .mobile-nav-panel .nav-item {
     border-bottom: none;
   }
 
-  .nav-link {
+  .mobile-nav-panel .nav-link {
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -689,30 +676,26 @@
     line-height: 1.3;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    text-decoration: none;
+    background: none;
+    border: none;
+    width: 100%;
+    cursor: pointer;
   }
 
-  .nav-link:hover,
-  .nav-link:active {
+  .mobile-nav-panel .nav-link:hover,
+  .mobile-nav-panel .nav-link:active {
     opacity: 1;
     background: rgba(0, 0, 0, 0.04);
   }
 
-  .nav-link.active {
+  .mobile-nav-panel .nav-link.active {
     color: #0071e3;
     font-weight: 500;
   }
 
-  /* Mobile flyout - show inline */
-  .flyout-container {
-    display: none !important;
-  }
-
-  .flyout-backdrop {
-    display: none !important;
-  }
-
-  /* Mobile Submenu - accordion style */
-  .nav-item.has-flyout .nav-link::after {
+  /* 모바일 서브메뉴 화살표 */
+  .mobile-nav-panel .nav-item.has-flyout .nav-link::after {
     content: '';
     width: 8px;
     height: 8px;
@@ -723,11 +706,47 @@
     transition: transform 0.3s ease;
   }
 
-  .nav-item.has-flyout.flyout-open .nav-link::after {
+  .mobile-nav-panel .nav-item.has-flyout.flyout-open .nav-link::after {
     transform: rotate(-135deg);
   }
 
-  /* Mobile layout adjustments */
+  /* 모바일 서브메뉴 - 아코디언 */
+  .mobile-nav-panel .mobile-submenu {
+    display: none;
+    background: #f5f5f7;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    border-left: 3px solid #0071e3;
+    margin-left: 16px;
+  }
+
+  .mobile-nav-panel .nav-item.has-flyout.flyout-open .mobile-submenu {
+    display: block;
+    max-height: 200px;
+  }
+
+  .mobile-nav-panel .mobile-submenu-link {
+    display: block;
+    padding: 12px 24px 12px 20px;
+    font-size: 15px;
+    font-weight: 400;
+    color: #1d1d1f;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .mobile-nav-panel .mobile-submenu-link:last-child {
+    border-bottom: none;
+  }
+
+  .mobile-nav-panel .mobile-submenu-link:active {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  /* 모바일 레이아웃 조정 */
   .logo {
     font-size: 18px;
   }
@@ -758,7 +777,7 @@
     display: none;
   }
 
-  /* Mobile User Dropdown */
+  /* 모바일 사용자 드롭다운 */
   .user-dropdown-menu {
     position: fixed;
     top: 44px;
@@ -787,45 +806,9 @@
     padding: 8px 10px;
   }
 
-  /* Language selector mobile */
+  /* 언어 선택기 모바일 */
   .language-selector {
     margin-right: 0;
-  }
-
-  /* Mobile Submenu - Accordion */
-  .mobile-submenu {
-    display: none;
-    background: #e8e8ed;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-    border-left: 3px solid #0071e3;
-    margin-left: 16px;
-  }
-
-  .nav-item.has-flyout.flyout-open .mobile-submenu {
-    display: block;
-    max-height: 200px;
-  }
-
-  .mobile-submenu-link {
-    display: block;
-    padding: 12px 24px 12px 20px;
-    font-size: 15px;
-    font-weight: 400;
-    color: #1d1d1f;
-    text-decoration: none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-
-  .mobile-submenu-link:last-child {
-    border-bottom: none;
-  }
-
-  .mobile-submenu-link:active {
-    background: rgba(0, 0, 0, 0.04);
   }
 }
 

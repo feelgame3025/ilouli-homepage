@@ -34,18 +34,23 @@ const NavigationBar = () => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  // 모바일 여부 - 초기 렌더링부터 올바르게 감지
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= 833;
+    }
+    return false;
+  });
   const notificationRef = useRef(null);
   const userMenuRef = useRef(null);
   const navRef = useRef(null);
 
-  // 모바일 여부 감지
+  // 모바일 여부 감지 (리사이즈 대응)
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 833);
     };
 
-    checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -188,110 +193,75 @@ const NavigationBar = () => {
         <div className="nav-container">
           <a href={getHostUrl(HOSTS.MAIN, '/')} className="logo">ilouli</a>
 
-          {/* 모바일 오버레이 */}
-          {isMobileMenuOpen && (
-            <div className="mobile-overlay" onClick={closeMobileMenu}></div>
-          )}
-
-          {/* 모바일에서는 메뉴가 열렸을 때만 렌더링 (클릭 이벤트 차단 방지) */}
-          {(!isMobile || isMobileMenuOpen) && (
+          {/* 데스크톱 네비게이션 - 모바일에서는 렌더링하지 않음 */}
+          {!isMobile && (
             <nav
-              className={`main-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}
+              className="main-nav"
               ref={navRef}
               onMouseLeave={handleDropdownLeave}
             >
               <ul className="nav-menu">
-              {/* About */}
-              <li className="nav-item">
-                <a
-                  href={getHostUrl(HOSTS.MAIN, '/about')}
-                  className={`nav-link ${currentHost === HOSTS.MAIN && location.pathname === '/about' ? 'active' : ''}`}
-                >
-                  {t('nav.about')}
-                </a>
-              </li>
-
-              {/* Community Dropdown */}
-              <li
-                className={`nav-item has-flyout ${activeDropdown === 'community' ? 'flyout-open' : ''}`}
-                onMouseEnter={() => handleDropdownEnter('community')}
-              >
-                <button
-                  className={`nav-link ${isActiveHost(HOSTS.COMMUNITY) ? 'active' : ''}`}
-                  onClick={() => toggleMobileDropdown('community')}
-                >
-                  {t('nav.community')}
-                </button>
-                {/* Mobile Submenu */}
-                <div className="mobile-submenu">
-                  <a href={getHostUrl(HOSTS.COMMUNITY, '/announcements')} className="mobile-submenu-link">
-                    {t('nav.announcements')}
-                  </a>
-                  <a href={getHostUrl(HOSTS.COMMUNITY, '/free-board')} className="mobile-submenu-link">
-                    {t('nav.freeBoard')}
-                  </a>
-                </div>
-              </li>
-
-              {/* AI Features - 구독자 이상 */}
-              {showAIFeatures && (
-                <li
-                  className={`nav-item has-flyout ${activeDropdown === 'ai' ? 'flyout-open' : ''}`}
-                  onMouseEnter={() => handleDropdownEnter('ai')}
-                >
-                  <button
-                    className={`nav-link ${isActiveHost(HOSTS.AI) ? 'active' : ''}`}
-                    onClick={() => toggleMobileDropdown('ai')}
-                  >
-                    {t('nav.aiFeatures')}
-                  </button>
-                  {/* Mobile Submenu */}
-                  <div className="mobile-submenu">
-                    <a href={getHostUrl(HOSTS.AI, '/storyboard')} className="mobile-submenu-link">
-                      {t('nav.aiStoryboard')}
-                    </a>
-                    <a href={getHostUrl(HOSTS.AI, '/content-tools')} className="mobile-submenu-link">
-                      {t('nav.aiContentTools')}
-                    </a>
-                  </div>
-                </li>
-              )}
-
-              {/* Family Space - Family/Admin */}
-              {showFamilySpace && (
+                {/* About */}
                 <li className="nav-item">
                   <a
-                    href={getHostUrl(HOSTS.FAMILY, '/')}
-                    className={`nav-link ${isActiveHost(HOSTS.FAMILY) ? 'active' : ''}`}
+                    href={getHostUrl(HOSTS.MAIN, '/about')}
+                    className={`nav-link ${currentHost === HOSTS.MAIN && location.pathname === '/about' ? 'active' : ''}`}
                   >
-                    {t('nav.familySpace')}
+                    {t('nav.about')}
                   </a>
                 </li>
-              )}
 
-              {/* Admin Lab - Family/Admin */}
-              {showAdminLab && (
+                {/* Community Dropdown */}
                 <li
-                  className={`nav-item has-flyout ${activeDropdown === 'lab' ? 'flyout-open' : ''}`}
-                  onMouseEnter={() => handleDropdownEnter('lab')}
+                  className={`nav-item has-flyout ${activeDropdown === 'community' ? 'flyout-open' : ''}`}
+                  onMouseEnter={() => handleDropdownEnter('community')}
                 >
                   <button
-                    className={`nav-link ${isActiveHost(HOSTS.LAB) ? 'active' : ''}`}
-                    onClick={() => toggleMobileDropdown('lab')}
+                    className={`nav-link ${isActiveHost(HOSTS.COMMUNITY) ? 'active' : ''}`}
                   >
-                    {t('nav.adminLab')}
+                    {t('nav.community')}
                   </button>
-                  {/* Mobile Submenu */}
-                  <div className="mobile-submenu">
-                    <a href={getHostUrl(HOSTS.LAB, '/test-zone')} className="mobile-submenu-link">
-                      {t('nav.testZone')}
-                    </a>
-                    <a href={getHostUrl(HOSTS.LAB, '/file-upload')} className="mobile-submenu-link">
-                      {t('nav.fileUpload')}
-                    </a>
-                  </div>
                 </li>
-              )}
+
+                {/* AI Features - 구독자 이상 */}
+                {showAIFeatures && (
+                  <li
+                    className={`nav-item has-flyout ${activeDropdown === 'ai' ? 'flyout-open' : ''}`}
+                    onMouseEnter={() => handleDropdownEnter('ai')}
+                  >
+                    <button
+                      className={`nav-link ${isActiveHost(HOSTS.AI) ? 'active' : ''}`}
+                    >
+                      {t('nav.aiFeatures')}
+                    </button>
+                  </li>
+                )}
+
+                {/* Family Space - Family/Admin */}
+                {showFamilySpace && (
+                  <li className="nav-item">
+                    <a
+                      href={getHostUrl(HOSTS.FAMILY, '/')}
+                      className={`nav-link ${isActiveHost(HOSTS.FAMILY) ? 'active' : ''}`}
+                    >
+                      {t('nav.familySpace')}
+                    </a>
+                  </li>
+                )}
+
+                {/* Admin Lab - Family/Admin */}
+                {showAdminLab && (
+                  <li
+                    className={`nav-item has-flyout ${activeDropdown === 'lab' ? 'flyout-open' : ''}`}
+                    onMouseEnter={() => handleDropdownEnter('lab')}
+                  >
+                    <button
+                      className={`nav-link ${isActiveHost(HOSTS.LAB) ? 'active' : ''}`}
+                    >
+                      {t('nav.adminLab')}
+                    </button>
+                  </li>
+                )}
               </ul>
             </nav>
           )}
@@ -576,6 +546,107 @@ const NavigationBar = () => {
           </div>
         )}
       </header>
+
+      {/* 모바일 네비게이션 - header 외부에 배치하여 클릭 이벤트 충돌 방지 */}
+      {isMobile && (
+        <>
+          {/* 모바일 오버레이 */}
+          {isMobileMenuOpen && (
+            <div className="mobile-overlay" onClick={closeMobileMenu}></div>
+          )}
+
+          {/* 모바일 메뉴 패널 */}
+          <nav className={`mobile-nav-panel ${isMobileMenuOpen ? 'open' : ''}`}>
+            <ul className="nav-menu">
+              {/* About */}
+              <li className="nav-item">
+                <a
+                  href={getHostUrl(HOSTS.MAIN, '/about')}
+                  className={`nav-link ${currentHost === HOSTS.MAIN && location.pathname === '/about' ? 'active' : ''}`}
+                >
+                  {t('nav.about')}
+                </a>
+              </li>
+
+              {/* Community Dropdown */}
+              <li
+                className={`nav-item has-flyout ${activeDropdown === 'community' ? 'flyout-open' : ''}`}
+              >
+                <button
+                  className={`nav-link ${isActiveHost(HOSTS.COMMUNITY) ? 'active' : ''}`}
+                  onClick={() => toggleMobileDropdown('community')}
+                >
+                  {t('nav.community')}
+                </button>
+                <div className="mobile-submenu">
+                  <a href={getHostUrl(HOSTS.COMMUNITY, '/announcements')} className="mobile-submenu-link">
+                    {t('nav.announcements')}
+                  </a>
+                  <a href={getHostUrl(HOSTS.COMMUNITY, '/free-board')} className="mobile-submenu-link">
+                    {t('nav.freeBoard')}
+                  </a>
+                </div>
+              </li>
+
+              {/* AI Features - 구독자 이상 */}
+              {showAIFeatures && (
+                <li
+                  className={`nav-item has-flyout ${activeDropdown === 'ai' ? 'flyout-open' : ''}`}
+                >
+                  <button
+                    className={`nav-link ${isActiveHost(HOSTS.AI) ? 'active' : ''}`}
+                    onClick={() => toggleMobileDropdown('ai')}
+                  >
+                    {t('nav.aiFeatures')}
+                  </button>
+                  <div className="mobile-submenu">
+                    <a href={getHostUrl(HOSTS.AI, '/storyboard')} className="mobile-submenu-link">
+                      {t('nav.aiStoryboard')}
+                    </a>
+                    <a href={getHostUrl(HOSTS.AI, '/content-tools')} className="mobile-submenu-link">
+                      {t('nav.aiContentTools')}
+                    </a>
+                  </div>
+                </li>
+              )}
+
+              {/* Family Space - Family/Admin */}
+              {showFamilySpace && (
+                <li className="nav-item">
+                  <a
+                    href={getHostUrl(HOSTS.FAMILY, '/')}
+                    className={`nav-link ${isActiveHost(HOSTS.FAMILY) ? 'active' : ''}`}
+                  >
+                    {t('nav.familySpace')}
+                  </a>
+                </li>
+              )}
+
+              {/* Admin Lab - Family/Admin */}
+              {showAdminLab && (
+                <li
+                  className={`nav-item has-flyout ${activeDropdown === 'lab' ? 'flyout-open' : ''}`}
+                >
+                  <button
+                    className={`nav-link ${isActiveHost(HOSTS.LAB) ? 'active' : ''}`}
+                    onClick={() => toggleMobileDropdown('lab')}
+                  >
+                    {t('nav.adminLab')}
+                  </button>
+                  <div className="mobile-submenu">
+                    <a href={getHostUrl(HOSTS.LAB, '/test-zone')} className="mobile-submenu-link">
+                      {t('nav.testZone')}
+                    </a>
+                    <a href={getHostUrl(HOSTS.LAB, '/file-upload')} className="mobile-submenu-link">
+                      {t('nav.fileUpload')}
+                    </a>
+                  </div>
+                </li>
+              )}
+            </ul>
+          </nav>
+        </>
+      )}
 
       {/* Flyout 배경 오버레이 - 데스크톱에서만 렌더링 */}
       {!isMobile && (
