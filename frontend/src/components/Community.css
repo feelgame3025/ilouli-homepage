@@ -66,6 +66,8 @@
   cursor: pointer;
   border-radius: 8px 8px 0 0;
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .tab:hover {
@@ -91,6 +93,8 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .write-btn:hover {
@@ -145,6 +149,8 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .cancel-btn:hover {
@@ -161,6 +167,8 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .submit-btn:hover {
@@ -187,6 +195,7 @@
   padding: 1.25rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .post-item:hover {
@@ -444,6 +453,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 0.25rem;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .category-item:hover {

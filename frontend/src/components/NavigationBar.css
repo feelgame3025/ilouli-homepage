@@ -245,10 +245,16 @@
   border-radius: 980px;
   cursor: pointer;
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .user-menu-trigger:hover {
   background: rgba(0, 0, 0, 0.04);
+}
+
+.user-menu-trigger:active {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .user-avatar-small {
@@ -274,7 +280,7 @@
   transition: transform 0.3s ease;
 }
 
-.user-menu-dropdown:hover .dropdown-arrow {
+.dropdown-arrow.open {
   transform: rotate(180deg);
 }
 
@@ -291,7 +297,18 @@
   z-index: 1001;
 }
 
-.user-menu-dropdown:hover .user-dropdown-menu {
+/* Desktop hover 유지 */
+@media (min-width: 834px) {
+  .user-menu-dropdown:hover .user-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
+
+/* Click-based dropdown (for mobile and click behavior) */
+.user-menu-dropdown.open .user-dropdown-menu {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
@@ -492,10 +509,17 @@
   font-weight: 500;
   font-size: 12px;
   transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .login-btn:hover {
   background-color: #0077ed;
+}
+
+.login-btn:active {
+  background-color: #005bb5;
+  transform: scale(0.98);
 }
 
 /* =============================================
@@ -770,10 +794,16 @@
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .notification-btn:hover {
   background: rgba(0, 0, 0, 0.04);
+}
+
+.notification-btn:active {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .notification-icon {

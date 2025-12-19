@@ -33,7 +33,9 @@ const NavigationBar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const notificationRef = useRef(null);
+  const userMenuRef = useRef(null);
   const navRef = useRef(null);
 
   useEffect(() => {
@@ -45,21 +47,33 @@ const NavigationBar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 알림 드롭다운 외부 클릭 시 닫기
+  // 드롭다운 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target)) {
         setIsNotificationOpen(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   const handleLogout = () => {
+    setIsUserMenuOpen(false);
     logout();
     window.location.href = getHostUrl(HOSTS.MAIN, '/');
+  };
+
+  const handleMenuItemClick = () => {
+    setIsUserMenuOpen(false);
   };
 
   const showFamilySpace = hasAccess([USER_TIERS.FAMILY, USER_TIERS.ADMIN]);
@@ -346,12 +360,15 @@ const NavigationBar = () => {
             )}
 
             {isAuthenticated ? (
-              <div className="user-menu-dropdown">
-                <button className="user-menu-trigger">
+              <div className={`user-menu-dropdown ${isUserMenuOpen ? 'open' : ''}`} ref={userMenuRef}>
+                <button
+                  className="user-menu-trigger"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                >
                   <span className="user-avatar-small">{user.name?.charAt(0).toUpperCase()}</span>
                   <span className="user-name">{user.name}</span>
                   {viewAsTier && <span className="viewing-as-indicator">👁</span>}
-                  <svg className="dropdown-arrow" width="10" height="6" viewBox="0 0 10 6">
+                  <svg className={`dropdown-arrow ${isUserMenuOpen ? 'open' : ''}`} width="10" height="6" viewBox="0 0 10 6">
                     <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" />
                   </svg>
                 </button>
@@ -372,7 +389,7 @@ const NavigationBar = () => {
                     <div className="dropdown-divider"></div>
 
                     {/* 프로필 링크 */}
-                    <Link to="/profile" className="user-dropdown-item">
+                    <Link to="/profile" className="user-dropdown-item" onClick={handleMenuItemClick}>
                       <span className="dropdown-icon">👤</span>
                       <span>내 프로필</span>
                     </Link>
@@ -380,7 +397,7 @@ const NavigationBar = () => {
                     {/* 관리자 전용 메뉴 */}
                     {isActualAdmin && (
                       <>
-                        <a href={getHostUrl(HOSTS.ADMIN, '/')} className="user-dropdown-item">
+                        <a href={getHostUrl(HOSTS.ADMIN, '/')} className="user-dropdown-item" onClick={handleMenuItemClick}>
                           <span className="dropdown-icon">⚙️</span>
                           <span>관리자 대시보드</span>
                         </a>

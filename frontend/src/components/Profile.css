@@ -145,6 +145,7 @@
   background-color: #e5e5e7;
   transition: all 0.3s ease;
   border-radius: 28px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .toggle-slider:before {
@@ -185,6 +186,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   margin-top: 0.5rem;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .clear-notifications-btn:hover {

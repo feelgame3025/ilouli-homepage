@@ -87,6 +87,8 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .auth-button:hover:not(:disabled) {
@@ -119,6 +121,10 @@
   text-decoration: underline;
 }
 
+.auth-switch a {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Social Login */
 .social-login-section {
   display: flex;
@@ -140,6 +146,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid transparent;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .social-btn:disabled {

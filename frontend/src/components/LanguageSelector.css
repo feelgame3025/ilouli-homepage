@@ -12,10 +12,16 @@
   cursor: pointer;
   border-radius: 8px;
   transition: background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .lang-trigger:hover {
   background: #f5f5f7;
+}
+
+.lang-trigger:active {
+  background: #e8e8ed;
 }
 
 .lang-flag {
@@ -65,16 +71,22 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 14px;
   background: transparent;
   border: none;
   cursor: pointer;
   transition: background 0.15s ease;
   text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .lang-option:hover {
   background: #f5f5f7;
+}
+
+.lang-option:active {
+  background: #e8e8ed;
 }
 
 .lang-option.active {
