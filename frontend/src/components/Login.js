@@ -44,7 +44,12 @@ const Login = () => {
     setSocialLoading(provider);
 
     try {
-      await socialLogin(provider);
+      // 30초 타임아웃 설정
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Login timeout')), 30000);
+      });
+
+      await Promise.race([socialLogin(provider), timeoutPromise]);
       navigate(from, { replace: true });
     } catch (err) {
       console.error('Social login error:', err);
@@ -52,8 +57,10 @@ const Login = () => {
         setError(t('auth.login.errorRejected'));
       } else if (err.error === 'popup_closed_by_user') {
         // 사용자가 팝업 닫음 - 에러 표시 안함
+      } else if (err.message === 'Login timeout') {
+        setError('로그인 시간이 초과되었습니다. 다시 시도해주세요.');
       } else {
-        setError(t('auth.social.error'));
+        setError(t('auth.social.error') + ` (${err.message || err.error || 'Unknown error'})`);
       }
     } finally {
       setSocialLoading(null);

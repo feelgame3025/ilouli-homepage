@@ -36,45 +36,77 @@ export const loadGoogleAuthScript = () => {
 // Google 로그인 실행
 export const signInWithGoogle = () => {
   return new Promise(async (resolve, reject) => {
+    console.log('[Google Auth] Starting login...');
+    console.log('[Google Auth] Client ID:', GOOGLE_CLIENT_ID ? 'Set' : 'NOT SET');
+
     // 초기화 안됐으면 먼저 초기화
     if (!googleAuthInitialized || !window.google?.accounts?.oauth2) {
+      console.log('[Google Auth] Not initialized, loading script...');
       try {
         await loadGoogleAuthScript();
+        // 스크립트 로드 후 잠시 대기
+        await new Promise(r => setTimeout(r, 500));
       } catch (err) {
+        console.error('[Google Auth] Failed to load script:', err);
         reject(new Error('Google Auth not initialized'));
         return;
       }
     }
 
-    const tokenClient = window.google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: 'email profile',
-      callback: async (response) => {
-        if (response.error) {
-          reject(response);
-          return;
+    if (!window.google?.accounts?.oauth2) {
+      console.error('[Google Auth] OAuth2 not available after script load');
+      reject(new Error('Google OAuth2 not available'));
+      return;
+    }
+
+    console.log('[Google Auth] Initializing token client...');
+
+    try {
+      const tokenClient = window.google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'email profile',
+        callback: async (response) => {
+          console.log('[Google Auth] Callback received:', response.error || 'success');
+
+          if (response.error) {
+            console.error('[Google Auth] Error in callback:', response);
+            reject(response);
+            return;
+          }
+
+          try {
+            console.log('[Google Auth] Fetching user info...');
+            // 사용자 정보 가져오기
+            const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { Authorization: `Bearer ${response.access_token}` }
+            }).then(res => res.json());
+
+            console.log('[Google Auth] User info received:', userInfo.email);
+
+            resolve({
+              provider: 'google',
+              id: userInfo.sub,
+              email: userInfo.email,
+              name: userInfo.name,
+              picture: userInfo.picture
+            });
+          } catch (err) {
+            console.error('[Google Auth] Failed to fetch user info:', err);
+            reject(err);
+          }
+        },
+        error_callback: (error) => {
+          console.error('[Google Auth] Error callback:', error);
+          reject(error);
         }
+      });
 
-        try {
-          // 사용자 정보 가져오기
-          const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-            headers: { Authorization: `Bearer ${response.access_token}` }
-          }).then(res => res.json());
-
-          resolve({
-            provider: 'google',
-            id: userInfo.sub,
-            email: userInfo.email,
-            name: userInfo.name,
-            picture: userInfo.picture
-          });
-        } catch (err) {
-          reject(err);
-        }
-      }
-    });
-
-    tokenClient.requestAccessToken({ prompt: 'select_account' });
+      console.log('[Google Auth] Requesting access token...');
+      tokenClient.requestAccessToken({ prompt: 'select_account' });
+    } catch (err) {
+      console.error('[Google Auth] Failed to init token client:', err);
+      reject(err);
+    }
   });
 };
 
