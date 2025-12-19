@@ -14,8 +14,11 @@ app.use(cors({
   origin: [
     'https://ilouli.com',
     'https://www.ilouli.com',
-    'https://admin.ilouli.com',
+    'https://ai.ilouli.com',
+    'https://community.ilouli.com',
     'https://family.ilouli.com',
+    'https://admin.ilouli.com',
+    'https://lab.ilouli.com',
     'https://api.ilouli.com',
     'http://localhost:3000'
   ],
