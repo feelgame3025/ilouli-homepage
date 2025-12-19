@@ -43,22 +43,35 @@ export const needsRedirectMode = () => {
 
   // iOS에서 인앱 브라우저는 대부분 리다이렉트 필요
   const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  const isSafari = /Safari/i.test(ua) && !/Chrome/i.test(ua);
+  const isSafari = /Safari/i.test(ua) && !/Chrome/i.test(ua) && !/CriOS/i.test(ua);
 
   // WebView 감지
   const isWebView = /\bwv\b|WebView/i.test(ua);
 
-  // 인앱 브라우저 감지
+  // 인앱 브라우저 감지 (모든 주요 앱)
   const inAppPatterns = [
-    /KAKAOTALK/i,
-    /Instagram/i,
-    /FBAN|FBAV/i,
-    /Twitter/i,
-    /Line\//i,
+    /KAKAOTALK/i,      // 카카오톡
+    /NAVER/i,          // 네이버 앱
+    /Instagram/i,      // 인스타그램
+    /FBAN|FBAV/i,      // 페이스북
+    /Twitter/i,        // 트위터
+    /Line\//i,         // 라인
+    /SamsungBrowser.*CrossApp/i, // 삼성 인터넷 크로스앱
+    /DaumApps/i,       // 다음 앱
+    /everytimeApp/i,   // 에브리타임
+    /band\//i,         // 밴드
   ];
   const isInApp = inAppPatterns.some(pattern => pattern.test(ua));
 
-  return isWebView || isInApp || (isIOS && !isSafari);
+  // Android에서 일반 Chrome이 아닌 경우
+  const isAndroid = /Android/i.test(ua);
+  const isChrome = /Chrome/i.test(ua) && !/Chromium/i.test(ua);
+  const isAndroidWebView = isAndroid && !isChrome;
+
+  console.log('[Google Auth] UA:', ua);
+  console.log('[Google Auth] isWebView:', isWebView, 'isInApp:', isInApp, 'isAndroidWebView:', isAndroidWebView);
+
+  return isWebView || isInApp || isAndroidWebView || (isIOS && !isSafari);
 };
 
 // ==================== Google 로그인 ====================
