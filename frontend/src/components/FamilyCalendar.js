@@ -272,16 +272,18 @@ const FamilyCalendar = () => {
                   <span className="day-number">{day.date.getDate()}</span>
                   {dayEvents.length > 0 && (
                     <div className="day-events">
-                      {dayEvents.slice(0, 3).map((event) => (
+                      {dayEvents.slice(0, 2).map((event) => (
                         <div
                           key={event.id}
-                          className="event-dot"
-                          style={{ backgroundColor: getCategoryColor(event.category) }}
+                          className="event-label"
+                          style={{ backgroundColor: getCategoryColor(event.category, event.isGoogleEvent) }}
                           title={event.title}
-                        />
+                        >
+                          {event.title}
+                        </div>
                       ))}
-                      {dayEvents.length > 3 && (
-                        <span className="more-events">+{dayEvents.length - 3}</span>
+                      {dayEvents.length > 2 && (
+                        <span className="more-events">+{dayEvents.length - 2}</span>
                       )}
                     </div>
                   )}
