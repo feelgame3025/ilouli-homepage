@@ -56,17 +56,27 @@ npm run build
 
 ## Deployment
 
-**자동 배포:** GitHub에 커밋하면 자동으로 빌드 및 배포됩니다.
+**자동 배포 (GitHub Actions):**
+- `main` 브랜치에 push하면 자동으로 빌드 및 배포
+- 워크플로우: `.github/workflows/deploy.yml`
+- 배포 시간: 약 50초
+
 ```bash
 # 변경사항 커밋 → 자동 배포
 git add .
 git commit -m "변경 내용"
 git push
+# GitHub Actions가 자동으로 빌드 후 서버에 배포
+```
+
+**배포 상태 확인:**
+```bash
+gh run list --limit 5  # 최근 배포 상태
 ```
 
 **수동 배포 (필요시):**
 ```bash
-npm run build
+cd frontend && npm run build
 sudo cp -r build/* /var/www/html/
 ```
 
