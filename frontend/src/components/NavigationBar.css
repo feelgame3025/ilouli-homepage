@@ -628,10 +628,12 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+    pointer-events: none; /* 닫혀있을 때 클릭 이벤트 통과 */
   }
 
   .main-nav.mobile-open {
     transform: translateX(0);
+    pointer-events: auto; /* 열렸을 때 클릭 이벤트 받기 */
   }
 
   .nav-menu {
