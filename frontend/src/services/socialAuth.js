@@ -37,41 +37,63 @@ export const isInAppBrowser = () => {
   return isWebView || isInApp;
 };
 
-// 리다이렉트 모드 필요 여부 (팝업이 안 되는 환경)
-export const needsRedirectMode = () => {
+// Google OAuth가 차단되는 WebView 환경인지 확인
+export const isBlockedWebView = () => {
   const ua = navigator.userAgent || navigator.vendor || window.opera;
 
-  // iOS에서 인앱 브라우저는 대부분 리다이렉트 필요
-  const isIOS = /iPhone|iPad|iPod/i.test(ua);
-  const isSafari = /Safari/i.test(ua) && !/Chrome/i.test(ua) && !/CriOS/i.test(ua);
-
-  // WebView 감지
-  const isWebView = /\bwv\b|WebView/i.test(ua);
-
-  // 인앱 브라우저 감지 (모든 주요 앱)
-  const inAppPatterns = [
-    /KAKAOTALK/i,      // 카카오톡
-    /NAVER/i,          // 네이버 앱
-    /Instagram/i,      // 인스타그램
-    /FBAN|FBAV/i,      // 페이스북
-    /Twitter/i,        // 트위터
-    /Line\//i,         // 라인
-    /SamsungBrowser.*CrossApp/i, // 삼성 인터넷 크로스앱
-    /DaumApps/i,       // 다음 앱
-    /everytimeApp/i,   // 에브리타임
-    /band\//i,         // 밴드
+  // WebView 감지 패턴
+  const webViewPatterns = [
+    /\bwv\b/i,         // Android WebView
+    /WebView/i,        // Generic WebView
+    /FBAN|FBAV/i,      // Facebook
+    /Instagram/i,      // Instagram
+    /KAKAOTALK/i,      // KakaoTalk
+    /NAVER\(/i,        // Naver App (NAVER( 패턴)
+    /Line\//i,         // Line
+    /Twitter/i,        // Twitter
+    /DaumApps/i,       // Daum
+    /band\//i,         // Band
   ];
-  const isInApp = inAppPatterns.some(pattern => pattern.test(ua));
 
-  // Android에서 일반 Chrome이 아닌 경우
+  const isWebView = webViewPatterns.some(pattern => pattern.test(ua));
+
+  // iOS에서 Safari가 아닌 경우 (인앱 브라우저)
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isRealSafari = isIOS && /Safari/i.test(ua) && !webViewPatterns.some(p => p.test(ua));
+  const isIOSWebView = isIOS && !isRealSafari;
+
+  // Android에서 Chrome이 아닌 경우
   const isAndroid = /Android/i.test(ua);
-  const isChrome = /Chrome/i.test(ua) && !/Chromium/i.test(ua);
-  const isAndroidWebView = isAndroid && !isChrome;
+  const hasChrome = /Chrome\/[\d.]+/i.test(ua);
+  const isAndroidChrome = isAndroid && hasChrome && !/wv\b/i.test(ua);
+  const isAndroidWebView = isAndroid && !isAndroidChrome;
 
-  console.log('[Google Auth] UA:', ua);
-  console.log('[Google Auth] isWebView:', isWebView, 'isInApp:', isInApp, 'isAndroidWebView:', isAndroidWebView);
+  console.log('[Auth] User Agent:', ua);
+  console.log('[Auth] isWebView:', isWebView, 'isIOSWebView:', isIOSWebView, 'isAndroidWebView:', isAndroidWebView);
 
-  return isWebView || isInApp || isAndroidWebView || (isIOS && !isSafari);
+  return isWebView || isIOSWebView || isAndroidWebView;
+};
+
+// 외부 브라우저로 열기
+export const openInExternalBrowser = (url) => {
+  const ua = navigator.userAgent;
+
+  // Android: Intent URL 사용
+  if (/Android/i.test(ua)) {
+    const intentUrl = `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+    window.location.href = intentUrl;
+    return;
+  }
+
+  // iOS: Safari로 열기 시도
+  if (/iPhone|iPad|iPod/i.test(ua)) {
+    // x-web-search 스킴 사용 (Safari 열기)
+    window.location.href = url;
+    return;
+  }
+
+  // 기타: 새 창으로 열기
+  window.open(url, '_blank');
 };
 
 // ==================== Google 로그인 ====================
@@ -183,19 +205,11 @@ export const signInWithGoogle = () => {
   return new Promise(async (resolve, reject) => {
     console.log('[Google Auth] Starting login...');
     console.log('[Google Auth] Client ID:', GOOGLE_CLIENT_ID ? 'Set' : 'NOT SET');
-    console.log('[Google Auth] Needs redirect mode:', needsRedirectMode());
 
-    // 리다이렉트 모드 필요 시 (인앱 브라우저 등)
-    if (needsRedirectMode()) {
-      console.log('[Google Auth] Using redirect mode...');
-      const currentUrl = window.location.origin + window.location.pathname;
-      const oauthUrl = getGoogleOAuthUrl(currentUrl);
-
-      // 현재 경로 저장 (로그인 후 돌아올 위치)
-      sessionStorage.setItem(GOOGLE_AUTH_CALLBACK_KEY, window.location.href);
-
-      // Google OAuth 페이지로 리다이렉트
-      window.location.href = oauthUrl;
+    // WebView 환경에서는 Google OAuth가 차단됨
+    if (isBlockedWebView()) {
+      console.log('[Google Auth] Blocked WebView detected');
+      reject({ type: 'webview_blocked', message: 'Google login is not supported in this browser' });
       return;
     }
 

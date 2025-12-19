@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
+import { openInExternalBrowser } from '../services/socialAuth';
 import './Login.css';
 
 const Login = () => {
@@ -15,6 +16,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState(null);
+  const [showExternalBrowserPrompt, setShowExternalBrowserPrompt] = useState(false);
 
   const from = location.state?.from?.pathname || '/';
 
@@ -41,10 +43,10 @@ const Login = () => {
 
   const handleSocialLogin = async (provider) => {
     setError('');
+    setShowExternalBrowserPrompt(false);
     setSocialLoading(provider);
 
     try {
-      // 리다이렉트 모드인 경우 페이지 이동 후 콜백 처리됨
       await socialLogin(provider);
       navigate(from, { replace: true });
     } catch (err) {
@@ -53,12 +55,25 @@ const Login = () => {
         setError(t('auth.login.errorRejected'));
       } else if (err.error === 'popup_closed_by_user') {
         // 사용자가 팝업 닫음 - 에러 표시 안함
+      } else if (err.type === 'webview_blocked') {
+        // WebView에서 Google 로그인 차단됨
+        setShowExternalBrowserPrompt(true);
       } else {
         setError(t('auth.social.error') + ` (${err.message || err.error || 'Unknown error'})`);
       }
     } finally {
       setSocialLoading(null);
     }
+  };
+
+  const handleOpenInExternalBrowser = () => {
+    openInExternalBrowser(window.location.href);
+  };
+
+  const handleCopyUrl = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      alert('URL이 복사되었습니다.\nChrome 또는 Safari에서 붙여넣기 하세요.');
+    });
   };
 
   return (
@@ -68,6 +83,28 @@ const Login = () => {
         <p className="auth-subtitle">{t('auth.login.subtitle')}</p>
 
         {error && <div className="auth-error">{error}</div>}
+
+        {/* 외부 브라우저 안내 */}
+        {showExternalBrowserPrompt && (
+          <div className="external-browser-prompt">
+            <div className="prompt-icon">🌐</div>
+            <div className="prompt-content">
+              <strong>외부 브라우저에서 로그인해주세요</strong>
+              <p>
+                Google 로그인은 보안상 인앱 브라우저에서 지원되지 않습니다.
+                Chrome 또는 Safari에서 열어주세요.
+              </p>
+              <div className="prompt-actions">
+                <button onClick={handleOpenInExternalBrowser} className="open-browser-btn">
+                  외부 브라우저로 열기
+                </button>
+                <button onClick={handleCopyUrl} className="copy-url-btn">
+                  URL 복사
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 소셜 로그인 버튼 */}
         <div className="social-login-section">

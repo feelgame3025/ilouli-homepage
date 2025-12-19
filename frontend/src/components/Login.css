@@ -227,73 +227,74 @@
   line-height: 1.6;
 }
 
-/* In-app Browser Warning */
-.inapp-warning {
+/* External Browser Prompt */
+.external-browser-prompt {
   display: flex;
   gap: 12px;
   padding: 16px;
-  background: #fff3cd;
-  border: 1px solid #ffc107;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+  border: 1px solid #90caf9;
   border-radius: 12px;
   margin-bottom: 1.5rem;
 }
 
-.inapp-warning-icon {
-  width: 24px;
-  height: 24px;
-  background: #ffc107;
-  color: #000;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
+.prompt-icon {
+  font-size: 28px;
   flex-shrink: 0;
 }
 
-.inapp-warning-content {
+.prompt-content {
   flex: 1;
 }
 
-.inapp-warning-content strong {
+.prompt-content strong {
   display: block;
-  color: #856404;
-  margin-bottom: 6px;
-  font-size: 14px;
+  color: #1565c0;
+  margin-bottom: 8px;
+  font-size: 15px;
 }
 
-.inapp-warning-content p {
-  color: #856404;
+.prompt-content p {
+  color: #5e35b1;
   font-size: 13px;
   margin: 0 0 12px 0;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
-.inapp-warning-actions {
+.prompt-actions {
   display: flex;
-  flex-direction: column;
   gap: 8px;
 }
 
-.copy-url-btn {
-  padding: 10px 16px;
-  background: #ffc107;
-  color: #000;
+.open-browser-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: #1976d2;
+  color: #fff;
   border: none;
   border-radius: 8px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
 }
 
-.copy-url-btn:hover {
-  background: #e0a800;
+.open-browser-btn:hover {
+  background: #1565c0;
 }
 
-.inapp-tip {
-  font-size: 12px;
-  color: #856404;
-  text-align: center;
+.copy-url-btn {
+  padding: 12px 16px;
+  background: #fff;
+  color: #1976d2;
+  border: 1px solid #1976d2;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-url-btn:hover {
+  background: #e3f2fd;
 }
