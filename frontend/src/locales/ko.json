@@ -343,6 +343,45 @@
       "description": "하루의 활동을 정리하여 리포트 형식으로 생성합니다."
     }
   },
+  "about": {
+    "hero": {
+      "title": "ilouli.com",
+      "subtitle": "창작, 연결, 그리고 유산"
+    },
+    "vision": {
+      "title": "우리의 비전",
+      "description": "우리는 혁신을 중심으로 한 통합 브랜드 포털을 구축하고 있습니다. 최첨단 AI 기술로 창작 활동을 지원하고, 가족을 위한 안전한 디지털 아카이브를 결합하여 창의성과 연결이 만나는 공간을 만들어갑니다."
+    },
+    "values": {
+      "title": "우리의 가치",
+      "innovation": {
+        "title": "혁신",
+        "description": "아이디어를 시각적 스토리로 변환하는 AI 기반 창작 도구로 경계를 넓혀갑니다."
+      },
+      "connection": {
+        "title": "연결",
+        "description": "의미 있는 상호작용을 통해 크리에이터, 가족, 커뮤니티 간의 다리를 만들어갑니다."
+      },
+      "legacy": {
+        "title": "유산",
+        "description": "안전한 디지털 아카이브를 통해 세대를 위한 추억과 이야기를 보존합니다."
+      }
+    },
+    "ventures": {
+      "title": "우리의 벤처",
+      "description": "창의성과 연결을 강화하기 위해 설계된 혁신적인 프로젝트 생태계를 탐험하세요.",
+      "flagship": "대표",
+      "comingSoon": "준비 중",
+      "aiStoryboard": "AI 기반 스토리보드 파이프라인으로 아이디어를 매력적인 시각적 스토리로 변환하세요.",
+      "creativeStudio": "콘텐츠 크리에이터와 스토리텔러를 위한 종합 창작 도구 모음.",
+      "digitalArchive": "소중한 추억과 가족 역사를 위한 안전하고 지능적인 저장소."
+    },
+    "contact": {
+      "title": "문의하기",
+      "description": "질문이 있거나 더 알고 싶으신가요? 연락 주세요.",
+      "email": "이메일"
+    }
+  },
   "language": {
     "select": "언어",
     "en": "English",

@@ -14,8 +14,44 @@ export const USER_STATUS = {
   REJECTED: 'rejected'
 };
 
-const AUTH_STORAGE_KEY = 'ilouli_auth';
+const AUTH_COOKIE_NAME = 'ilouli_auth';
 const USERS_STORAGE_KEY = 'ilouli_users';
+
+// 쿠키 유틸리티 함수들 (서브도메인 공유용)
+const getCookieDomain = () => {
+  const hostname = window.location.hostname;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return hostname;
+  }
+  // .ilouli.com 형식으로 설정하여 모든 서브도메인에서 공유
+  return '.ilouli.com';
+};
+
+const setCookie = (name, value, days = 30) => {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  const domain = getCookieDomain();
+  const domainStr = domain.startsWith('.') ? `domain=${domain};` : '';
+  document.cookie = `${name}=${encodeURIComponent(JSON.stringify(value))};expires=${expires};path=/;${domainStr}SameSite=Lax`;
+};
+
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    try {
+      return JSON.parse(decodeURIComponent(parts.pop().split(';').shift()));
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+};
+
+const deleteCookie = (name) => {
+  const domain = getCookieDomain();
+  const domainStr = domain.startsWith('.') ? `domain=${domain};` : '';
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;${domainStr}`;
+};
 
 // 기본 관리자 계정 설정
 const DEFAULT_ADMIN = {
@@ -53,15 +89,10 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify([...existingUsers, DEFAULT_ADMIN]));
     }
 
-    // 기존 세션 복원
-    const storedAuth = localStorage.getItem(AUTH_STORAGE_KEY);
+    // 쿠키에서 세션 복원
+    const storedAuth = getCookie(AUTH_COOKIE_NAME);
     if (storedAuth) {
-      try {
-        const parsedUser = JSON.parse(storedAuth);
-        setUser(parsedUser);
-      } catch (e) {
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-      }
+      setUser(storedAuth);
     }
     setLoading(false);
   }, []);
@@ -97,7 +128,7 @@ export const AuthProvider = ({ children }) => {
 
     const { password: _, ...userWithoutPassword } = foundUser;
     setUser(userWithoutPassword);
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(userWithoutPassword));
+    setCookie(AUTH_COOKIE_NAME, userWithoutPassword);
     return userWithoutPassword;
   };
 
@@ -126,7 +157,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem(AUTH_STORAGE_KEY);
+    deleteCookie(AUTH_COOKIE_NAME);
   };
 
   const hasAccess = (requiredTiers) => {
