@@ -388,17 +388,19 @@ const FamilyCalendar = () => {
             )}
           </div>
 
-          {/* 선택된 날짜의 일정 */}
-          <div className="sidebar-section">
-            <h3>
-              {selectedDate
-                ? selectedDate.toLocaleDateString('ko-KR', {
-                    month: 'long',
-                    day: 'numeric',
-                    weekday: 'short'
-                  })
-                : t('calendar.selectDate')}
-            </h3>
+          {/* 일정 섹션들 (모바일에서 가로 스크롤) */}
+          <div className="sidebar-sections">
+            {/* 선택된 날짜의 일정 */}
+            <div className="sidebar-section">
+              <h3>
+                {selectedDate
+                  ? selectedDate.toLocaleDateString('ko-KR', {
+                      month: 'long',
+                      day: 'numeric',
+                      weekday: 'short'
+                    })
+                  : t('calendar.selectDate')}
+              </h3>
             {selectedDateEvents.length === 0 ? (
               <p className="no-events">{t('calendar.noEvents')}</p>
             ) : (
@@ -478,6 +480,7 @@ const FamilyCalendar = () => {
                 ))}
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>

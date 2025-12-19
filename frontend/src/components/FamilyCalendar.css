@@ -464,6 +464,12 @@
   gap: 20px;
 }
 
+.sidebar-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
 .sidebar-section {
   background: #ffffff;
   border-radius: 16px;
@@ -795,10 +801,20 @@
 
   .calendar-sidebar {
     order: -1;
+    gap: 16px;
+  }
+
+  .sidebar-search {
+    width: 100%;
+  }
+
+  .sidebar-sections {
+    display: flex;
     flex-direction: row;
     overflow-x: auto;
     gap: 16px;
     padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
   }
 
   .sidebar-section {
