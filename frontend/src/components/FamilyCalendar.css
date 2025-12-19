@@ -60,12 +60,13 @@
   text-align: center;
 }
 
-/* Calendar Search */
-.calendar-search {
+/* Sidebar Search */
+.sidebar-search {
   position: relative;
-  flex: 1;
-  max-width: 280px;
-  margin: 0 16px;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .search-input-wrapper {
@@ -96,6 +97,7 @@
   font-size: 14px;
   outline: none;
   min-width: 0;
+  width: 100%;
 }
 
 .search-input::placeholder {
@@ -115,6 +117,7 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .search-clear-btn:hover {
@@ -122,38 +125,34 @@
 }
 
 .search-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  margin-top: 8px;
-  max-height: 400px;
+  margin-top: 12px;
+  max-height: 300px;
   overflow-y: auto;
-  z-index: 100;
+  border: 1px solid #e5e5e7;
 }
 
 .search-results-header {
-  padding: 12px 16px;
+  padding: 10px 12px;
   font-size: 12px;
   color: #86868b;
   border-bottom: 1px solid #e5e5e7;
+  background: #f9f9f9;
 }
 
 .search-no-results {
-  padding: 24px 16px;
+  padding: 20px 12px;
   text-align: center;
   color: #86868b;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .search-result-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 10px 12px;
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -163,8 +162,8 @@
 }
 
 .search-result-color {
-  width: 4px;
-  height: 32px;
+  width: 3px;
+  height: 28px;
   border-radius: 2px;
   flex-shrink: 0;
 }
@@ -176,7 +175,7 @@
 
 .search-result-title {
   display: block;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #1d1d1f;
   white-space: nowrap;
@@ -186,15 +185,15 @@
 
 .search-result-date {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   color: #86868b;
   margin-top: 2px;
 }
 
 .search-more {
-  padding: 12px 16px;
+  padding: 10px 12px;
   text-align: center;
-  font-size: 12px;
+  font-size: 11px;
   color: #86868b;
   border-top: 1px solid #e5e5e7;
 }
@@ -822,21 +821,16 @@
     gap: 12px;
   }
 
-  .calendar-search {
-    max-width: 100%;
-    margin: 0;
-    order: 3;
+  .current-month {
+    font-size: 20px;
+  }
+
+  .sidebar-search {
+    padding: 12px;
   }
 
   .search-results {
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    max-height: 50vh;
-  }
-
-  .current-month {
-    font-size: 20px;
+    max-height: 250px;
   }
 
   .calendar-day {

@@ -231,65 +231,6 @@ const FamilyCalendar = () => {
               </button>
             </div>
 
-            {/* 검색 */}
-            <div className="calendar-search">
-              <div className="search-input-wrapper">
-                <span className="search-icon">🔍</span>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  placeholder={t('calendar.search.placeholder') || '일정 검색...'}
-                  className="search-input"
-                />
-                {searchQuery && (
-                  <button onClick={clearSearch} className="search-clear-btn">×</button>
-                )}
-              </div>
-              {showSearchResults && (
-                <div className="search-results">
-                  {searchResults.length === 0 ? (
-                    <div className="search-no-results">
-                      {t('calendar.search.noResults') || '검색 결과가 없습니다'}
-                    </div>
-                  ) : (
-                    <>
-                      <div className="search-results-header">
-                        {searchResults.length}개의 일정
-                      </div>
-                      {searchResults.slice(0, 10).map((event) => (
-                        <div
-                          key={event.id}
-                          className="search-result-item"
-                          onClick={() => handleSearchResultClick(event)}
-                        >
-                          <div
-                            className="search-result-color"
-                            style={{ backgroundColor: getCategoryColor(event.category, event.isGoogleEvent) }}
-                          />
-                          <div className="search-result-info">
-                            <span className="search-result-title">{event.title}</span>
-                            <span className="search-result-date">
-                              {new Date(event.date + 'T00:00:00').toLocaleDateString('ko-KR', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                      {searchResults.length > 10 && (
-                        <div className="search-more">
-                          +{searchResults.length - 10}개 더 있음
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-
             <div className="calendar-actions">
               {/* Google 캘린더 연결 버튼 */}
               {googleConnected ? (
@@ -388,6 +329,65 @@ const FamilyCalendar = () => {
 
         {/* 사이드바 */}
         <div className="calendar-sidebar">
+          {/* 검색 */}
+          <div className="sidebar-search">
+            <div className="search-input-wrapper">
+              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder={t('calendar.search.placeholder') || '일정 검색...'}
+                className="search-input"
+              />
+              {searchQuery && (
+                <button onClick={clearSearch} className="search-clear-btn">×</button>
+              )}
+            </div>
+            {showSearchResults && (
+              <div className="search-results">
+                {searchResults.length === 0 ? (
+                  <div className="search-no-results">
+                    {t('calendar.search.noResults') || '검색 결과가 없습니다'}
+                  </div>
+                ) : (
+                  <>
+                    <div className="search-results-header">
+                      {searchResults.length}개의 일정
+                    </div>
+                    {searchResults.slice(0, 10).map((event) => (
+                      <div
+                        key={event.id}
+                        className="search-result-item"
+                        onClick={() => handleSearchResultClick(event)}
+                      >
+                        <div
+                          className="search-result-color"
+                          style={{ backgroundColor: getCategoryColor(event.category, event.isGoogleEvent) }}
+                        />
+                        <div className="search-result-info">
+                          <span className="search-result-title">{event.title}</span>
+                          <span className="search-result-date">
+                            {new Date(event.date + 'T00:00:00').toLocaleDateString('ko-KR', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {searchResults.length > 10 && (
+                      <div className="search-more">
+                        +{searchResults.length - 10}개 더 있음
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* 선택된 날짜의 일정 */}
           <div className="sidebar-section">
             <h3>
