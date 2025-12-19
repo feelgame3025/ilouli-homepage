@@ -27,6 +27,11 @@ jobs:
 
       - name: Build
         working-directory: frontend
+        env:
+          REACT_APP_GOOGLE_CLIENT_ID: ${{ secrets.REACT_APP_GOOGLE_CLIENT_ID }}
+          REACT_APP_GOOGLE_API_KEY: ${{ secrets.REACT_APP_GOOGLE_API_KEY }}
+          REACT_APP_KAKAO_APP_KEY: ${{ secrets.REACT_APP_KAKAO_APP_KEY }}
+          REACT_APP_API_URL: https://api.ilouli.com
         run: CI=false npm run build
 
       - name: Deploy build files via SCP
