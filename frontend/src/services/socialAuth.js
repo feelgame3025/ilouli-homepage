@@ -6,36 +6,59 @@ const KAKAO_APP_KEY = process.env.REACT_APP_KAKAO_APP_KEY;
 let googleAuthInitialized = false;
 let kakaoInitialized = false;
 
-// 인앱 브라우저 감지
+// Google OAuth 콜백 저장 키
+const GOOGLE_AUTH_CALLBACK_KEY = 'google_auth_callback';
+const GOOGLE_AUTH_STATE_KEY = 'google_auth_state';
+
+// 인앱 브라우저 감지 (WebView만 - Custom Tab은 허용)
 export const isInAppBrowser = () => {
   const ua = navigator.userAgent || navigator.vendor || window.opera;
 
-  // 일반적인 인앱 브라우저 패턴
+  // WebView 전용 패턴 (Custom Tab은 제외)
+  const webViewPatterns = [
+    /\bwv\b/i,              // 안드로이드 웹뷰
+    /WebView/i,             // 일반 웹뷰
+  ];
+
+  // 먼저 WebView인지 확인
+  const isWebView = webViewPatterns.some(pattern => pattern.test(ua));
+
+  // 인앱 브라우저 패턴 (이들 중 일부는 Custom Tab 사용)
   const inAppPatterns = [
-    /KAKAOTALK/i,          // 카카오톡
-    /NAVER/i,              // 네이버 앱
+    /KAKAOTALK/i,          // 카카오톡 (WebView 사용)
     /Instagram/i,          // 인스타그램
     /FBAN|FBAV/i,          // 페이스북
     /Twitter/i,            // 트위터
     /Line\//i,             // 라인
-    /wv\)/i,               // 안드로이드 웹뷰
-    /WebView/i,            // 일반 웹뷰
   ];
 
-  return inAppPatterns.some(pattern => pattern.test(ua));
+  const isInApp = inAppPatterns.some(pattern => pattern.test(ua));
+
+  return isWebView || isInApp;
 };
 
-// 외부 브라우저로 열기 안내
-export const getExternalBrowserUrl = () => {
-  const currentUrl = window.location.href;
+// 리다이렉트 모드 필요 여부 (팝업이 안 되는 환경)
+export const needsRedirectMode = () => {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
 
-  // iOS Safari로 열기
-  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    return `x-safari-${currentUrl}`;
-  }
+  // iOS에서 인앱 브라우저는 대부분 리다이렉트 필요
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  const isSafari = /Safari/i.test(ua) && !/Chrome/i.test(ua);
 
-  // Android Chrome으로 열기
-  return `intent://${currentUrl.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+  // WebView 감지
+  const isWebView = /\bwv\b|WebView/i.test(ua);
+
+  // 인앱 브라우저 감지
+  const inAppPatterns = [
+    /KAKAOTALK/i,
+    /Instagram/i,
+    /FBAN|FBAV/i,
+    /Twitter/i,
+    /Line\//i,
+  ];
+  const isInApp = inAppPatterns.some(pattern => pattern.test(ua));
+
+  return isWebView || isInApp || (isIOS && !isSafari);
 };
 
 // ==================== Google 로그인 ====================
@@ -65,12 +88,105 @@ export const loadGoogleAuthScript = () => {
   });
 };
 
+// Google OAuth 리다이렉트 URL 생성
+const getGoogleOAuthUrl = (redirectUri) => {
+  const state = Math.random().toString(36).substring(2, 15);
+  sessionStorage.setItem(GOOGLE_AUTH_STATE_KEY, state);
+
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: redirectUri,
+    response_type: 'token',
+    scope: 'email profile',
+    state: state,
+    prompt: 'select_account'
+  });
+
+  return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+};
+
+// Google OAuth 콜백 처리 (URL hash에서 토큰 추출)
+export const handleGoogleOAuthCallback = async () => {
+  const hash = window.location.hash;
+  if (!hash || !hash.includes('access_token')) {
+    return null;
+  }
+
+  console.log('[Google Auth] Processing OAuth callback...');
+
+  // URL hash에서 파라미터 추출
+  const params = new URLSearchParams(hash.substring(1));
+  const accessToken = params.get('access_token');
+  const state = params.get('state');
+  const error = params.get('error');
+
+  // 에러 체크
+  if (error) {
+    console.error('[Google Auth] OAuth error:', error);
+    // URL에서 hash 제거
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    throw new Error(error);
+  }
+
+  // state 검증
+  const savedState = sessionStorage.getItem(GOOGLE_AUTH_STATE_KEY);
+  if (state && savedState && state !== savedState) {
+    console.error('[Google Auth] State mismatch');
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    throw new Error('State mismatch');
+  }
+
+  if (!accessToken) {
+    return null;
+  }
+
+  // URL에서 hash 제거
+  window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  sessionStorage.removeItem(GOOGLE_AUTH_STATE_KEY);
+
+  try {
+    // 사용자 정보 가져오기
+    const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    }).then(res => res.json());
+
+    console.log('[Google Auth] User info received:', userInfo.email);
+
+    return {
+      provider: 'google',
+      id: userInfo.sub,
+      email: userInfo.email,
+      name: userInfo.name,
+      picture: userInfo.picture
+    };
+  } catch (err) {
+    console.error('[Google Auth] Failed to fetch user info:', err);
+    throw err;
+  }
+};
+
 // Google 로그인 실행
 export const signInWithGoogle = () => {
   return new Promise(async (resolve, reject) => {
     console.log('[Google Auth] Starting login...');
     console.log('[Google Auth] Client ID:', GOOGLE_CLIENT_ID ? 'Set' : 'NOT SET');
+    console.log('[Google Auth] Needs redirect mode:', needsRedirectMode());
 
+    // 리다이렉트 모드 필요 시 (인앱 브라우저 등)
+    if (needsRedirectMode()) {
+      console.log('[Google Auth] Using redirect mode...');
+      const currentUrl = window.location.origin + window.location.pathname;
+      const oauthUrl = getGoogleOAuthUrl(currentUrl);
+
+      // 현재 경로 저장 (로그인 후 돌아올 위치)
+      sessionStorage.setItem(GOOGLE_AUTH_CALLBACK_KEY, window.location.href);
+
+      // Google OAuth 페이지로 리다이렉트
+      window.location.href = oauthUrl;
+      return;
+    }
+
+    // 일반 팝업 모드
     // 초기화 안됐으면 먼저 초기화
     if (!googleAuthInitialized || !window.google?.accounts?.oauth2) {
       console.log('[Google Auth] Not initialized, loading script...');

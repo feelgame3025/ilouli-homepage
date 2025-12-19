@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI, usersAPI, getToken, removeToken } from '../services/api';
-import { signInWithGoogle, signInWithKakao } from '../services/socialAuth';
+import { signInWithGoogle, signInWithKakao, handleGoogleOAuthCallback } from '../services/socialAuth';
 
 export const USER_TIERS = {
   GUEST: 'guest',
@@ -31,9 +31,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [viewAsTier, setViewAsTier] = useState(null);
 
-  // 토큰으로 세션 복원
+  // 토큰으로 세션 복원 및 OAuth 콜백 처리
   useEffect(() => {
     const restoreSession = async () => {
+      // Google OAuth 리다이렉트 콜백 처리
+      if (window.location.hash && window.location.hash.includes('access_token')) {
+        try {
+          console.log('[Auth] Processing Google OAuth callback...');
+          const socialUser = await handleGoogleOAuthCallback();
+          if (socialUser) {
+            const userData = await authAPI.socialLogin('google', socialUser);
+            setUser(userData);
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.error('Failed to process Google OAuth callback:', err);
+        }
+      }
+
+      // 일반 세션 복원
       const token = getToken();
       if (token) {
         try {

@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
-import { isInAppBrowser } from '../services/socialAuth';
 import './Login.css';
 
 const Login = () => {
@@ -16,14 +15,8 @@ const Login = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState(null);
-  const [showInAppWarning, setShowInAppWarning] = useState(false);
-  const [inAppBrowser, setInAppBrowser] = useState(false);
 
   const from = location.state?.from?.pathname || '/';
-
-  useEffect(() => {
-    setInAppBrowser(isInAppBrowser());
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,23 +41,11 @@ const Login = () => {
 
   const handleSocialLogin = async (provider) => {
     setError('');
-    setShowInAppWarning(false);
-
-    // Google 로그인 시 인앱 브라우저 체크
-    if (provider === 'google' && inAppBrowser) {
-      setShowInAppWarning(true);
-      return;
-    }
-
     setSocialLoading(provider);
 
     try {
-      // 30초 타임아웃 설정
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Login timeout')), 30000);
-      });
-
-      await Promise.race([socialLogin(provider), timeoutPromise]);
+      // 리다이렉트 모드인 경우 페이지 이동 후 콜백 처리됨
+      await socialLogin(provider);
       navigate(from, { replace: true });
     } catch (err) {
       console.error('Social login error:', err);
@@ -72,21 +53,12 @@ const Login = () => {
         setError(t('auth.login.errorRejected'));
       } else if (err.error === 'popup_closed_by_user') {
         // 사용자가 팝업 닫음 - 에러 표시 안함
-      } else if (err.message === 'Login timeout') {
-        setError('로그인 시간이 초과되었습니다. 다시 시도해주세요.');
-      } else if (err.type === 'popup_failed_to_open' || err.message?.includes('disallowed_useragent')) {
-        setShowInAppWarning(true);
       } else {
         setError(t('auth.social.error') + ` (${err.message || err.error || 'Unknown error'})`);
       }
     } finally {
       setSocialLoading(null);
     }
-  };
-
-  const copyUrlToClipboard = () => {
-    navigator.clipboard.writeText(window.location.href);
-    alert('URL이 복사되었습니다. 외부 브라우저에서 붙여넣기 하세요.');
   };
 
   return (
@@ -96,25 +68,6 @@ const Login = () => {
         <p className="auth-subtitle">{t('auth.login.subtitle')}</p>
 
         {error && <div className="auth-error">{error}</div>}
-
-        {/* 인앱 브라우저 경고 */}
-        {showInAppWarning && (
-          <div className="inapp-warning">
-            <div className="inapp-warning-icon">!</div>
-            <div className="inapp-warning-content">
-              <strong>외부 브라우저를 사용해주세요</strong>
-              <p>
-                Google 로그인은 카카오톡, 인스타그램 등의 인앱 브라우저에서 지원되지 않습니다.
-              </p>
-              <div className="inapp-warning-actions">
-                <button onClick={copyUrlToClipboard} className="copy-url-btn">
-                  URL 복사하기
-                </button>
-                <span className="inapp-tip">Safari 또는 Chrome에서 열어주세요</span>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* 소셜 로그인 버튼 */}
         <div className="social-login-section">
