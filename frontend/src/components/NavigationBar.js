@@ -34,9 +34,21 @@ const NavigationBar = () => {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const notificationRef = useRef(null);
   const userMenuRef = useRef(null);
   const navRef = useRef(null);
+
+  // 모바일 여부 감지
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 833);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -181,12 +193,14 @@ const NavigationBar = () => {
             <div className="mobile-overlay" onClick={closeMobileMenu}></div>
           )}
 
-          <nav
-            className={`main-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}
-            ref={navRef}
-            onMouseLeave={handleDropdownLeave}
-          >
-            <ul className="nav-menu">
+          {/* 모바일에서는 메뉴가 열렸을 때만 렌더링 (클릭 이벤트 차단 방지) */}
+          {(!isMobile || isMobileMenuOpen) && (
+            <nav
+              className={`main-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}
+              ref={navRef}
+              onMouseLeave={handleDropdownLeave}
+            >
+              <ul className="nav-menu">
               {/* About */}
               <li className="nav-item">
                 <a
@@ -278,8 +292,9 @@ const NavigationBar = () => {
                   </div>
                 </li>
               )}
-            </ul>
-          </nav>
+              </ul>
+            </nav>
+          )}
 
           <div className="nav-actions">
             <LanguageSelector />
