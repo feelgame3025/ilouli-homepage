@@ -1,0 +1,6 @@
+# ilouli.com 배포용 sudoers 설정
+# 설치: sudo cp deploy-sudoers /etc/sudoers.d/ilouli-deploy && sudo chmod 440 /etc/sudoers.d/ilouli-deploy
+
+feel3025 ALL=(ALL) NOPASSWD: /bin/cp -r /home/feel3025/myproject/homepage/frontend/build/* /var/www/html/
+feel3025 ALL=(ALL) NOPASSWD: /bin/chown -R www-data\:www-data /var/www/html
+feel3025 ALL=(ALL) NOPASSWD: /bin/chmod -R 755 /var/www/html

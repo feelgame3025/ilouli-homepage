@@ -1,6 +1,8 @@
 {
   "nav": {
     "aiStoryboard": "AI 스토리보드",
+    "aiFeatures": "AI 기능",
+    "aiContentTools": "콘텐츠 도구",
     "community": "커뮤니티",
     "announcements": "공지사항",
     "freeBoard": "자유게시판",
@@ -318,6 +320,27 @@
     "settings": {
       "title": "설정",
       "placeholder": "계정 및 알림 설정이 여기에서 가능합니다."
+    }
+  },
+  "aiContentTools": {
+    "title": "AI 콘텐츠 도구",
+    "subtitle": "AI를 활용한 다양한 콘텐츠 제작 도구",
+    "comingSoon": "준비 중",
+    "summarize": {
+      "title": "콘텐츠 요약",
+      "description": "긴 문서나 기사를 핵심 내용만 추출하여 간결하게 요약합니다."
+    },
+    "transform": {
+      "title": "콘텐츠 변환",
+      "description": "텍스트를 다양한 형식으로 변환합니다. (SNS 포스트, 이메일 등)"
+    },
+    "blogDraft": {
+      "title": "블로그 초안 생성",
+      "description": "키워드와 주제를 입력하면 블로그 글 초안을 자동 생성합니다."
+    },
+    "dailyReport": {
+      "title": "데일리 리포트",
+      "description": "하루의 활동을 정리하여 리포트 형식으로 생성합니다."
     }
   },
   "language": {

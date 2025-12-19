@@ -1,6 +1,8 @@
 {
   "nav": {
     "aiStoryboard": "AI Storyboard",
+    "aiFeatures": "AI Features",
+    "aiContentTools": "Content Tools",
     "community": "Community",
     "announcements": "Announcements",
     "freeBoard": "Free Board",
@@ -357,6 +359,27 @@
       "title": "Get in Touch",
       "description": "Have questions or want to learn more? We'd love to hear from you.",
       "email": "Email"
+    }
+  },
+  "aiContentTools": {
+    "title": "AI Content Tools",
+    "subtitle": "Various content creation tools powered by AI",
+    "comingSoon": "Coming Soon",
+    "summarize": {
+      "title": "Content Summarization",
+      "description": "Extract key points from long documents and articles into concise summaries."
+    },
+    "transform": {
+      "title": "Content Transformation",
+      "description": "Transform text into various formats. (Social posts, emails, etc.)"
+    },
+    "blogDraft": {
+      "title": "Blog Draft Generator",
+      "description": "Automatically generate blog post drafts from keywords and topics."
+    },
+    "dailyReport": {
+      "title": "Daily Report",
+      "description": "Compile your daily activities into a formatted report."
     }
   },
   "language": {

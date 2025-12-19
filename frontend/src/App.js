@@ -1,88 +1,56 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { USER_TIERS } from './contexts/AuthContext';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
 import AppProvider from './contexts/AppProvider';
 import NavigationBar from './components/NavigationBar';
-import LandingPage from './components/LandingPage';
-import AIStoryboard from './components/AIStoryboard';
-import FamilySpace from './components/FamilySpace';
-import Profile from './components/Profile';
-import Login from './components/Login';
-import Signup from './components/Signup';
-import Admin from './components/Admin';
-import TestZone from './components/TestZone';
-import FileUpload from './components/FileUpload';
-import Community from './components/Community';
-import About from './components/About';
-import ProtectedRoute from './components/ProtectedRoute';
+import { getCurrentHost, HOSTS, HOST_INFO } from './utils/hostConfig';
+
+// Routers
+import MainRouter from './routers/MainRouter';
+import AIRouter from './routers/AIRouter';
+import CommunityRouter from './routers/CommunityRouter';
+import FamilyRouter from './routers/FamilyRouter';
+import AdminRouter from './routers/AdminRouter';
+import LabRouter from './routers/LabRouter';
+
 import './App.css';
 
 function App() {
+  const currentHost = getCurrentHost();
+
+  // 호스트에 따른 페이지 타이틀 설정
+  useEffect(() => {
+    const hostInfo = HOST_INFO[currentHost];
+    if (hostInfo) {
+      document.title = hostInfo.title;
+    }
+  }, [currentHost]);
+
+  // 호스트에 따른 라우터 선택
+  const renderRouter = () => {
+    switch (currentHost) {
+      case HOSTS.AI:
+        return <AIRouter />;
+      case HOSTS.COMMUNITY:
+        return <CommunityRouter />;
+      case HOSTS.FAMILY:
+        return <FamilyRouter />;
+      case HOSTS.ADMIN:
+        return <AdminRouter />;
+      case HOSTS.LAB:
+        return <LabRouter />;
+      case HOSTS.MAIN:
+      default:
+        return <MainRouter />;
+    }
+  };
+
   return (
     <Router>
       <AppProvider>
-        <div className="App">
+        <div className="App" data-host={currentHost}>
           <NavigationBar />
           <main className="main-content">
-            <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route
-              path="/storyboard"
-              element={
-                <ProtectedRoute requiredTiers={[USER_TIERS.FAMILY, USER_TIERS.ADMIN]}>
-                  <AIStoryboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/family"
-              element={
-                <ProtectedRoute requiredTiers={[USER_TIERS.FAMILY, USER_TIERS.ADMIN]}>
-                  <FamilySpace />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute requiredTiers={[USER_TIERS.ADMIN]}>
-                  <Admin />
-                </ProtectedRoute>
-              }
-            />
-            {/* Admin Lab Routes */}
-            <Route
-              path="/admin-lab/test-zone"
-              element={
-                <ProtectedRoute requiredTiers={[USER_TIERS.ADMIN, USER_TIERS.FAMILY]}>
-                  <TestZone />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin-lab/file-upload"
-              element={
-                <ProtectedRoute requiredTiers={[USER_TIERS.ADMIN, USER_TIERS.FAMILY]}>
-                  <FileUpload />
-                </ProtectedRoute>
-              }
-            />
-            {/* Community Routes */}
-            <Route path="/community" element={<Community />} />
-            <Route path="/community/announcements" element={<Community defaultTab="announcements" />} />
-            <Route path="/community/free-board" element={<Community defaultTab="community" />} />
-            <Route path="/about" element={<About />} />
-          </Routes>
+            {renderRouter()}
           </main>
         </div>
       </AppProvider>
