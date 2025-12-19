@@ -40,10 +40,18 @@
   text-decoration: none;
   letter-spacing: -0.02em;
   transition: opacity 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  position: relative;
+  z-index: 1005;
 }
 
 .logo:hover {
   opacity: 0.7;
+}
+
+.logo:active {
+  opacity: 0.5;
 }
 
 /* Main Navigation */
@@ -95,6 +103,8 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  position: relative;
+  z-index: 1005;
 }
 
 /* =============================================
@@ -511,6 +521,9 @@
   transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  position: relative;
+  z-index: 1005;
+  display: inline-block;
 }
 
 .login-btn:hover {
@@ -539,11 +552,11 @@
     padding: 0 16px;
   }
 
-  /* Mobile Overlay */
+  /* Mobile Overlay - 헤더 아래에서 시작 */
   .mobile-overlay {
     display: block;
     position: fixed;
-    top: 0;
+    top: 44px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -750,10 +763,12 @@
   /* Mobile Submenu - Accordion */
   .mobile-submenu {
     display: none;
-    background: #f5f5f7;
+    background: #e8e8ed;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease;
+    border-left: 3px solid #0071e3;
+    margin-left: 16px;
   }
 
   .nav-item.has-flyout.flyout-open .mobile-submenu {
@@ -763,13 +778,14 @@
 
   .mobile-submenu-link {
     display: block;
-    padding: 12px 24px 12px 40px;
+    padding: 12px 24px 12px 20px;
     font-size: 15px;
     font-weight: 400;
     color: #1d1d1f;
     text-decoration: none;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   .mobile-submenu-link:last-child {
