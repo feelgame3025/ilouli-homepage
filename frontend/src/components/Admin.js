@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth, USER_TIERS } from '../contexts/AuthContext';
 import { useCommunity, REPORT_STATUS } from '../contexts/CommunityContext';
+import { useNotification, NOTIFICATION_TYPES } from '../contexts/NotificationContext';
 import './Admin.css';
 
 const Admin = () => {
   const { t } = useTranslation();
   const { getAllUsers, updateUserTier, deleteUser, getPendingUsers, approveUser, rejectUser, user } = useAuth();
   const { getReports, handleReport, getHiddenPosts, restorePost } = useCommunity();
+  const { addNotification } = useNotification();
 
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState([]);
@@ -92,6 +94,15 @@ const Admin = () => {
       loadUsers();
       loadPendingUsers();
       setTimeout(() => setMessage(''), 3000);
+
+      // 승인된 회원에게 알림 발송
+      addNotification(
+        userId,
+        NOTIFICATION_TYPES.APPROVAL,
+        t('notification.messages.accountApproved'),
+        t('notification.messages.accountApproved'),
+        '/profile'
+      );
     } catch (err) {
       setMessage(t('admin.error.approveFailed'));
     }
@@ -100,6 +111,15 @@ const Admin = () => {
   const handleReject = (userId, userName) => {
     if (window.confirm(t('admin.confirm.reject', { name: userName }))) {
       try {
+        // 거절 전에 알림 발송 (거절되면 사용자가 삭제되므로)
+        addNotification(
+          userId,
+          NOTIFICATION_TYPES.APPROVAL,
+          t('notification.messages.accountRejected'),
+          t('notification.messages.accountRejected'),
+          null
+        );
+
         rejectUser(userId);
         setMessage(t('admin.success.rejected', { name: userName }));
         loadPendingUsers();
@@ -112,11 +132,27 @@ const Admin = () => {
 
   const handleReportAction = (reportId, action) => {
     try {
+      // 처리 전에 신고자 정보 가져오기
+      const report = reports.find(r => r.id === reportId);
+
       handleReport(reportId, action, true);
       setMessage(t('admin.moderation.success.' + action));
       loadReports();
       loadHiddenPosts();
       setTimeout(() => setMessage(''), 3000);
+
+      // 신고자에게 알림 발송
+      if (report && report.reporter) {
+        addNotification(
+          report.reporter.id,
+          NOTIFICATION_TYPES.REPORT_RESULT,
+          t('notification.messages.reportProcessed'),
+          action === 'hide'
+            ? t('admin.moderation.success.hide')
+            : t('admin.moderation.success.dismiss'),
+          '/community'
+        );
+      }
     } catch (err) {
       setMessage(t('admin.moderation.error.actionFailed'));
     }

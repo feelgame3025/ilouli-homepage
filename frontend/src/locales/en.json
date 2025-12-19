@@ -362,8 +362,41 @@
   "language": {
     "select": "Language",
     "en": "English",
-    "ko": "한국어",
-    "ja": "日本語",
-    "zh": "中文"
+    "ko": "한국어"
+  },
+  "notification": {
+    "title": "Notifications",
+    "empty": "No notifications",
+    "markAllRead": "Mark all read",
+    "settings": "Notification Settings",
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{{count}}m ago",
+      "hoursAgo": "{{count}}h ago",
+      "daysAgo": "{{count}}d ago"
+    },
+    "types": {
+      "comment": "Comment",
+      "reply": "Reply",
+      "reportResult": "Report Result",
+      "approval": "Approval",
+      "mention": "Mention",
+      "system": "System"
+    },
+    "messages": {
+      "newComment": "{{author}} commented on your post",
+      "newReply": "{{author}} replied to your comment",
+      "reportProcessed": "Your report has been processed",
+      "accountApproved": "Your account has been approved",
+      "accountRejected": "Your account has been rejected"
+    },
+    "settingsPage": {
+      "title": "Notification Settings",
+      "sound": "Notification Sound",
+      "email": "Email Notifications",
+      "typeSettings": "Notification Type Settings",
+      "enableAll": "Enable All",
+      "disableAll": "Disable All"
+    }
   }
 }

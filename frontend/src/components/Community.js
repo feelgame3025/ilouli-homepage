@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth, USER_TIERS } from '../contexts/AuthContext';
 import { useCommunity, POST_TYPES, CATEGORIES } from '../contexts/CommunityContext';
+import { useNotification, NOTIFICATION_TYPES } from '../contexts/NotificationContext';
 import './Community.css';
 
 const Community = ({ defaultTab = 'announcements' }) => {
@@ -19,6 +20,7 @@ const Community = ({ defaultTab = 'announcements' }) => {
     reportPost,
     reportComment
   } = useCommunity();
+  const { addNotification } = useNotification();
 
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -115,6 +117,17 @@ const Community = ({ defaultTab = 'announcements' }) => {
     // 댓글 추가 후 선택된 포스트 새로고침
     const updatedPost = getPostById(selectedPost.id);
     setSelectedPost(updatedPost);
+
+    // 글 작성자에게 알림 발송 (자기 글에 댓글 제외)
+    if (selectedPost.author.id !== user.id) {
+      addNotification(
+        selectedPost.author.id,
+        NOTIFICATION_TYPES.COMMENT,
+        t('notification.messages.newComment', { author: user.name }),
+        `"${selectedPost.title}"`,
+        `/community`
+      );
+    }
   };
 
   const handleDeleteComment = (commentId) => {

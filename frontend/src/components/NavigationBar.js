@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth, USER_TIERS } from '../contexts/AuthContext';
+import { useNotification, NOTIFICATION_TYPES } from '../contexts/NotificationContext';
 import LanguageSelector from './LanguageSelector';
 import './NavigationBar.css';
 
@@ -17,11 +18,20 @@ const NavigationBar = () => {
     viewAsTier,
     getActualTier
   } = useAuth();
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification
+  } = useNotification();
   const navigate = useNavigate();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedDropdown, setExpandedDropdown] = useState(null);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const notificationRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,6 +40,18 @@ const NavigationBar = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // 알림 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setIsNotificationOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleLogout = () => {
@@ -85,6 +107,42 @@ const NavigationBar = () => {
 
   const toggleDropdown = (name) => {
     setExpandedDropdown(expandedDropdown === name ? null : name);
+  };
+
+  const toggleNotification = () => {
+    setIsNotificationOpen(!isNotificationOpen);
+  };
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case NOTIFICATION_TYPES.COMMENT: return '💬';
+      case NOTIFICATION_TYPES.REPLY: return '↩️';
+      case NOTIFICATION_TYPES.REPORT_RESULT: return '📋';
+      case NOTIFICATION_TYPES.APPROVAL: return '✅';
+      case NOTIFICATION_TYPES.MENTION: return '@';
+      case NOTIFICATION_TYPES.SYSTEM: return '🔔';
+      default: return '🔔';
+    }
+  };
+
+  const formatTimeAgo = (dateString) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diff = Math.floor((now - date) / 1000);
+
+    if (diff < 60) return t('notification.time.justNow');
+    if (diff < 3600) return t('notification.time.minutesAgo', { count: Math.floor(diff / 60) });
+    if (diff < 86400) return t('notification.time.hoursAgo', { count: Math.floor(diff / 3600) });
+    if (diff < 604800) return t('notification.time.daysAgo', { count: Math.floor(diff / 86400) });
+    return date.toLocaleDateString('ko-KR');
+  };
+
+  const handleNotificationClick = (notification) => {
+    markAsRead(notification.id);
+    if (notification.link) {
+      navigate(notification.link);
+      setIsNotificationOpen(false);
+    }
   };
 
   return (
@@ -195,6 +253,82 @@ const NavigationBar = () => {
 
         <div className="nav-actions">
           <LanguageSelector />
+
+          {/* 알림 아이콘 */}
+          {isAuthenticated && (
+            <div className="notification-dropdown" ref={notificationRef}>
+              <button
+                className={`notification-btn ${unreadCount > 0 ? 'has-unread' : ''}`}
+                onClick={toggleNotification}
+                aria-label={t('notification.title')}
+              >
+                <svg className="notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                {unreadCount > 0 && (
+                  <span className="notification-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                )}
+              </button>
+
+              {isNotificationOpen && (
+                <div className="notification-panel">
+                  <div className="notification-header">
+                    <h3>{t('notification.title')}</h3>
+                    {unreadCount > 0 && (
+                      <button className="mark-all-read" onClick={markAllAsRead}>
+                        {t('notification.markAllRead')}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="notification-list">
+                    {notifications.length === 0 ? (
+                      <div className="notification-empty">
+                        <span className="empty-icon">🔔</span>
+                        <p>{t('notification.empty')}</p>
+                      </div>
+                    ) : (
+                      notifications.slice(0, 10).map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={`notification-item ${notification.read ? 'read' : 'unread'}`}
+                          onClick={() => handleNotificationClick(notification)}
+                        >
+                          <span className="notification-type-icon">
+                            {getNotificationIcon(notification.type)}
+                          </span>
+                          <div className="notification-content">
+                            <p className="notification-title">{notification.title}</p>
+                            <p className="notification-message">{notification.message}</p>
+                            <span className="notification-time">{formatTimeAgo(notification.createdAt)}</span>
+                          </div>
+                          <button
+                            className="notification-delete"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteNotification(notification.id);
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {notifications.length > 0 && (
+                    <div className="notification-footer">
+                      <Link to="/profile" onClick={() => setIsNotificationOpen(false)}>
+                        {t('notification.settings')}
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {isAuthenticated ? (
             <div className="user-menu-dropdown">
               <button className="user-menu-trigger">

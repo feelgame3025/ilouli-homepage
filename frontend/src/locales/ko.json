@@ -323,8 +323,41 @@
   "language": {
     "select": "언어",
     "en": "English",
-    "ko": "한국어",
-    "ja": "日本語",
-    "zh": "中文"
+    "ko": "한국어"
+  },
+  "notification": {
+    "title": "알림",
+    "empty": "알림이 없습니다",
+    "markAllRead": "모두 읽음",
+    "settings": "알림 설정",
+    "time": {
+      "justNow": "방금",
+      "minutesAgo": "{{count}}분 전",
+      "hoursAgo": "{{count}}시간 전",
+      "daysAgo": "{{count}}일 전"
+    },
+    "types": {
+      "comment": "댓글",
+      "reply": "답글",
+      "reportResult": "신고 결과",
+      "approval": "승인",
+      "mention": "멘션",
+      "system": "시스템"
+    },
+    "messages": {
+      "newComment": "{{author}}님이 회원님의 글에 댓글을 남겼습니다",
+      "newReply": "{{author}}님이 회원님의 댓글에 답글을 남겼습니다",
+      "reportProcessed": "회원님의 신고가 처리되었습니다",
+      "accountApproved": "회원님의 계정이 승인되었습니다",
+      "accountRejected": "회원님의 계정이 거절되었습니다"
+    },
+    "settingsPage": {
+      "title": "알림 설정",
+      "sound": "알림 소리",
+      "email": "이메일 알림",
+      "typeSettings": "알림 유형 설정",
+      "enableAll": "모두 켜기",
+      "disableAll": "모두 끄기"
+    }
   }
 }
