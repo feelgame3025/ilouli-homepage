@@ -492,91 +492,95 @@ const NavigationBar = () => {
           </div>
         </div>
 
-        {/* Apple Style Flyout Panels */}
-        <div className={`flyout-container ${activeDropdown ? 'visible' : ''}`} onMouseLeave={handleDropdownLeave}>
-          {/* Community Flyout */}
-          <div className={`flyout-panel ${activeDropdown === 'community' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('community')}>
-            <div className="flyout-content">
-              <div className="flyout-section">
-                <h3 className="flyout-section-title">커뮤니티</h3>
-                <div className="flyout-links">
-                  <a href={getHostUrl(HOSTS.COMMUNITY, '/announcements')} className="flyout-link">
-                    <span className="flyout-link-icon">📢</span>
-                    <div className="flyout-link-text">
-                      <span className="flyout-link-title">{t('nav.announcements')}</span>
-                      <span className="flyout-link-desc">중요한 소식과 업데이트</span>
-                    </div>
-                  </a>
-                  <a href={getHostUrl(HOSTS.COMMUNITY, '/free-board')} className="flyout-link">
-                    <span className="flyout-link-icon">💬</span>
-                    <div className="flyout-link-text">
-                      <span className="flyout-link-title">{t('nav.freeBoard')}</span>
-                      <span className="flyout-link-desc">자유롭게 소통하기</span>
-                    </div>
-                  </a>
+        {/* Apple Style Flyout Panels - 데스크톱에서만 렌더링 */}
+        {!isMobile && (
+          <div className={`flyout-container ${activeDropdown ? 'visible' : ''}`} onMouseLeave={handleDropdownLeave}>
+            {/* Community Flyout */}
+            <div className={`flyout-panel ${activeDropdown === 'community' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('community')}>
+              <div className="flyout-content">
+                <div className="flyout-section">
+                  <h3 className="flyout-section-title">커뮤니티</h3>
+                  <div className="flyout-links">
+                    <a href={getHostUrl(HOSTS.COMMUNITY, '/announcements')} className="flyout-link">
+                      <span className="flyout-link-icon">📢</span>
+                      <div className="flyout-link-text">
+                        <span className="flyout-link-title">{t('nav.announcements')}</span>
+                        <span className="flyout-link-desc">중요한 소식과 업데이트</span>
+                      </div>
+                    </a>
+                    <a href={getHostUrl(HOSTS.COMMUNITY, '/free-board')} className="flyout-link">
+                      <span className="flyout-link-icon">💬</span>
+                      <div className="flyout-link-text">
+                        <span className="flyout-link-title">{t('nav.freeBoard')}</span>
+                        <span className="flyout-link-desc">자유롭게 소통하기</span>
+                      </div>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* AI Features Flyout */}
+            {showAIFeatures && (
+              <div className={`flyout-panel ${activeDropdown === 'ai' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('ai')}>
+                <div className="flyout-content">
+                  <div className="flyout-section">
+                    <h3 className="flyout-section-title">AI 기능</h3>
+                    <div className="flyout-links">
+                      <a href={getHostUrl(HOSTS.AI, '/storyboard')} className="flyout-link">
+                        <span className="flyout-link-icon">🎬</span>
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">{t('nav.aiStoryboard')}</span>
+                          <span className="flyout-link-desc">AI 기반 스토리 생성</span>
+                        </div>
+                      </a>
+                      <a href={getHostUrl(HOSTS.AI, '/content-tools')} className="flyout-link">
+                        <span className="flyout-link-icon">✨</span>
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">{t('nav.aiContentTools')}</span>
+                          <span className="flyout-link-desc">콘텐츠 요약 및 변환</span>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Admin Lab Flyout */}
+            {showAdminLab && (
+              <div className={`flyout-panel ${activeDropdown === 'lab' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('lab')}>
+                <div className="flyout-content">
+                  <div className="flyout-section">
+                    <h3 className="flyout-section-title">관리자 랩</h3>
+                    <div className="flyout-links">
+                      <a href={getHostUrl(HOSTS.LAB, '/test-zone')} className="flyout-link">
+                        <span className="flyout-link-icon">🧪</span>
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">{t('nav.testZone')}</span>
+                          <span className="flyout-link-desc">새로운 기능 테스트</span>
+                        </div>
+                      </a>
+                      <a href={getHostUrl(HOSTS.LAB, '/file-upload')} className="flyout-link">
+                        <span className="flyout-link-icon">📁</span>
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">{t('nav.fileUpload')}</span>
+                          <span className="flyout-link-desc">AI 파일 분석</span>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* AI Features Flyout */}
-          {showAIFeatures && (
-            <div className={`flyout-panel ${activeDropdown === 'ai' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('ai')}>
-              <div className="flyout-content">
-                <div className="flyout-section">
-                  <h3 className="flyout-section-title">AI 기능</h3>
-                  <div className="flyout-links">
-                    <a href={getHostUrl(HOSTS.AI, '/storyboard')} className="flyout-link">
-                      <span className="flyout-link-icon">🎬</span>
-                      <div className="flyout-link-text">
-                        <span className="flyout-link-title">{t('nav.aiStoryboard')}</span>
-                        <span className="flyout-link-desc">AI 기반 스토리 생성</span>
-                      </div>
-                    </a>
-                    <a href={getHostUrl(HOSTS.AI, '/content-tools')} className="flyout-link">
-                      <span className="flyout-link-icon">✨</span>
-                      <div className="flyout-link-text">
-                        <span className="flyout-link-title">{t('nav.aiContentTools')}</span>
-                        <span className="flyout-link-desc">콘텐츠 요약 및 변환</span>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Admin Lab Flyout */}
-          {showAdminLab && (
-            <div className={`flyout-panel ${activeDropdown === 'lab' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('lab')}>
-              <div className="flyout-content">
-                <div className="flyout-section">
-                  <h3 className="flyout-section-title">관리자 랩</h3>
-                  <div className="flyout-links">
-                    <a href={getHostUrl(HOSTS.LAB, '/test-zone')} className="flyout-link">
-                      <span className="flyout-link-icon">🧪</span>
-                      <div className="flyout-link-text">
-                        <span className="flyout-link-title">{t('nav.testZone')}</span>
-                        <span className="flyout-link-desc">새로운 기능 테스트</span>
-                      </div>
-                    </a>
-                    <a href={getHostUrl(HOSTS.LAB, '/file-upload')} className="flyout-link">
-                      <span className="flyout-link-icon">📁</span>
-                      <div className="flyout-link-text">
-                        <span className="flyout-link-title">{t('nav.fileUpload')}</span>
-                        <span className="flyout-link-desc">AI 파일 분석</span>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </header>
 
-      {/* Flyout 배경 오버레이 */}
-      <div className={`flyout-backdrop ${activeDropdown ? 'visible' : ''}`} onClick={handleDropdownLeave}></div>
+      {/* Flyout 배경 오버레이 - 데스크톱에서만 렌더링 */}
+      {!isMobile && (
+        <div className={`flyout-backdrop ${activeDropdown ? 'visible' : ''}`} onClick={handleDropdownLeave}></div>
+      )}
     </>
   );
 };
