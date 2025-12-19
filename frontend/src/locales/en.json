@@ -387,6 +387,37 @@
     "en": "English",
     "ko": "한국어"
   },
+  "calendar": {
+    "today": "Today",
+    "addEvent": "Add Event",
+    "editEvent": "Edit Event",
+    "selectDate": "Select a date",
+    "noEvents": "No events",
+    "upcoming": "Upcoming Events",
+    "noUpcoming": "No upcoming events",
+    "confirmDelete": "Are you sure you want to delete this event?",
+    "categories": {
+      "family": "Family",
+      "birthday": "Birthday",
+      "travel": "Travel",
+      "health": "Health",
+      "work": "Work",
+      "other": "Other"
+    },
+    "form": {
+      "title": "Event Title",
+      "titlePlaceholder": "Enter event title",
+      "date": "Date",
+      "time": "Time",
+      "allDay": "All Day",
+      "category": "Category",
+      "description": "Description",
+      "descriptionPlaceholder": "Add notes about this event",
+      "cancel": "Cancel",
+      "save": "Save",
+      "update": "Update"
+    }
+  },
   "notification": {
     "title": "Notifications",
     "empty": "No notifications",

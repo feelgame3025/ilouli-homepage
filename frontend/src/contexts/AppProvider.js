@@ -3,6 +3,7 @@ import { AuthProvider } from './AuthContext';
 import { CommunityProvider } from './CommunityContext';
 import { AssetProvider } from './AssetContext';
 import { NotificationProvider } from './NotificationContext';
+import { CalendarProvider } from './CalendarContext';
 
 const AppProvider = ({ children }) => {
   return (
@@ -10,7 +11,9 @@ const AppProvider = ({ children }) => {
       <NotificationProvider>
         <CommunityProvider>
           <AssetProvider>
-            {children}
+            <CalendarProvider>
+              {children}
+            </CalendarProvider>
           </AssetProvider>
         </CommunityProvider>
       </NotificationProvider>
