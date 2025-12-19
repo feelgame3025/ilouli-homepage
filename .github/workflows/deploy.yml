@@ -23,7 +23,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: frontend
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build
         working-directory: frontend
@@ -39,7 +39,7 @@ jobs:
             cd /home/feel3025/myproject/homepage
             git pull origin main
             cd frontend
-            npm ci
+            npm ci --legacy-peer-deps
             npm run build
             sudo cp -r build/* /var/www/html/
             sudo chown -R www-data:www-data /var/www/html
