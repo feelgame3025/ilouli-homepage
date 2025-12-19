@@ -635,9 +635,19 @@
   .main-nav {
     /* 데스크톱 스타일 완전 무효화 */
     flex: none !important;
-    display: none !important;
+    display: none !important; /* Hide it by default on mobile */
     justify-content: initial !important;
-    /* 모바일 전용 스타일 */
+    /* Ensure no event interaction when hidden */
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .main-nav.mobile-open {
+    display: flex !important;
+    flex-direction: column;
+    transform: translateX(0);
+    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    /* Add previously conflicting styles here */
     position: fixed !important;
     top: 44px;
     right: 0;
@@ -647,19 +657,13 @@
     height: calc(100vh - 44px);
     height: calc(100dvh - 44px);
     background: #ffffff;
-    transform: translateX(100%);
     opacity: 1;
     z-index: 1002;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
-  }
-
-  .main-nav.mobile-open {
-    display: flex !important;
-    flex-direction: column;
-    transform: translateX(0);
-    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+    pointer-events: auto; /* Enable event interaction when open */
+    visibility: visible;
   }
 
   .nav-menu {
