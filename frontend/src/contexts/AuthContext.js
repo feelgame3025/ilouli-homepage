@@ -90,7 +90,24 @@ export const AuthProvider = ({ children }) => {
     }
 
     // 쿠키에서 세션 복원
-    const storedAuth = getCookie(AUTH_COOKIE_NAME);
+    let storedAuth = getCookie(AUTH_COOKIE_NAME);
+
+    // 쿠키에 없으면 localStorage에서 확인 (마이그레이션)
+    if (!storedAuth) {
+      const localStoredAuth = localStorage.getItem(AUTH_COOKIE_NAME);
+      if (localStoredAuth) {
+        try {
+          storedAuth = JSON.parse(localStoredAuth);
+          // 쿠키로 마이그레이션
+          setCookie(AUTH_COOKIE_NAME, storedAuth);
+          // localStorage 정리
+          localStorage.removeItem(AUTH_COOKIE_NAME);
+        } catch (e) {
+          localStorage.removeItem(AUTH_COOKIE_NAME);
+        }
+      }
+    }
+
     if (storedAuth) {
       setUser(storedAuth);
     }
