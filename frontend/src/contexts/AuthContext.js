@@ -31,7 +31,8 @@ const setCookie = (name, value, days = 30) => {
   const expires = new Date(Date.now() + days * 864e5).toUTCString();
   const domain = getCookieDomain();
   const domainStr = domain.startsWith('.') ? `domain=${domain};` : '';
-  document.cookie = `${name}=${encodeURIComponent(JSON.stringify(value))};expires=${expires};path=/;${domainStr}SameSite=Lax`;
+  const secureStr = window.location.protocol === 'https:' ? 'Secure;' : '';
+  document.cookie = `${name}=${encodeURIComponent(JSON.stringify(value))};expires=${expires};path=/;${domainStr}${secureStr}SameSite=Lax`;
 };
 
 const getCookie = (name) => {
