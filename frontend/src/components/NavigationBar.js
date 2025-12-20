@@ -485,6 +485,13 @@ const NavigationBar = () => {
                         <span className="flyout-link-desc">자유롭게 소통하기</span>
                       </div>
                     </a>
+                    <a href={getHostUrl(HOSTS.COMMUNITY, '/games')} className="flyout-link">
+                      <span className="flyout-link-icon">🎮</span>
+                      <div className="flyout-link-text">
+                        <span className="flyout-link-title">{t('nav.games')}</span>
+                        <span className="flyout-link-desc">미니게임 즐기기</span>
+                      </div>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -584,6 +591,9 @@ const NavigationBar = () => {
                   </a>
                   <a href={getHostUrl(HOSTS.COMMUNITY, '/free-board')} className="mobile-submenu-link">
                     {t('nav.freeBoard')}
+                  </a>
+                  <a href={getHostUrl(HOSTS.COMMUNITY, '/games')} className="mobile-submenu-link">
+                    {t('nav.games')}
                   </a>
                 </div>
               </li>

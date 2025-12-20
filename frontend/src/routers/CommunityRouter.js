@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Community from '../components/Community';
+import Games from '../components/Games';
 import Profile from '../components/Profile';
 import Login from '../components/Login';
 import Signup from '../components/Signup';
@@ -12,6 +13,7 @@ const CommunityRouter = () => {
       <Route path="/" element={<Navigate to="/announcements" replace />} />
       <Route path="/announcements" element={<Community defaultTab="announcements" />} />
       <Route path="/free-board" element={<Community defaultTab="community" />} />
+      <Route path="/games" element={<Games />} />
       <Route
         path="/profile"
         element={
