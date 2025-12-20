@@ -1,7 +1,499 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './Games.css';
 
+// 메모리 카드 게임
+const MemoryGame = ({ onBack }) => {
+  const emojis = ['🎮', '🎯', '🎲', '🎪', '🎨', '🎭', '🎸', '🎺'];
+  const [cards, setCards] = useState(() => {
+    const shuffled = [...emojis, ...emojis]
+      .sort(() => Math.random() - 0.5)
+      .map((emoji, index) => ({ id: index, emoji, flipped: false, matched: false }));
+    return shuffled;
+  });
+  const [flippedCards, setFlippedCards] = useState([]);
+  const [moves, setMoves] = useState(0);
+  const [isChecking, setIsChecking] = useState(false);
+
+  const handleCardClick = (id) => {
+    if (isChecking) return;
+    const card = cards.find(c => c.id === id);
+    if (card.flipped || card.matched) return;
+
+    const newCards = cards.map(c =>
+      c.id === id ? { ...c, flipped: true } : c
+    );
+    setCards(newCards);
+
+    const newFlipped = [...flippedCards, id];
+    setFlippedCards(newFlipped);
+
+    if (newFlipped.length === 2) {
+      setMoves(m => m + 1);
+      setIsChecking(true);
+      const [first, second] = newFlipped;
+      const firstCard = newCards.find(c => c.id === first);
+      const secondCard = newCards.find(c => c.id === second);
+
+      if (firstCard.emoji === secondCard.emoji) {
+        setCards(newCards.map(c =>
+          c.id === first || c.id === second ? { ...c, matched: true } : c
+        ));
+        setFlippedCards([]);
+        setIsChecking(false);
+      } else {
+        setTimeout(() => {
+          setCards(newCards.map(c =>
+            c.id === first || c.id === second ? { ...c, flipped: false } : c
+          ));
+          setFlippedCards([]);
+          setIsChecking(false);
+        }, 1000);
+      }
+    }
+  };
+
+  const resetGame = () => {
+    const shuffled = [...emojis, ...emojis]
+      .sort(() => Math.random() - 0.5)
+      .map((emoji, index) => ({ id: index, emoji, flipped: false, matched: false }));
+    setCards(shuffled);
+    setFlippedCards([]);
+    setMoves(0);
+  };
+
+  const isComplete = cards.every(c => c.matched);
+
+  return (
+    <div className="game-play-area">
+      <div className="game-header-bar">
+        <button onClick={onBack} className="back-btn">← 뒤로</button>
+        <h2>메모리 게임</h2>
+        <span className="game-score">시도: {moves}회</span>
+      </div>
+
+      {isComplete && (
+        <div className="game-complete">
+          <h3>🎉 축하합니다!</h3>
+          <p>{moves}번 만에 완료했습니다!</p>
+          <button onClick={resetGame} className="game-btn">다시 하기</button>
+        </div>
+      )}
+
+      <div className="memory-grid">
+        {cards.map(card => (
+          <div
+            key={card.id}
+            className={`memory-card ${card.flipped || card.matched ? 'flipped' : ''} ${card.matched ? 'matched' : ''}`}
+            onClick={() => handleCardClick(card.id)}
+          >
+            <div className="card-inner">
+              <div className="card-front">?</div>
+              <div className="card-back">{card.emoji}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <button onClick={resetGame} className="game-btn reset-btn">새 게임</button>
+    </div>
+  );
+};
+
+// 틱택토 게임
+const TicTacToe = ({ onBack }) => {
+  const [board, setBoard] = useState(Array(9).fill(null));
+  const [isXNext, setIsXNext] = useState(true);
+  const [scores, setScores] = useState({ X: 0, O: 0 });
+
+  const calculateWinner = (squares) => {
+    const lines = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+    for (let [a, b, c] of lines) {
+      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+        return { winner: squares[a], line: [a, b, c] };
+      }
+    }
+    return null;
+  };
+
+  const result = calculateWinner(board);
+  const winner = result?.winner;
+  const winningLine = result?.line || [];
+  const isDraw = !winner && board.every(cell => cell !== null);
+
+  const handleClick = (index) => {
+    if (board[index] || winner) return;
+    const newBoard = [...board];
+    newBoard[index] = isXNext ? 'X' : 'O';
+    setBoard(newBoard);
+    setIsXNext(!isXNext);
+
+    const newResult = calculateWinner(newBoard);
+    if (newResult?.winner) {
+      setScores(s => ({ ...s, [newResult.winner]: s[newResult.winner] + 1 }));
+    }
+  };
+
+  const resetGame = () => {
+    setBoard(Array(9).fill(null));
+    setIsXNext(true);
+  };
+
+  const resetScores = () => {
+    setScores({ X: 0, O: 0 });
+    resetGame();
+  };
+
+  return (
+    <div className="game-play-area">
+      <div className="game-header-bar">
+        <button onClick={onBack} className="back-btn">← 뒤로</button>
+        <h2>틱택토</h2>
+        <span className="game-score">X: {scores.X} | O: {scores.O}</span>
+      </div>
+
+      <div className="ttt-status">
+        {winner ? `🎉 ${winner} 승리!` : isDraw ? '무승부!' : `다음 차례: ${isXNext ? 'X' : 'O'}`}
+      </div>
+
+      <div className="ttt-board">
+        {board.map((cell, index) => (
+          <button
+            key={index}
+            className={`ttt-cell ${cell} ${winningLine.includes(index) ? 'winning' : ''}`}
+            onClick={() => handleClick(index)}
+          >
+            {cell}
+          </button>
+        ))}
+      </div>
+
+      <div className="game-buttons">
+        <button onClick={resetGame} className="game-btn">새 게임</button>
+        <button onClick={resetScores} className="game-btn secondary">점수 초기화</button>
+      </div>
+    </div>
+  );
+};
+
+// 숫자 맞추기 게임
+const NumberGuess = ({ onBack }) => {
+  const [target, setTarget] = useState(() => Math.floor(Math.random() * 100) + 1);
+  const [guess, setGuess] = useState('');
+  const [message, setMessage] = useState('1부터 100 사이의 숫자를 맞춰보세요!');
+  const [attempts, setAttempts] = useState(0);
+  const [history, setHistory] = useState([]);
+  const [isComplete, setIsComplete] = useState(false);
+  const [bestScore, setBestScore] = useState(() => {
+    const saved = localStorage.getItem('numberGuess_best');
+    return saved ? parseInt(saved) : null;
+  });
+
+  const handleGuess = () => {
+    const num = parseInt(guess);
+    if (isNaN(num) || num < 1 || num > 100) {
+      setMessage('1부터 100 사이의 숫자를 입력하세요!');
+      return;
+    }
+
+    const newAttempts = attempts + 1;
+    setAttempts(newAttempts);
+    setHistory([...history, { num, result: num === target ? 'correct' : num < target ? 'low' : 'high' }]);
+
+    if (num === target) {
+      setMessage(`🎉 정답! ${newAttempts}번 만에 맞췄습니다!`);
+      setIsComplete(true);
+      if (!bestScore || newAttempts < bestScore) {
+        setBestScore(newAttempts);
+        localStorage.setItem('numberGuess_best', newAttempts.toString());
+      }
+    } else if (num < target) {
+      setMessage('📈 더 높은 숫자입니다!');
+    } else {
+      setMessage('📉 더 낮은 숫자입니다!');
+    }
+    setGuess('');
+  };
+
+  const resetGame = () => {
+    setTarget(Math.floor(Math.random() * 100) + 1);
+    setGuess('');
+    setMessage('1부터 100 사이의 숫자를 맞춰보세요!');
+    setAttempts(0);
+    setHistory([]);
+    setIsComplete(false);
+  };
+
+  return (
+    <div className="game-play-area">
+      <div className="game-header-bar">
+        <button onClick={onBack} className="back-btn">← 뒤로</button>
+        <h2>숫자 맞추기</h2>
+        <span className="game-score">시도: {attempts}회 {bestScore && `| 최고: ${bestScore}회`}</span>
+      </div>
+
+      <div className="number-guess-area">
+        <p className={`guess-message ${isComplete ? 'success' : ''}`}>{message}</p>
+
+        {!isComplete && (
+          <div className="guess-input-area">
+            <input
+              type="number"
+              value={guess}
+              onChange={(e) => setGuess(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleGuess()}
+              placeholder="숫자 입력"
+              min="1"
+              max="100"
+              className="guess-input"
+            />
+            <button onClick={handleGuess} className="game-btn">확인</button>
+          </div>
+        )}
+
+        {history.length > 0 && (
+          <div className="guess-history">
+            <p>추측 기록:</p>
+            <div className="history-chips">
+              {history.map((h, i) => (
+                <span key={i} className={`history-chip ${h.result}`}>
+                  {h.num} {h.result === 'low' ? '↑' : h.result === 'high' ? '↓' : '✓'}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <button onClick={resetGame} className="game-btn reset-btn">
+          {isComplete ? '다시 하기' : '새 게임'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// 반응속도 테스트 게임
+const ReactionTest = ({ onBack }) => {
+  const [state, setState] = useState('waiting'); // waiting, ready, click, result
+  const [startTime, setStartTime] = useState(0);
+  const [reactionTime, setReactionTime] = useState(0);
+  const [results, setResults] = useState([]);
+  const [timeoutId, setTimeoutId] = useState(null);
+
+  const startTest = () => {
+    setState('ready');
+    const delay = Math.random() * 4000 + 1000; // 1-5초 랜덤
+    const id = setTimeout(() => {
+      setState('click');
+      setStartTime(Date.now());
+    }, delay);
+    setTimeoutId(id);
+  };
+
+  const handleClick = () => {
+    if (state === 'waiting') {
+      startTest();
+    } else if (state === 'ready') {
+      // 너무 일찍 클릭
+      clearTimeout(timeoutId);
+      setState('early');
+    } else if (state === 'click') {
+      const time = Date.now() - startTime;
+      setReactionTime(time);
+      setResults([...results, time]);
+      setState('result');
+    } else if (state === 'result' || state === 'early') {
+      startTest();
+    }
+  };
+
+  const getAverage = () => {
+    if (results.length === 0) return 0;
+    return Math.round(results.reduce((a, b) => a + b, 0) / results.length);
+  };
+
+  const getBestTime = () => {
+    if (results.length === 0) return 0;
+    return Math.min(...results);
+  };
+
+  const getStateStyle = () => {
+    switch (state) {
+      case 'ready': return { background: '#ef4444', color: 'white' };
+      case 'click': return { background: '#22c55e', color: 'white' };
+      case 'early': return { background: '#f97316', color: 'white' };
+      default: return { background: '#3b82f6', color: 'white' };
+    }
+  };
+
+  const getMessage = () => {
+    switch (state) {
+      case 'waiting': return '클릭하여 시작';
+      case 'ready': return '초록색이 되면 클릭!';
+      case 'click': return '지금 클릭!';
+      case 'early': return '너무 빨리 클릭했습니다! 다시 클릭하세요';
+      case 'result': return `${reactionTime}ms! 클릭하여 다시 시도`;
+      default: return '';
+    }
+  };
+
+  return (
+    <div className="game-play-area">
+      <div className="game-header-bar">
+        <button onClick={onBack} className="back-btn">← 뒤로</button>
+        <h2>반응속도 테스트</h2>
+        <span className="game-score">
+          {results.length > 0 && `평균: ${getAverage()}ms | 최고: ${getBestTime()}ms`}
+        </span>
+      </div>
+
+      <div
+        className="reaction-area"
+        style={getStateStyle()}
+        onClick={handleClick}
+      >
+        <span className="reaction-message">{getMessage()}</span>
+        {state === 'result' && (
+          <span className="reaction-emoji">
+            {reactionTime < 200 ? '🚀' : reactionTime < 300 ? '⚡' : reactionTime < 400 ? '👍' : '🐢'}
+          </span>
+        )}
+      </div>
+
+      {results.length > 0 && (
+        <div className="reaction-results">
+          <p>기록: {results.map((r, i) => <span key={i} className="result-chip">{r}ms</span>)}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 가위바위보 게임
+const RockPaperScissors = ({ onBack }) => {
+  const choices = [
+    { name: 'rock', emoji: '✊', label: '바위' },
+    { name: 'paper', emoji: '✋', label: '보' },
+    { name: 'scissors', emoji: '✌️', label: '가위' }
+  ];
+
+  const [playerChoice, setPlayerChoice] = useState(null);
+  const [computerChoice, setComputerChoice] = useState(null);
+  const [result, setResult] = useState(null);
+  const [scores, setScores] = useState({ player: 0, computer: 0 });
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const getResult = (player, computer) => {
+    if (player === computer) return 'draw';
+    if (
+      (player === 'rock' && computer === 'scissors') ||
+      (player === 'paper' && computer === 'rock') ||
+      (player === 'scissors' && computer === 'paper')
+    ) return 'win';
+    return 'lose';
+  };
+
+  const play = (choice) => {
+    if (isPlaying) return;
+    setIsPlaying(true);
+    setPlayerChoice(choice);
+    setComputerChoice(null);
+    setResult(null);
+
+    // 애니메이션을 위한 딜레이
+    let count = 0;
+    const interval = setInterval(() => {
+      setComputerChoice(choices[Math.floor(Math.random() * 3)].name);
+      count++;
+      if (count > 6) {
+        clearInterval(interval);
+        const finalChoice = choices[Math.floor(Math.random() * 3)].name;
+        setComputerChoice(finalChoice);
+        const gameResult = getResult(choice, finalChoice);
+        setResult(gameResult);
+        if (gameResult === 'win') {
+          setScores(s => ({ ...s, player: s.player + 1 }));
+        } else if (gameResult === 'lose') {
+          setScores(s => ({ ...s, computer: s.computer + 1 }));
+        }
+        setIsPlaying(false);
+      }
+    }, 100);
+  };
+
+  const getResultMessage = () => {
+    if (!result) return '선택하세요!';
+    if (result === 'win') return '🎉 이겼습니다!';
+    if (result === 'lose') return '😢 졌습니다...';
+    return '🤝 무승부!';
+  };
+
+  return (
+    <div className="game-play-area">
+      <div className="game-header-bar">
+        <button onClick={onBack} className="back-btn">← 뒤로</button>
+        <h2>가위바위보</h2>
+        <span className="game-score">나 {scores.player} : {scores.computer} 컴퓨터</span>
+      </div>
+
+      <div className="rps-arena">
+        <div className="rps-player">
+          <span className="rps-label">나</span>
+          <div className={`rps-choice ${playerChoice ? 'selected' : ''}`}>
+            {playerChoice ? choices.find(c => c.name === playerChoice)?.emoji : '❓'}
+          </div>
+        </div>
+
+        <div className="rps-vs">VS</div>
+
+        <div className="rps-player">
+          <span className="rps-label">컴퓨터</span>
+          <div className={`rps-choice ${computerChoice ? 'selected' : ''} ${isPlaying ? 'animating' : ''}`}>
+            {computerChoice ? choices.find(c => c.name === computerChoice)?.emoji : '❓'}
+          </div>
+        </div>
+      </div>
+
+      <div className={`rps-result ${result || ''}`}>
+        {getResultMessage()}
+      </div>
+
+      <div className="rps-buttons">
+        {choices.map(choice => (
+          <button
+            key={choice.name}
+            className={`rps-btn ${playerChoice === choice.name ? 'active' : ''}`}
+            onClick={() => play(choice.name)}
+            disabled={isPlaying}
+          >
+            <span className="rps-btn-emoji">{choice.emoji}</span>
+            <span className="rps-btn-label">{choice.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// 메인 게임 컴포넌트
 const Games = () => {
+  const [selectedGame, setSelectedGame] = useState(null);
+
+  const games = [
+    { id: 'memory', name: '메모리 게임', icon: '🧠', desc: '카드를 뒤집어 짝을 맞춰보세요', component: MemoryGame },
+    { id: 'tictactoe', name: '틱택토', icon: '⭕', desc: '3개를 먼저 연결하면 승리!', component: TicTacToe },
+    { id: 'numberguess', name: '숫자 맞추기', icon: '🔢', desc: '1~100 사이의 숫자를 맞춰보세요', component: NumberGuess },
+    { id: 'reaction', name: '반응속도 테스트', icon: '⚡', desc: '얼마나 빠르게 반응할 수 있나요?', component: ReactionTest },
+    { id: 'rps', name: '가위바위보', icon: '✊', desc: '컴퓨터와 대결하세요!', component: RockPaperScissors },
+  ];
+
+  if (selectedGame) {
+    const Game = games.find(g => g.id === selectedGame)?.component;
+    return <Game onBack={() => setSelectedGame(null)} />;
+  }
 
   return (
     <div className="games-container">
@@ -11,11 +503,17 @@ const Games = () => {
       </div>
 
       <div className="games-grid">
-        <div className="game-card coming-soon">
-          <div className="game-icon">🎮</div>
-          <h3>준비 중</h3>
-          <p>곧 재미있는 게임이 추가됩니다!</p>
-        </div>
+        {games.map(game => (
+          <div
+            key={game.id}
+            className="game-card"
+            onClick={() => setSelectedGame(game.id)}
+          >
+            <div className="game-icon">{game.icon}</div>
+            <h3>{game.name}</h3>
+            <p>{game.desc}</p>
+          </div>
+        ))}
       </div>
     </div>
   );

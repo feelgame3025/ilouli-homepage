@@ -40,16 +40,11 @@
 .game-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
 }
 
-.game-card.coming-soon {
-  opacity: 0.7;
-  cursor: default;
-}
-
-.game-card.coming-soon:hover {
-  transform: none;
-  box-shadow: none;
+.game-card:active {
+  transform: translateY(-2px);
 }
 
 .game-icon {
@@ -68,6 +63,469 @@
   font-size: 0.95rem;
   color: #666;
   line-height: 1.5;
+}
+
+/* 게임 플레이 영역 공통 스타일 */
+.game-play-area {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.game-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.game-header-bar h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin: 0;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.back-btn:hover {
+  background: #f0f7ff;
+}
+
+.game-score {
+  font-size: 0.9rem;
+  color: #666;
+  background: #f5f5f5;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+}
+
+.game-btn {
+  background: #1d1d1f;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.game-btn:hover {
+  background: #333;
+}
+
+.game-btn:active {
+  transform: scale(0.98);
+}
+
+.game-btn.secondary {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.game-btn.secondary:hover {
+  background: #e5e5e5;
+}
+
+.game-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.reset-btn {
+  display: block;
+  margin: 1.5rem auto 0;
+}
+
+.game-complete {
+  text-align: center;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e8f5e9 100%);
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+}
+
+.game-complete h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.game-complete p {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+/* 메모리 게임 */
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.memory-card {
+  aspect-ratio: 1;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
+}
+
+.memory-card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-front,
+.card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.card-front {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.card-back {
+  background: white;
+  border: 2px solid #e5e5e5;
+  transform: rotateY(180deg);
+}
+
+.memory-card.matched .card-back {
+  background: #e8f5e9;
+  border-color: #4caf50;
+}
+
+/* 틱택토 */
+.ttt-status {
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  color: #1d1d1f;
+}
+
+.ttt-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.ttt-cell {
+  aspect-ratio: 1;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 12px;
+  font-size: 2.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ttt-cell:hover:not(:disabled) {
+  background: #e5e5e5;
+}
+
+.ttt-cell.X {
+  color: #3b82f6;
+}
+
+.ttt-cell.O {
+  color: #ef4444;
+}
+
+.ttt-cell.winning {
+  background: #fef3c7;
+  animation: pulse 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.05); }
+}
+
+/* 숫자 맞추기 */
+.number-guess-area {
+  text-align: center;
+}
+
+.guess-message {
+  font-size: 1.25rem;
+  color: #1d1d1f;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 12px;
+}
+
+.guess-message.success {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  color: #2e7d32;
+}
+
+.guess-input-area {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.guess-input {
+  width: 120px;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 1.25rem;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+.guess-input::-webkit-outer-spin-button,
+.guess-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.guess-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.guess-history {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.guess-history p {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.75rem;
+}
+
+.history-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.history-chip {
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.history-chip.low {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.history-chip.high {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.history-chip.correct {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* 반응속도 테스트 */
+.reaction-area {
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reaction-message {
+  font-size: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 1rem;
+}
+
+.reaction-emoji {
+  font-size: 4rem;
+  margin-top: 1rem;
+}
+
+.reaction-results {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.reaction-results p {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.result-chip {
+  display: inline-block;
+  background: #f5f5f5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  margin: 0.25rem;
+  font-size: 0.85rem;
+}
+
+/* 가위바위보 */
+.rps-arena {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.rps-player {
+  text-align: center;
+}
+
+.rps-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.rps-choice {
+  width: 100px;
+  height: 100px;
+  background: #f5f5f5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  transition: all 0.2s;
+}
+
+.rps-choice.selected {
+  background: #e8f5e9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.rps-choice.animating {
+  animation: shake 0.1s infinite;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.rps-vs {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #999;
+}
+
+.rps-result {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.rps-result.win {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.rps-result.lose {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.rps-result.draw {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.rps-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.rps-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: white;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rps-btn:hover:not(:disabled) {
+  border-color: #3b82f6;
+  background: #f0f7ff;
+}
+
+.rps-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rps-btn.active {
+  border-color: #3b82f6;
+  background: #e8f5e9;
+}
+
+.rps-btn-emoji {
+  font-size: 2rem;
+}
+
+.rps-btn-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
 }
 
 /* 모바일 반응형 */
@@ -94,5 +552,90 @@
 
   .game-icon {
     font-size: 3rem;
+  }
+
+  .game-play-area {
+    padding: 0.5rem;
+  }
+
+  .game-header-bar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .game-header-bar h2 {
+    font-size: 1.25rem;
+    order: 1;
+    width: 100%;
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .back-btn {
+    order: 0;
+  }
+
+  .game-score {
+    order: 2;
+    font-size: 0.8rem;
+  }
+
+  /* 메모리 게임 모바일 */
+  .memory-grid {
+    gap: 0.5rem;
+  }
+
+  .card-front,
+  .card-back {
+    font-size: 1.5rem;
+  }
+
+  /* 틱택토 모바일 */
+  .ttt-board {
+    max-width: 250px;
+  }
+
+  .ttt-cell {
+    font-size: 2rem;
+  }
+
+  /* 반응속도 모바일 */
+  .reaction-area {
+    height: 250px;
+  }
+
+  .reaction-message {
+    font-size: 1.25rem;
+  }
+
+  /* 가위바위보 모바일 */
+  .rps-arena {
+    gap: 1rem;
+  }
+
+  .rps-choice {
+    width: 80px;
+    height: 80px;
+    font-size: 2.5rem;
+  }
+
+  .rps-buttons {
+    gap: 0.5rem;
+  }
+
+  .rps-btn {
+    padding: 0.75rem 1rem;
+  }
+
+  .rps-btn-emoji {
+    font-size: 1.5rem;
+  }
+
+  .rps-btn-label {
+    font-size: 0.8rem;
+  }
+
+  .game-buttons {
+    flex-direction: column;
   }
 }
