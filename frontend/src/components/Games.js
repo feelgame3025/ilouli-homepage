@@ -1,5 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import gameSound from '../utils/gameSound';
 import './Games.css';
+
+// 사운드 토글 버튼 컴포넌트
+const SoundToggle = ({ isMuted, onToggle }) => (
+  <button
+    className={`sound-toggle ${isMuted ? 'muted' : ''}`}
+    onClick={onToggle}
+    title={isMuted ? '소리 켜기' : '소리 끄기'}
+  >
+    {isMuted ? '🔇' : '🔊'}
+  </button>
+);
 
 // 메모리 카드 게임
 const MemoryGame = ({ onBack }) => {
@@ -13,11 +25,19 @@ const MemoryGame = ({ onBack }) => {
   const [flippedCards, setFlippedCards] = useState([]);
   const [moves, setMoves] = useState(0);
   const [isChecking, setIsChecking] = useState(false);
+  const [isMuted, setIsMuted] = useState(gameSound.getMuted());
+
+  useEffect(() => {
+    gameSound.init();
+    gameSound.playGameStart();
+  }, []);
 
   const handleCardClick = (id) => {
     if (isChecking) return;
     const card = cards.find(c => c.id === id);
     if (card.flipped || card.matched) return;
+
+    gameSound.playFlip();
 
     const newCards = cards.map(c =>
       c.id === id ? { ...c, flipped: true } : c
@@ -35,12 +55,20 @@ const MemoryGame = ({ onBack }) => {
       const secondCard = newCards.find(c => c.id === second);
 
       if (firstCard.emoji === secondCard.emoji) {
-        setCards(newCards.map(c =>
+        gameSound.playMatch();
+        const updatedCards = newCards.map(c =>
           c.id === first || c.id === second ? { ...c, matched: true } : c
-        ));
+        );
+        setCards(updatedCards);
         setFlippedCards([]);
         setIsChecking(false);
+
+        // 모든 카드가 매칭되었는지 확인
+        if (updatedCards.every(c => c.matched)) {
+          setTimeout(() => gameSound.playWin(), 300);
+        }
       } else {
+        gameSound.playWrong();
         setTimeout(() => {
           setCards(newCards.map(c =>
             c.id === first || c.id === second ? { ...c, flipped: false } : c
@@ -53,12 +81,19 @@ const MemoryGame = ({ onBack }) => {
   };
 
   const resetGame = () => {
+    gameSound.playClick();
     const shuffled = [...emojis, ...emojis]
       .sort(() => Math.random() - 0.5)
       .map((emoji, index) => ({ id: index, emoji, flipped: false, matched: false }));
     setCards(shuffled);
     setFlippedCards([]);
     setMoves(0);
+    gameSound.playGameStart();
+  };
+
+  const toggleSound = () => {
+    const muted = gameSound.toggleMute();
+    setIsMuted(muted);
   };
 
   const isComplete = cards.every(c => c.matched);
@@ -66,9 +101,12 @@ const MemoryGame = ({ onBack }) => {
   return (
     <div className="game-play-area">
       <div className="game-header-bar">
-        <button onClick={onBack} className="back-btn">← 뒤로</button>
+        <button onClick={() => { gameSound.playClick(); onBack(); }} className="back-btn">← 뒤로</button>
         <h2>메모리 게임</h2>
-        <span className="game-score">시도: {moves}회</span>
+        <div className="header-right">
+          <span className="game-score">시도: {moves}회</span>
+          <SoundToggle isMuted={isMuted} onToggle={toggleSound} />
+        </div>
       </div>
 
       {isComplete && (
@@ -104,6 +142,12 @@ const TicTacToe = ({ onBack }) => {
   const [board, setBoard] = useState(Array(9).fill(null));
   const [isXNext, setIsXNext] = useState(true);
   const [scores, setScores] = useState({ X: 0, O: 0 });
+  const [isMuted, setIsMuted] = useState(gameSound.getMuted());
+
+  useEffect(() => {
+    gameSound.init();
+    gameSound.playGameStart();
+  }, []);
 
   const calculateWinner = (squares) => {
     const lines = [
@@ -126,6 +170,9 @@ const TicTacToe = ({ onBack }) => {
 
   const handleClick = (index) => {
     if (board[index] || winner) return;
+
+    gameSound.playClick();
+
     const newBoard = [...board];
     newBoard[index] = isXNext ? 'X' : 'O';
     setBoard(newBoard);
@@ -133,26 +180,39 @@ const TicTacToe = ({ onBack }) => {
 
     const newResult = calculateWinner(newBoard);
     if (newResult?.winner) {
+      setTimeout(() => gameSound.playWin(), 100);
       setScores(s => ({ ...s, [newResult.winner]: s[newResult.winner] + 1 }));
+    } else if (newBoard.every(cell => cell !== null)) {
+      gameSound.playDraw();
     }
   };
 
   const resetGame = () => {
+    gameSound.playClick();
     setBoard(Array(9).fill(null));
     setIsXNext(true);
   };
 
   const resetScores = () => {
+    gameSound.playClick();
     setScores({ X: 0, O: 0 });
     resetGame();
+  };
+
+  const toggleSound = () => {
+    const muted = gameSound.toggleMute();
+    setIsMuted(muted);
   };
 
   return (
     <div className="game-play-area">
       <div className="game-header-bar">
-        <button onClick={onBack} className="back-btn">← 뒤로</button>
+        <button onClick={() => { gameSound.playClick(); onBack(); }} className="back-btn">← 뒤로</button>
         <h2>틱택토</h2>
-        <span className="game-score">X: {scores.X} | O: {scores.O}</span>
+        <div className="header-right">
+          <span className="game-score">X: {scores.X} | O: {scores.O}</span>
+          <SoundToggle isMuted={isMuted} onToggle={toggleSound} />
+        </div>
       </div>
 
       <div className="ttt-status">
@@ -187,14 +247,21 @@ const NumberGuess = ({ onBack }) => {
   const [attempts, setAttempts] = useState(0);
   const [history, setHistory] = useState([]);
   const [isComplete, setIsComplete] = useState(false);
+  const [isMuted, setIsMuted] = useState(gameSound.getMuted());
   const [bestScore, setBestScore] = useState(() => {
     const saved = localStorage.getItem('numberGuess_best');
     return saved ? parseInt(saved) : null;
   });
 
+  useEffect(() => {
+    gameSound.init();
+    gameSound.playGameStart();
+  }, []);
+
   const handleGuess = () => {
     const num = parseInt(guess);
     if (isNaN(num) || num < 1 || num > 100) {
+      gameSound.playWrong();
       setMessage('1부터 100 사이의 숫자를 입력하세요!');
       return;
     }
@@ -204,35 +271,50 @@ const NumberGuess = ({ onBack }) => {
     setHistory([...history, { num, result: num === target ? 'correct' : num < target ? 'low' : 'high' }]);
 
     if (num === target) {
+      gameSound.playCorrect();
+      setTimeout(() => gameSound.playWin(), 200);
       setMessage(`🎉 정답! ${newAttempts}번 만에 맞췄습니다!`);
       setIsComplete(true);
       if (!bestScore || newAttempts < bestScore) {
         setBestScore(newAttempts);
         localStorage.setItem('numberGuess_best', newAttempts.toString());
+        setTimeout(() => gameSound.playAchievement(), 500);
       }
     } else if (num < target) {
+      gameSound.playUp();
       setMessage('📈 더 높은 숫자입니다!');
     } else {
+      gameSound.playDown();
       setMessage('📉 더 낮은 숫자입니다!');
     }
     setGuess('');
   };
 
   const resetGame = () => {
+    gameSound.playClick();
     setTarget(Math.floor(Math.random() * 100) + 1);
     setGuess('');
     setMessage('1부터 100 사이의 숫자를 맞춰보세요!');
     setAttempts(0);
     setHistory([]);
     setIsComplete(false);
+    gameSound.playGameStart();
+  };
+
+  const toggleSound = () => {
+    const muted = gameSound.toggleMute();
+    setIsMuted(muted);
   };
 
   return (
     <div className="game-play-area">
       <div className="game-header-bar">
-        <button onClick={onBack} className="back-btn">← 뒤로</button>
+        <button onClick={() => { gameSound.playClick(); onBack(); }} className="back-btn">← 뒤로</button>
         <h2>숫자 맞추기</h2>
-        <span className="game-score">시도: {attempts}회 {bestScore && `| 최고: ${bestScore}회`}</span>
+        <div className="header-right">
+          <span className="game-score">시도: {attempts}회 {bestScore && `| 최고: ${bestScore}회`}</span>
+          <SoundToggle isMuted={isMuted} onToggle={toggleSound} />
+        </div>
       </div>
 
       <div className="number-guess-area">
@@ -282,13 +364,23 @@ const ReactionTest = ({ onBack }) => {
   const [reactionTime, setReactionTime] = useState(0);
   const [results, setResults] = useState([]);
   const [timeoutId, setTimeoutId] = useState(null);
+  const [isMuted, setIsMuted] = useState(gameSound.getMuted());
+
+  useEffect(() => {
+    gameSound.init();
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [timeoutId]);
 
   const startTest = () => {
     setState('ready');
+    gameSound.playReady();
     const delay = Math.random() * 4000 + 1000; // 1-5초 랜덤
     const id = setTimeout(() => {
       setState('click');
       setStartTime(Date.now());
+      gameSound.playBeep();
     }, delay);
     setTimeoutId(id);
   };
@@ -299,12 +391,22 @@ const ReactionTest = ({ onBack }) => {
     } else if (state === 'ready') {
       // 너무 일찍 클릭
       clearTimeout(timeoutId);
+      gameSound.playWrong();
       setState('early');
     } else if (state === 'click') {
       const time = Date.now() - startTime;
+      gameSound.playReactionClick();
       setReactionTime(time);
-      setResults([...results, time]);
+      const newResults = [...results, time];
+      setResults(newResults);
       setState('result');
+
+      // 좋은 기록이면 특별 효과음
+      if (time < 200) {
+        setTimeout(() => gameSound.playAchievement(), 200);
+      } else if (time < 300) {
+        setTimeout(() => gameSound.playSuccess(), 200);
+      }
     } else if (state === 'result' || state === 'early') {
       startTest();
     }
@@ -340,14 +442,22 @@ const ReactionTest = ({ onBack }) => {
     }
   };
 
+  const toggleSound = () => {
+    const muted = gameSound.toggleMute();
+    setIsMuted(muted);
+  };
+
   return (
     <div className="game-play-area">
       <div className="game-header-bar">
-        <button onClick={onBack} className="back-btn">← 뒤로</button>
+        <button onClick={() => { gameSound.playClick(); onBack(); }} className="back-btn">← 뒤로</button>
         <h2>반응속도 테스트</h2>
-        <span className="game-score">
-          {results.length > 0 && `평균: ${getAverage()}ms | 최고: ${getBestTime()}ms`}
-        </span>
+        <div className="header-right">
+          <span className="game-score">
+            {results.length > 0 && `평균: ${getAverage()}ms | 최고: ${getBestTime()}ms`}
+          </span>
+          <SoundToggle isMuted={isMuted} onToggle={toggleSound} />
+        </div>
       </div>
 
       <div
@@ -385,6 +495,11 @@ const RockPaperScissors = ({ onBack }) => {
   const [result, setResult] = useState(null);
   const [scores, setScores] = useState({ player: 0, computer: 0 });
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(gameSound.getMuted());
+
+  useEffect(() => {
+    gameSound.init();
+  }, []);
 
   const getResult = (player, computer) => {
     if (player === computer) return 'draw';
@@ -402,11 +517,13 @@ const RockPaperScissors = ({ onBack }) => {
     setPlayerChoice(choice);
     setComputerChoice(null);
     setResult(null);
+    gameSound.playSelect();
 
     // 애니메이션을 위한 딜레이
     let count = 0;
     const interval = setInterval(() => {
       setComputerChoice(choices[Math.floor(Math.random() * 3)].name);
+      gameSound.playRoll();
       count++;
       if (count > 6) {
         clearInterval(interval);
@@ -414,11 +531,20 @@ const RockPaperScissors = ({ onBack }) => {
         setComputerChoice(finalChoice);
         const gameResult = getResult(choice, finalChoice);
         setResult(gameResult);
-        if (gameResult === 'win') {
-          setScores(s => ({ ...s, player: s.player + 1 }));
-        } else if (gameResult === 'lose') {
-          setScores(s => ({ ...s, computer: s.computer + 1 }));
-        }
+
+        // 결과에 따른 효과음
+        setTimeout(() => {
+          if (gameResult === 'win') {
+            gameSound.playWin();
+            setScores(s => ({ ...s, player: s.player + 1 }));
+          } else if (gameResult === 'lose') {
+            gameSound.playLose();
+            setScores(s => ({ ...s, computer: s.computer + 1 }));
+          } else {
+            gameSound.playDraw();
+          }
+        }, 100);
+
         setIsPlaying(false);
       }
     }, 100);
@@ -431,12 +557,20 @@ const RockPaperScissors = ({ onBack }) => {
     return '🤝 무승부!';
   };
 
+  const toggleSound = () => {
+    const muted = gameSound.toggleMute();
+    setIsMuted(muted);
+  };
+
   return (
     <div className="game-play-area">
       <div className="game-header-bar">
-        <button onClick={onBack} className="back-btn">← 뒤로</button>
+        <button onClick={() => { gameSound.playClick(); onBack(); }} className="back-btn">← 뒤로</button>
         <h2>가위바위보</h2>
-        <span className="game-score">나 {scores.player} : {scores.computer} 컴퓨터</span>
+        <div className="header-right">
+          <span className="game-score">나 {scores.player} : {scores.computer} 컴퓨터</span>
+          <SoundToggle isMuted={isMuted} onToggle={toggleSound} />
+        </div>
       </div>
 
       <div className="rps-arena">
@@ -481,6 +615,11 @@ const RockPaperScissors = ({ onBack }) => {
 // 메인 게임 컴포넌트
 const Games = () => {
   const [selectedGame, setSelectedGame] = useState(null);
+  const [isMuted, setIsMuted] = useState(gameSound.getMuted());
+
+  useEffect(() => {
+    gameSound.init();
+  }, []);
 
   const games = [
     { id: 'memory', name: '메모리 게임', icon: '🧠', desc: '카드를 뒤집어 짝을 맞춰보세요', component: MemoryGame },
@@ -490,15 +629,28 @@ const Games = () => {
     { id: 'rps', name: '가위바위보', icon: '✊', desc: '컴퓨터와 대결하세요!', component: RockPaperScissors },
   ];
 
+  const handleGameSelect = (gameId) => {
+    gameSound.playClick();
+    setSelectedGame(gameId);
+  };
+
+  const toggleSound = () => {
+    const muted = gameSound.toggleMute();
+    setIsMuted(muted);
+  };
+
   if (selectedGame) {
     const Game = games.find(g => g.id === selectedGame)?.component;
-    return <Game onBack={() => setSelectedGame(null)} />;
+    return <Game onBack={() => { gameSound.playClick(); setSelectedGame(null); }} />;
   }
 
   return (
     <div className="games-container">
       <div className="games-header">
-        <h1>게임</h1>
+        <div className="games-title-row">
+          <h1>게임</h1>
+          <SoundToggle isMuted={isMuted} onToggle={toggleSound} />
+        </div>
         <p>다양한 미니게임을 즐겨보세요</p>
       </div>
 
@@ -507,7 +659,7 @@ const Games = () => {
           <div
             key={game.id}
             className="game-card"
-            onClick={() => setSelectedGame(game.id)}
+            onClick={() => handleGameSelect(game.id)}
           >
             <div className="game-icon">{game.icon}</div>
             <h3>{game.name}</h3>
