@@ -22,7 +22,7 @@ const Leaderboard = {
   // 서버에서 점수 가져오기
   async fetchScores(gameId) {
     try {
-      const response = await api.get(`/games/scores/${gameId}`);
+      const response = await api.get(`/api/games/scores/${gameId}`);
       const scores = response.data.scores.map(s => ({
         id: s.id,
         name: s.playerName,
@@ -42,7 +42,7 @@ const Leaderboard = {
   // 서버에 점수 저장
   async addScore(gameId, name, score, details = {}) {
     try {
-      const response = await api.post('/games/scores', {
+      const response = await api.post('/api/games/scores', {
         gameId,
         playerName: name || '익명',
         score,
@@ -79,7 +79,7 @@ const Leaderboard = {
   // 모든 게임 점수 가져오기
   async fetchAllScores() {
     try {
-      const response = await api.get('/games/scores');
+      const response = await api.get('/api/games/scores');
       const rankings = response.data.rankings;
       for (const gameId in rankings) {
         const scores = rankings[gameId].map(s => ({
@@ -456,6 +456,8 @@ const TicTacToe = ({ onBack }) => {
 };
 
 // ==================== 수도쿠 게임 ====================
+const MAX_ERRORS = 15; // 최대 실패 횟수
+
 const Sudoku = ({ onBack }) => {
   const [isMuted, setIsMuted] = useState(gameSound.getMuted());
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -468,6 +470,7 @@ const Sudoku = ({ onBack }) => {
   const [startTime, setStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
   const [showSubmit, setShowSubmit] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [finalRank, setFinalRank] = useState(0);
@@ -523,6 +526,7 @@ const Sudoku = ({ onBack }) => {
     setStartTime(Date.now());
     setElapsedTime(0);
     setIsComplete(false);
+    setIsGameOver(false);
   }, [difficulty]);
 
   useEffect(() => {
@@ -531,13 +535,13 @@ const Sudoku = ({ onBack }) => {
   }, [generateSudoku]);
 
   useEffect(() => {
-    if (!isComplete && startTime) {
+    if (!isComplete && !isGameOver && startTime) {
       const timer = setInterval(() => {
         setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [startTime, isComplete]);
+  }, [startTime, isComplete, isGameOver]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
@@ -546,13 +550,13 @@ const Sudoku = ({ onBack }) => {
   };
 
   const handleCellClick = (row, col) => {
-    if (initial[row]?.[col]) return;
+    if (initial[row]?.[col] || isGameOver || isComplete) return;
     setSelected({ row, col });
     gameSound.playClick();
   };
 
   const handleNumberInput = (num) => {
-    if (!selected || initial[selected.row]?.[selected.col]) return;
+    if (!selected || initial[selected.row]?.[selected.col] || isGameOver || isComplete) return;
 
     const newBoard = board.map(row => [...row]);
     newBoard[selected.row][selected.col] = num;
@@ -575,7 +579,13 @@ const Sudoku = ({ onBack }) => {
         }
       } else {
         gameSound.playWrong();
-        setErrors(e => e + 1);
+        const newErrors = errors + 1;
+        setErrors(newErrors);
+        // 15회 실패 시 게임 오버
+        if (newErrors >= MAX_ERRORS) {
+          setIsGameOver(true);
+          gameSound.playLose();
+        }
       }
     }
   };
@@ -615,13 +625,24 @@ const Sudoku = ({ onBack }) => {
         <h2>수도쿠</h2>
         <div className="header-right">
           <button onClick={() => setShowLeaderboard(true)} className="ranking-btn">🏆</button>
-          <span className="game-score">{formatTime(elapsedTime)} | 오류: {errors}</span>
+          <span className="game-score">{formatTime(elapsedTime)}</span>
           <SoundToggle isMuted={isMuted} onToggle={toggleSound} />
         </div>
       </div>
 
+      {/* 남은 기회 표시 */}
+      <div className="sudoku-lives">
+        <span className="lives-label">기회</span>
+        <div className="lives-hearts">
+          {[...Array(MAX_ERRORS)].map((_, i) => (
+            <span key={i} className={`heart ${i < MAX_ERRORS - errors ? 'active' : 'lost'}`} />
+          ))}
+        </div>
+        <span className="lives-count">{MAX_ERRORS - errors}/{MAX_ERRORS}</span>
+      </div>
+
       <div className="sudoku-controls">
-        <select value={difficulty} onChange={e => setDifficulty(e.target.value)} className="difficulty-select">
+        <select value={difficulty} onChange={e => setDifficulty(e.target.value)} className="difficulty-select" disabled={isGameOver || isComplete}>
           <option value="easy">쉬움</option>
           <option value="medium">보통</option>
           <option value="hard">어려움</option>
@@ -629,7 +650,16 @@ const Sudoku = ({ onBack }) => {
         <button onClick={generateSudoku} className="game-btn small">새 게임</button>
       </div>
 
-      <div className="sudoku-board">
+      {/* 게임 오버 표시 */}
+      {isGameOver && (
+        <div className="sudoku-gameover">
+          <h3>💔 게임 오버!</h3>
+          <p>15번의 실패로 게임이 종료되었습니다.</p>
+          <button onClick={generateSudoku} className="game-btn">다시 도전</button>
+        </div>
+      )}
+
+      <div className={`sudoku-board ${isGameOver ? 'game-over' : ''}`}>
         {board.map((row, r) => (
           <div key={r} className="sudoku-row">
             {row.map((cell, c) => (
@@ -669,83 +699,196 @@ const Sudoku = ({ onBack }) => {
   );
 };
 
-// ==================== 고스톱 (맞고) 게임 ====================
+// ==================== 맞고 게임 ====================
+// 화투패 48장 정의 (정확한 구성)
+const HWATU_DECK = [
+  // 1월 (송학) - 광, 홍단, 피, 피
+  { month: 1, name: '송학', type: '광', subtype: null, image: '🏯', piCount: 0 },
+  { month: 1, name: '송학', type: '띠', subtype: '홍단', image: '🎋', piCount: 0 },
+  { month: 1, name: '송학', type: '피', subtype: null, image: '🌲', piCount: 1 },
+  { month: 1, name: '송학', type: '피', subtype: null, image: '🌲', piCount: 1 },
+  // 2월 (매조) - 열끗(새), 홍단, 피, 피
+  { month: 2, name: '매조', type: '열끗', subtype: '고도리', image: '🐦', piCount: 0 },
+  { month: 2, name: '매조', type: '띠', subtype: '홍단', image: '🎋', piCount: 0 },
+  { month: 2, name: '매조', type: '피', subtype: null, image: '🌸', piCount: 1 },
+  { month: 2, name: '매조', type: '피', subtype: null, image: '🌸', piCount: 1 },
+  // 3월 (벚꽃) - 광, 홍단, 피, 피
+  { month: 3, name: '벚꽃', type: '광', subtype: null, image: '🌸', piCount: 0 },
+  { month: 3, name: '벚꽃', type: '띠', subtype: '홍단', image: '🎋', piCount: 0 },
+  { month: 3, name: '벚꽃', type: '피', subtype: null, image: '🌸', piCount: 1 },
+  { month: 3, name: '벚꽃', type: '피', subtype: null, image: '🌸', piCount: 1 },
+  // 4월 (흑싸리) - 열끗(새), 초단, 피, 피
+  { month: 4, name: '흑싸리', type: '열끗', subtype: '고도리', image: '🐦', piCount: 0 },
+  { month: 4, name: '흑싸리', type: '띠', subtype: '초단', image: '🎋', piCount: 0 },
+  { month: 4, name: '흑싸리', type: '피', subtype: null, image: '🌿', piCount: 1 },
+  { month: 4, name: '흑싸리', type: '피', subtype: null, image: '🌿', piCount: 1 },
+  // 5월 (난초) - 열끗, 초단, 피, 피
+  { month: 5, name: '난초', type: '열끗', subtype: null, image: '🦋', piCount: 0 },
+  { month: 5, name: '난초', type: '띠', subtype: '초단', image: '🎋', piCount: 0 },
+  { month: 5, name: '난초', type: '피', subtype: null, image: '🌺', piCount: 1 },
+  { month: 5, name: '난초', type: '피', subtype: null, image: '🌺', piCount: 1 },
+  // 6월 (목단) - 열끗, 청단, 피, 피
+  { month: 6, name: '목단', type: '열끗', subtype: null, image: '🦋', piCount: 0 },
+  { month: 6, name: '목단', type: '띠', subtype: '청단', image: '📘', piCount: 0 },
+  { month: 6, name: '목단', type: '피', subtype: null, image: '🌺', piCount: 1 },
+  { month: 6, name: '목단', type: '피', subtype: null, image: '🌺', piCount: 1 },
+  // 7월 (홍싸리) - 열끗(멧돼지), 초단, 피, 피
+  { month: 7, name: '홍싸리', type: '열끗', subtype: null, image: '🐗', piCount: 0 },
+  { month: 7, name: '홍싸리', type: '띠', subtype: '초단', image: '🎋', piCount: 0 },
+  { month: 7, name: '홍싸리', type: '피', subtype: null, image: '🍂', piCount: 1 },
+  { month: 7, name: '홍싸리', type: '피', subtype: null, image: '🍂', piCount: 1 },
+  // 8월 (공산) - 광(달), 열끗(새), 피, 피
+  { month: 8, name: '공산', type: '광', subtype: null, image: '🌕', piCount: 0 },
+  { month: 8, name: '공산', type: '열끗', subtype: '고도리', image: '🦢', piCount: 0 },
+  { month: 8, name: '공산', type: '피', subtype: null, image: '🍃', piCount: 1 },
+  { month: 8, name: '공산', type: '피', subtype: null, image: '🍃', piCount: 1 },
+  // 9월 (국화) - 열끗(술잔), 청단, 피, 피
+  { month: 9, name: '국화', type: '열끗', subtype: null, image: '🍶', piCount: 0 },
+  { month: 9, name: '국화', type: '띠', subtype: '청단', image: '📘', piCount: 0 },
+  { month: 9, name: '국화', type: '피', subtype: null, image: '🌼', piCount: 1 },
+  { month: 9, name: '국화', type: '피', subtype: null, image: '🌼', piCount: 1 },
+  // 10월 (단풍) - 열끗(사슴), 청단, 피, 피
+  { month: 10, name: '단풍', type: '열끗', subtype: null, image: '🦌', piCount: 0 },
+  { month: 10, name: '단풍', type: '띠', subtype: '청단', image: '📘', piCount: 0 },
+  { month: 10, name: '단풍', type: '피', subtype: null, image: '🍁', piCount: 1 },
+  { month: 10, name: '단풍', type: '피', subtype: null, image: '🍁', piCount: 1 },
+  // 11월 (오동) - 광, 피, 피, 쌍피
+  { month: 11, name: '오동', type: '광', subtype: '비광', image: '🌧️', piCount: 0 },
+  { month: 11, name: '오동', type: '피', subtype: null, image: '🍂', piCount: 1 },
+  { month: 11, name: '오동', type: '피', subtype: null, image: '🍂', piCount: 1 },
+  { month: 11, name: '오동', type: '피', subtype: '쌍피', image: '🍂', piCount: 2 },
+  // 12월 (비) - 광, 열끗, 띠, 쌍피
+  { month: 12, name: '비', type: '광', subtype: '비광', image: '☔', piCount: 0 },
+  { month: 12, name: '비', type: '열끗', subtype: null, image: '🐦', piCount: 0 },
+  { month: 12, name: '비', type: '띠', subtype: null, image: '🎋', piCount: 0 },
+  { month: 12, name: '비', type: '피', subtype: '쌍피', image: '🌧️', piCount: 2 },
+];
+
 const GoStop = ({ onBack }) => {
   const [isMuted, setIsMuted] = useState(gameSound.getMuted());
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [gameState, setGameState] = useState('betting'); // betting, playing, result
+  const [gameState, setGameState] = useState('betting');
+  const [chips, setChips] = useState(1000);
+  const [currentBet, setCurrentBet] = useState(100);
+  const [message, setMessage] = useState('베팅 금액을 선택하세요');
+
+  const [deck, setDeck] = useState([]);
+  const [playerHand, setPlayerHand] = useState([]);
+  const [computerHand, setComputerHand] = useState([]);
+  const [fieldCards, setFieldCards] = useState([]);
+
+  const [playerCollected, setPlayerCollected] = useState({ 광: [], 열끗: [], 띠: [], 피: [] });
+  const [computerCollected, setComputerCollected] = useState({ 광: [], 열끗: [], 띠: [], 피: [] });
+
   const [playerScore, setPlayerScore] = useState(0);
   const [computerScore, setComputerScore] = useState(0);
-  const [currentBet, setCurrentBet] = useState(100);
-  const [chips, setChips] = useState(1000);
-  const [message, setMessage] = useState('베팅 금액을 선택하세요');
-  const [playerCards, setPlayerCards] = useState([]);
-  const [computerCards, setComputerCards] = useState([]);
-  const [fieldCards, setFieldCards] = useState([]);
-  const [playerCollected, setPlayerCollected] = useState({ 광: [], 띠: [], 피: [], 동물: [] });
-  const [computerCollected, setComputerCollected] = useState({ 광: [], 띠: [], 피: [], 동물: [] });
+  const [goCount, setGoCount] = useState(0);
+  const [canStop, setCanStop] = useState(false);
+  const [isPlayerTurn, setIsPlayerTurn] = useState(true);
+  const [selectedCard, setSelectedCard] = useState(null);
+
   const [showSubmit, setShowSubmit] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [finalRank, setFinalRank] = useState(0);
-  const [canGo, setCanGo] = useState(false);
-  const [goCount, setGoCount] = useState(0);
-
-  // 화투 카드 정의
-  const createDeck = () => {
-    const months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
-    const deck = [];
-
-    months.forEach((month, idx) => {
-      // 각 월별 4장씩
-      const monthNum = idx + 1;
-      // 광 (1월 소나무, 3월 벚꽃, 8월 억새, 11월 오동, 12월 비)
-      const gwangMonths = [1, 3, 8, 11, 12];
-      // 동물
-      const animalMonths = [2, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-      // 띠
-      const ttiMonths = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12];
-
-      for (let i = 0; i < 4; i++) {
-        let type = '피';
-        if (i === 0 && gwangMonths.includes(monthNum)) type = '광';
-        else if (i === 1 && animalMonths.includes(monthNum)) type = '동물';
-        else if (i === 2 && ttiMonths.includes(monthNum)) type = '띠';
-
-        deck.push({
-          id: `${monthNum}-${i}`,
-          month: monthNum,
-          monthName: month,
-          type,
-          emoji: getCardEmoji(monthNum, type)
-        });
-      }
-    });
-
-    return deck.sort(() => Math.random() - 0.5);
-  };
-
-  const getCardEmoji = (month, type) => {
-    const emojis = {
-      1: { 광: '🌲', 동물: '🦢', 띠: '🎋', 피: '🌿' },
-      2: { 광: '🌸', 동물: '🐦', 띠: '🎋', 피: '🌸' },
-      3: { 광: '🌸', 동물: '🐦', 띠: '🎋', 피: '🌸' },
-      4: { 광: '🌺', 동물: '🐦', 띠: '🎋', 피: '🌺' },
-      5: { 광: '🌿', 동물: '🦋', 띠: '🎋', 피: '🌿' },
-      6: { 광: '🌺', 동물: '🦋', 띠: '🎋', 피: '🌺' },
-      7: { 광: '🐗', 동물: '🐗', 띠: '🎋', 피: '🍂' },
-      8: { 광: '🌕', 동물: '🦢', 띠: '🎋', 피: '🍃' },
-      9: { 광: '🍶', 동물: '🦋', 띠: '🎋', 피: '🌾' },
-      10: { 광: '🦌', 동물: '🦌', 띠: '🎋', 피: '🍁' },
-      11: { 광: '🌧️', 동물: '🐉', 띠: '🎋', 피: '🍂' },
-      12: { 광: '☔', 동물: '🐦', 띠: '🎋', 피: '🌧️' }
-    };
-    return emojis[month]?.[type] || '🎴';
-  };
+  const [scoreBreakdown, setScoreBreakdown] = useState([]);
 
   useEffect(() => {
     gameSound.init();
   }, []);
 
+  // 덱 섞기
+  const shuffleDeck = () => {
+    const newDeck = HWATU_DECK.map((card, idx) => ({
+      ...card,
+      id: `card-${idx}-${Date.now()}`
+    }));
+    for (let i = newDeck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
+    }
+    return newDeck;
+  };
+
+  // 점수 계산 (맞고 룰)
+  const calculateScore = useCallback((collected) => {
+    let score = 0;
+    const breakdown = [];
+
+    // 광 점수
+    const gwangCards = collected.광;
+    const hasBiGwang = gwangCards.some(c => c.subtype === '비광');
+    const gwangCount = gwangCards.length;
+
+    if (gwangCount === 5) {
+      score += 15;
+      breakdown.push({ name: '오광', score: 15 });
+    } else if (gwangCount === 4) {
+      score += 4;
+      breakdown.push({ name: '사광', score: 4 });
+    } else if (gwangCount === 3) {
+      if (hasBiGwang) {
+        score += 2;
+        breakdown.push({ name: '비삼광', score: 2 });
+      } else {
+        score += 3;
+        breakdown.push({ name: '삼광', score: 3 });
+      }
+    }
+
+    // 고도리 (2,4,8월 새)
+    const godoriCards = collected.열끗.filter(c => c.subtype === '고도리');
+    if (godoriCards.length === 3) {
+      score += 5;
+      breakdown.push({ name: '고도리', score: 5 });
+    }
+
+    // 홍단 (1,2,3월 홍단)
+    const hongdanCards = collected.띠.filter(c => c.subtype === '홍단');
+    if (hongdanCards.length === 3) {
+      score += 3;
+      breakdown.push({ name: '홍단', score: 3 });
+    }
+
+    // 청단 (6,9,10월 청단)
+    const cheongdanCards = collected.띠.filter(c => c.subtype === '청단');
+    if (cheongdanCards.length === 3) {
+      score += 3;
+      breakdown.push({ name: '청단', score: 3 });
+    }
+
+    // 초단 (4,5,7월 초단)
+    const chodanCards = collected.띠.filter(c => c.subtype === '초단');
+    if (chodanCards.length === 3) {
+      score += 3;
+      breakdown.push({ name: '초단', score: 3 });
+    }
+
+    // 열끗 (5장 이상)
+    if (collected.열끗.length >= 5) {
+      const yeolkkeut = collected.열끗.length - 4;
+      score += yeolkkeut;
+      breakdown.push({ name: `열끗 ${collected.열끗.length}장`, score: yeolkkeut });
+    }
+
+    // 띠 (5장 이상)
+    if (collected.띠.length >= 5) {
+      const tti = collected.띠.length - 4;
+      score += tti;
+      breakdown.push({ name: `띠 ${collected.띠.length}장`, score: tti });
+    }
+
+    // 피 (10장 이상, 쌍피는 2장으로 계산)
+    const piCount = collected.피.reduce((sum, c) => sum + c.piCount, 0);
+    if (piCount >= 10) {
+      const piScore = piCount - 9;
+      score += piScore;
+      breakdown.push({ name: `피 ${piCount}장`, score: piScore });
+    }
+
+    return { score, breakdown };
+  }, []);
+
+  // 게임 시작
   const startGame = () => {
     if (currentBet > chips) {
       setMessage('칩이 부족합니다!');
@@ -753,141 +896,228 @@ const GoStop = ({ onBack }) => {
     }
 
     gameSound.playGameStart();
-    const deck = createDeck();
+    const newDeck = shuffleDeck();
 
-    setPlayerCards(deck.slice(0, 7));
-    setComputerCards(deck.slice(7, 14));
-    setFieldCards(deck.slice(14, 22));
-    setPlayerCollected({ 광: [], 띠: [], 피: [], 동물: [] });
-    setComputerCollected({ 광: [], 띠: [], 피: [], 동물: [] });
+    // 카드 배분: 플레이어 7장, 컴퓨터 7장, 바닥 6장
+    setPlayerHand(newDeck.slice(0, 7));
+    setComputerHand(newDeck.slice(7, 14));
+    setFieldCards(newDeck.slice(14, 20));
+    setDeck(newDeck.slice(20));
+
+    setPlayerCollected({ 광: [], 열끗: [], 띠: [], 피: [] });
+    setComputerCollected({ 광: [], 열끗: [], 띠: [], 피: [] });
     setPlayerScore(0);
     setComputerScore(0);
     setGoCount(0);
-    setCanGo(false);
+    setCanStop(false);
+    setIsPlayerTurn(true);
+    setSelectedCard(null);
+    setScoreBreakdown([]);
     setGameState('playing');
     setMessage('카드를 선택하세요');
   };
 
-  const calculatePoints = (collected) => {
-    let points = 0;
-    // 광
-    if (collected.광.length >= 3) points += collected.광.length * 3;
-    // 동물
-    if (collected.동물.length >= 5) points += collected.동물.length;
-    // 띠
-    if (collected.띠.length >= 5) points += collected.띠.length;
-    // 피 (10장 이상)
-    if (collected.피.length >= 10) points += collected.피.length - 9;
-
-    return points;
+  // 카드 선택
+  const selectCard = (card) => {
+    if (!isPlayerTurn || canStop) return;
+    setSelectedCard(card);
+    gameSound.playClick();
   };
 
-  const playCard = (card) => {
-    if (gameState !== 'playing') return;
+  // 카드 내기
+  const playCard = () => {
+    if (!selectedCard || !isPlayerTurn || canStop) return;
 
     gameSound.playFlip();
 
-    // 같은 월의 카드 찾기
-    const matchingField = fieldCards.filter(f => f.month === card.month);
-
-    let newPlayerCards = playerCards.filter(c => c.id !== card.id);
+    const matchingCards = fieldCards.filter(f => f.month === selectedCard.month);
     let newFieldCards = [...fieldCards];
-    let newCollected = { ...playerCollected };
+    let newCollected = JSON.parse(JSON.stringify(playerCollected));
+    let newHand = playerHand.filter(c => c.id !== selectedCard.id);
 
-    if (matchingField.length > 0) {
-      // 매칭되는 카드가 있으면 가져감
-      const matched = matchingField[0];
+    if (matchingCards.length === 0) {
+      // 매칭 카드 없음 - 바닥에 놓기
+      newFieldCards.push(selectedCard);
+    } else if (matchingCards.length === 1) {
+      // 1장 매칭 - 둘 다 가져오기
+      const matched = matchingCards[0];
       newFieldCards = fieldCards.filter(f => f.id !== matched.id);
-      newCollected[card.type] = [...newCollected[card.type], card];
-      newCollected[matched.type] = [...newCollected[matched.type], matched];
+      newCollected[selectedCard.type].push(selectedCard);
+      newCollected[matched.type].push(matched);
       gameSound.playMatch();
-    } else {
-      // 없으면 바닥에 내려놓음
-      newFieldCards.push(card);
+    } else if (matchingCards.length === 2) {
+      // 2장 매칭 - 하나 선택 (자동으로 첫 번째 선택)
+      const matched = matchingCards[0];
+      newFieldCards = fieldCards.filter(f => f.id !== matched.id);
+      newCollected[selectedCard.type].push(selectedCard);
+      newCollected[matched.type].push(matched);
+      gameSound.playMatch();
+    } else if (matchingCards.length === 3) {
+      // 3장 매칭 - 모두 가져오기
+      newFieldCards = fieldCards.filter(f => f.month !== selectedCard.month);
+      newCollected[selectedCard.type].push(selectedCard);
+      matchingCards.forEach(m => newCollected[m.type].push(m));
+      gameSound.playMatch();
     }
 
-    setPlayerCards(newPlayerCards);
+    // 덱에서 카드 뽑기
+    if (deck.length > 0) {
+      const drawnCard = deck[0];
+      const newDeck = deck.slice(1);
+      setDeck(newDeck);
+
+      const drawnMatches = newFieldCards.filter(f => f.month === drawnCard.month);
+      if (drawnMatches.length === 0) {
+        newFieldCards.push(drawnCard);
+      } else if (drawnMatches.length === 1) {
+        const matched = drawnMatches[0];
+        newFieldCards = newFieldCards.filter(f => f.id !== matched.id);
+        newCollected[drawnCard.type].push(drawnCard);
+        newCollected[matched.type].push(matched);
+      } else if (drawnMatches.length >= 2) {
+        const matched = drawnMatches[0];
+        newFieldCards = newFieldCards.filter(f => f.id !== matched.id);
+        newCollected[drawnCard.type].push(drawnCard);
+        newCollected[matched.type].push(matched);
+      }
+    }
+
+    setPlayerHand(newHand);
     setFieldCards(newFieldCards);
     setPlayerCollected(newCollected);
+    setSelectedCard(null);
 
-    const points = calculatePoints(newCollected);
-    setPlayerScore(points);
+    const { score, breakdown } = calculateScore(newCollected);
+    setPlayerScore(score);
+    setScoreBreakdown(breakdown);
 
-    // 점수가 3점 이상이면 고/스톱 선택 가능
-    if (points >= 3 && !canGo) {
-      setCanGo(true);
-      setMessage('고 또는 스톱을 선택하세요');
+    // 7점 이상이면 스톱 가능
+    if (score >= 7) {
+      setCanStop(true);
+      setMessage(`${score}점! 고 또는 스톱?`);
+      return;
+    }
+
+    // 게임 종료 체크
+    if (newHand.length === 0) {
+      endGame(newCollected, computerCollected);
       return;
     }
 
     // 컴퓨터 턴
-    setTimeout(() => computerTurn(newFieldCards), 500);
+    setIsPlayerTurn(false);
+    setMessage('컴퓨터 턴...');
+    setTimeout(() => computerTurn(newFieldCards), 800);
   };
 
+  // 컴퓨터 턴
   const computerTurn = (currentFieldCards) => {
-    if (computerCards.length === 0) {
-      endGame();
+    if (computerHand.length === 0) {
+      endGame(playerCollected, computerCollected);
       return;
     }
 
-    // 간단한 AI: 매칭되는 카드 우선 선택
-    let cardToPlay = computerCards[0];
-    for (const card of computerCards) {
-      if (currentFieldCards.some(f => f.month === card.month)) {
-        cardToPlay = card;
-        break;
+    // AI: 매칭 우선, 광/열끗/띠 우선
+    let bestCard = computerHand[0];
+    let bestScore = -1;
+
+    for (const card of computerHand) {
+      const matches = currentFieldCards.filter(f => f.month === card.month);
+      let cardScore = 0;
+      if (matches.length > 0) cardScore += 10;
+      if (card.type === '광') cardScore += 5;
+      else if (card.type === '열끗') cardScore += 3;
+      else if (card.type === '띠') cardScore += 2;
+      if (cardScore > bestScore) {
+        bestScore = cardScore;
+        bestCard = card;
       }
     }
 
-    const matchingField = currentFieldCards.filter(f => f.month === cardToPlay.month);
-
-    let newComputerCards = computerCards.filter(c => c.id !== cardToPlay.id);
+    const matchingCards = currentFieldCards.filter(f => f.month === bestCard.month);
     let newFieldCards = [...currentFieldCards];
-    let newCollected = { ...computerCollected };
+    let newCollected = JSON.parse(JSON.stringify(computerCollected));
+    let newHand = computerHand.filter(c => c.id !== bestCard.id);
 
-    if (matchingField.length > 0) {
-      const matched = matchingField[0];
-      newFieldCards = currentFieldCards.filter(f => f.id !== matched.id);
-      newCollected[cardToPlay.type] = [...newCollected[cardToPlay.type], cardToPlay];
-      newCollected[matched.type] = [...newCollected[matched.type], matched];
+    if (matchingCards.length === 0) {
+      newFieldCards.push(bestCard);
     } else {
-      newFieldCards.push(cardToPlay);
+      const matched = matchingCards[0];
+      newFieldCards = currentFieldCards.filter(f => f.id !== matched.id);
+      if (matchingCards.length === 3) {
+        newFieldCards = currentFieldCards.filter(f => f.month !== bestCard.month);
+        matchingCards.forEach(m => newCollected[m.type].push(m));
+      } else {
+        newCollected[matched.type].push(matched);
+      }
+      newCollected[bestCard.type].push(bestCard);
     }
 
-    setComputerCards(newComputerCards);
+    // 덱에서 뽑기
+    if (deck.length > 0) {
+      const drawnCard = deck[0];
+      const newDeck = deck.slice(1);
+      setDeck(newDeck);
+
+      const drawnMatches = newFieldCards.filter(f => f.month === drawnCard.month);
+      if (drawnMatches.length === 0) {
+        newFieldCards.push(drawnCard);
+      } else {
+        const matched = drawnMatches[0];
+        newFieldCards = newFieldCards.filter(f => f.id !== matched.id);
+        newCollected[drawnCard.type].push(drawnCard);
+        newCollected[matched.type].push(matched);
+      }
+    }
+
+    setComputerHand(newHand);
     setFieldCards(newFieldCards);
     setComputerCollected(newCollected);
-    setComputerScore(calculatePoints(newCollected));
 
-    if (newComputerCards.length === 0 && playerCards.length === 0) {
-      endGame();
-    } else {
-      setMessage('카드를 선택하세요');
+    const { score } = calculateScore(newCollected);
+    setComputerScore(score);
+
+    if (newHand.length === 0) {
+      endGame(playerCollected, newCollected);
+      return;
     }
+
+    setIsPlayerTurn(true);
+    setMessage('카드를 선택하세요');
   };
 
+  // 고
   const handleGo = () => {
     setGoCount(g => g + 1);
-    setCanGo(false);
+    setCanStop(false);
     setMessage('고! 계속합니다');
-    gameSound.playSuccess();
+    gameSound.playClick();
+    setIsPlayerTurn(false);
+    setTimeout(() => computerTurn(fieldCards), 800);
   };
 
+  // 스톱
   const handleStop = () => {
-    endGame();
+    endGame(playerCollected, computerCollected);
   };
 
-  const endGame = () => {
-    const playerPoints = playerScore * (goCount + 1);
-    const computerPoints = computerScore;
+  // 게임 종료
+  const endGame = (pCollected, cCollected) => {
+    const { score: pScore, breakdown: pBreakdown } = calculateScore(pCollected);
+    const { score: cScore } = calculateScore(cCollected);
+
+    const finalPlayerScore = pScore * (goCount + 1);
+    const finalComputerScore = cScore;
+
+    setScoreBreakdown(pBreakdown);
 
     let winAmount = 0;
-    if (playerPoints > computerPoints) {
+    if (finalPlayerScore > finalComputerScore && pScore >= 7) {
       winAmount = currentBet * (goCount + 1);
       setChips(c => c + winAmount);
       setMessage(`승리! +${winAmount} 칩`);
       gameSound.playWin();
-    } else if (playerPoints < computerPoints) {
+    } else if (finalComputerScore > finalPlayerScore || pScore < 7) {
       winAmount = -currentBet;
       setChips(c => c + winAmount);
       setMessage(`패배! ${winAmount} 칩`);
@@ -897,12 +1127,13 @@ const GoStop = ({ onBack }) => {
       gameSound.playDraw();
     }
 
+    setPlayerScore(finalPlayerScore);
+    setComputerScore(finalComputerScore);
     setGameState('result');
 
     if (chips + winAmount >= 2000) {
-      const score = chips + winAmount;
-      setFinalScore(score);
-      setFinalRank(Leaderboard.getRank('gostop', score));
+      setFinalScore(chips + winAmount);
+      setFinalRank(Leaderboard.getRank('gostop', chips + winAmount));
       setShowSubmit(true);
     }
   };
@@ -917,14 +1148,22 @@ const GoStop = ({ onBack }) => {
     setIsMuted(muted);
   };
 
+  // 수집한 카드 개수
+  const getCollectedCount = (collected) => ({
+    광: collected.광.length,
+    열끗: collected.열끗.length,
+    띠: collected.띠.length,
+    피: collected.피.reduce((sum, c) => sum + c.piCount, 0)
+  });
+
   return (
     <div className="game-play-area gostop-area">
       <div className="game-header-bar">
         <button onClick={() => { gameSound.playClick(); onBack(); }} className="back-btn">← 뒤로</button>
-        <h2>고스톱</h2>
+        <h2>맞고</h2>
         <div className="header-right">
           <button onClick={() => setShowLeaderboard(true)} className="ranking-btn">🏆</button>
-          <span className="game-score">칩: {chips}</span>
+          <span className="game-score">💰 {chips}</span>
           <SoundToggle isMuted={isMuted} onToggle={toggleSound} />
         </div>
       </div>
@@ -932,8 +1171,8 @@ const GoStop = ({ onBack }) => {
       <div className="gostop-message">{message}</div>
 
       {gameState === 'betting' && (
-        <div className="betting-area">
-          <p>베팅 금액:</p>
+        <div className="matgo-betting">
+          <div className="betting-title">베팅 금액</div>
           <div className="bet-buttons">
             {[50, 100, 200, 500].map(bet => (
               <button
@@ -946,66 +1185,134 @@ const GoStop = ({ onBack }) => {
               </button>
             ))}
           </div>
-          <button onClick={startGame} className="game-btn">게임 시작</button>
+          <button onClick={startGame} className="game-btn start-btn">게임 시작</button>
+
+          <div className="matgo-rules">
+            <h4>맞고 룰</h4>
+            <ul>
+              <li>7점 이상 득점 시 스톱 가능</li>
+              <li>고 선언 시 점수 배수 증가</li>
+              <li>오광 15점, 사광 4점, 삼광 3점</li>
+              <li>고도리/홍단/청단/초단 각 3~5점</li>
+            </ul>
+          </div>
         </div>
       )}
 
       {gameState === 'playing' && (
-        <div className="gostop-table">
-          <div className="opponent-area">
-            <div className="card-count">컴퓨터: {computerCards.length}장</div>
-            <div className="score-display">점수: {computerScore}</div>
+        <div className="matgo-table">
+          {/* 컴퓨터 영역 */}
+          <div className="matgo-opponent">
+            <div className="opponent-info">
+              <span className="opponent-label">컴퓨터</span>
+              <span className="opponent-cards">🎴 {computerHand.length}장</span>
+              <span className="opponent-score">{computerScore}점</span>
+            </div>
+            <div className="opponent-collected">
+              {(() => {
+                const counts = getCollectedCount(computerCollected);
+                return (
+                  <>
+                    {counts.광 > 0 && <span className="collected-badge gwang">광 {counts.광}</span>}
+                    {counts.열끗 > 0 && <span className="collected-badge yeol">열 {counts.열끗}</span>}
+                    {counts.띠 > 0 && <span className="collected-badge tti">띠 {counts.띠}</span>}
+                    {counts.피 > 0 && <span className="collected-badge pi">피 {counts.피}</span>}
+                  </>
+                );
+              })()}
+            </div>
           </div>
 
-          <div className="field-area">
-            <div className="field-cards">
+          {/* 바닥 카드 */}
+          <div className="matgo-field">
+            <div className="field-label">바닥 ({fieldCards.length}장)</div>
+            <div className="field-cards-grid">
               {fieldCards.map(card => (
-                <div key={card.id} className="hwatu-card field">
-                  <span className="card-emoji">{card.emoji}</span>
+                <div key={card.id} className={`matgo-card field-card ${card.type}`}>
                   <span className="card-month">{card.month}월</span>
+                  <span className="card-image">{card.image}</span>
+                  <span className="card-type-badge">{card.type === '열끗' ? '열' : card.type}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="player-area">
-            <div className="score-display">점수: {playerScore} {goCount > 0 && `(고 ${goCount}회)`}</div>
-            <div className="player-cards">
-              {playerCards.map(card => (
+          {/* 플레이어 수집 카드 */}
+          <div className="matgo-player-collected">
+            {(() => {
+              const counts = getCollectedCount(playerCollected);
+              return (
+                <>
+                  {counts.광 > 0 && <span className="collected-badge gwang">광 {counts.광}</span>}
+                  {counts.열끗 > 0 && <span className="collected-badge yeol">열 {counts.열끗}</span>}
+                  {counts.띠 > 0 && <span className="collected-badge tti">띠 {counts.띠}</span>}
+                  {counts.피 > 0 && <span className="collected-badge pi">피 {counts.피}</span>}
+                </>
+              );
+            })()}
+            <span className="player-score-badge">{playerScore}점 {goCount > 0 && `(고${goCount})`}</span>
+          </div>
+
+          {/* 플레이어 패 */}
+          <div className="matgo-player-hand">
+            <div className="hand-cards">
+              {playerHand.map(card => (
                 <div
                   key={card.id}
-                  className="hwatu-card playable"
-                  onClick={() => !canGo && playCard(card)}
+                  className={`matgo-card hand-card ${card.type} ${selectedCard?.id === card.id ? 'selected' : ''} ${!isPlayerTurn || canStop ? 'disabled' : ''}`}
+                  onClick={() => selectCard(card)}
                 >
-                  <span className="card-emoji">{card.emoji}</span>
                   <span className="card-month">{card.month}월</span>
-                  <span className="card-type">{card.type}</span>
+                  <span className="card-image">{card.image}</span>
+                  <span className="card-type-badge">{card.type === '열끗' ? '열' : card.type}</span>
                 </div>
               ))}
             </div>
+            {selectedCard && !canStop && (
+              <button onClick={playCard} className="play-card-btn">카드 내기</button>
+            )}
           </div>
 
-          {canGo && (
+          {/* 고/스톱 버튼 */}
+          {canStop && (
             <div className="go-stop-buttons">
-              <button onClick={handleGo} className="game-btn go-btn">고!</button>
-              <button onClick={handleStop} className="game-btn stop-btn">스톱</button>
+              <button onClick={handleGo} className="go-btn">🔥 고!</button>
+              <button onClick={handleStop} className="stop-btn">✋ 스톱</button>
             </div>
           )}
         </div>
       )}
 
       {gameState === 'result' && (
-        <div className="result-area">
+        <div className="matgo-result">
+          <div className="result-title">{message}</div>
           <div className="result-scores">
-            <div>내 점수: {playerScore} × {goCount + 1} = {playerScore * (goCount + 1)}</div>
-            <div>상대 점수: {computerScore}</div>
+            <div className="score-row player">
+              <span>내 점수</span>
+              <span>{playerScore}점 {goCount > 0 && `(×${goCount + 1})`}</span>
+            </div>
+            <div className="score-row computer">
+              <span>컴퓨터</span>
+              <span>{computerScore}점</span>
+            </div>
           </div>
+          {scoreBreakdown.length > 0 && (
+            <div className="score-breakdown">
+              <div className="breakdown-title">점수 구성</div>
+              {scoreBreakdown.map((item, idx) => (
+                <div key={idx} className="breakdown-item">
+                  <span>{item.name}</span>
+                  <span>+{item.score}</span>
+                </div>
+              ))}
+            </div>
+          )}
           <button onClick={() => setGameState('betting')} className="game-btn">다시 하기</button>
         </div>
       )}
 
       {showLeaderboard && (
-        <LeaderboardDisplay gameId="gostop" gameName="고스톱" onClose={() => setShowLeaderboard(false)} />
+        <LeaderboardDisplay gameId="gostop" gameName="맞고" onClose={() => setShowLeaderboard(false)} />
       )}
       {showSubmit && (
         <ScoreSubmitModal

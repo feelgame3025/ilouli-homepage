@@ -362,7 +362,7 @@
   to { transform: scale(1.05); }
 }
 
-/* ==================== 스도쿠 ==================== */
+/* ==================== 스도쿠 (Apple Blue Style) ==================== */
 .sudoku-area {
   text-align: center;
 }
@@ -370,100 +370,141 @@
 .sudoku-controls {
   display: flex;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
-.difficulty-btn {
-  padding: 0.5rem 1rem;
-  border: 2px solid #e5e5e5;
-  border-radius: 8px;
-  background: white;
-  font-size: 0.9rem;
+.difficulty-select {
+  padding: 0.6rem 1.25rem;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  font-size: 0.95rem;
   font-weight: 500;
+  color: #0369a1;
   cursor: pointer;
   transition: all 0.2s;
+  outline: none;
 }
 
-.difficulty-btn:hover {
-  border-color: #3b82f6;
-  background: #f0f7ff;
+.difficulty-select:hover {
+  background: linear-gradient(135deg, #bae6fd 0%, #7dd3fc 100%);
 }
 
-.difficulty-btn.active {
-  border-color: #3b82f6;
-  background: #3b82f6;
-  color: white;
+.difficulty-select:focus {
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3);
+}
+
+.game-btn.small {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  border-radius: 12px;
+}
+
+.game-btn.small:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
 }
 
 .sudoku-timer {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #1d1d1f;
+  color: #0369a1;
   margin-bottom: 1rem;
 }
 
 .sudoku-board {
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  gap: 1px;
-  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  max-width: 380px;
   margin: 0 auto 1.5rem;
-  background: #1d1d1f;
-  border: 2px solid #1d1d1f;
-  border-radius: 8px;
-  overflow: hidden;
+  background: linear-gradient(145deg, #e0f2fe 0%, #f0f9ff 50%, #e0f2fe 100%);
+  border: 3px solid #7dd3fc;
+  border-radius: 16px;
+  padding: 6px;
+  box-shadow:
+    0 4px 20px rgba(14, 165, 233, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.sudoku-row {
+  display: flex;
 }
 
 .sudoku-cell {
+  width: calc(100% / 9);
   aspect-ratio: 1;
-  background: white;
-  border: none;
-  font-size: 1.25rem;
+  background: linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  font-size: 1.35rem;
   font-weight: 600;
+  color: #1e3a5f;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
 }
 
-.sudoku-cell:hover:not(.fixed):not(.selected) {
-  background: #f0f7ff;
+.sudoku-cell:hover:not(.initial):not(.selected) {
+  background: linear-gradient(145deg, #bae6fd 0%, #7dd3fc 100%);
 }
 
-.sudoku-cell.fixed {
-  background: #f5f5f5;
-  color: #1d1d1f;
+.sudoku-cell.initial {
+  background: linear-gradient(145deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1e40af;
+  font-weight: 700;
   cursor: default;
 }
 
 .sudoku-cell.selected {
-  background: #dbeafe;
+  background: linear-gradient(145deg, #38bdf8 0%, #0ea5e9 100%);
+  color: white;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sudoku-cell.highlighted {
+  background: linear-gradient(145deg, #bae6fd 0%, #93c5fd 100%);
 }
 
 .sudoku-cell.error {
-  background: #fee2e2;
+  background: linear-gradient(145deg, #fecaca 0%, #fca5a5 100%);
   color: #dc2626;
 }
 
-.sudoku-cell.user-input {
-  color: #3b82f6;
+/* 3x3 박스 구분 - 두꺼운 테두리 */
+.sudoku-cell.border-right {
+  border-right: 3px solid #38bdf8;
 }
 
-/* 3x3 박스 구분선 */
-.sudoku-cell:nth-child(3n) {
-  border-right: 2px solid #1d1d1f;
+.sudoku-cell.border-bottom {
+  border-bottom: 3px solid #38bdf8;
 }
 
-.sudoku-cell:nth-child(9n) {
-  border-right: none;
+/* 3x3 박스별 배경 색상 변화 */
+.sudoku-row:nth-child(1) .sudoku-cell:nth-child(-n+3),
+.sudoku-row:nth-child(2) .sudoku-cell:nth-child(-n+3),
+.sudoku-row:nth-child(3) .sudoku-cell:nth-child(-n+3),
+.sudoku-row:nth-child(1) .sudoku-cell:nth-child(n+7),
+.sudoku-row:nth-child(2) .sudoku-cell:nth-child(n+7),
+.sudoku-row:nth-child(3) .sudoku-cell:nth-child(n+7),
+.sudoku-row:nth-child(4) .sudoku-cell:nth-child(n+4):nth-child(-n+6),
+.sudoku-row:nth-child(5) .sudoku-cell:nth-child(n+4):nth-child(-n+6),
+.sudoku-row:nth-child(6) .sudoku-cell:nth-child(n+4):nth-child(-n+6),
+.sudoku-row:nth-child(7) .sudoku-cell:nth-child(-n+3),
+.sudoku-row:nth-child(8) .sudoku-cell:nth-child(-n+3),
+.sudoku-row:nth-child(9) .sudoku-cell:nth-child(-n+3),
+.sudoku-row:nth-child(7) .sudoku-cell:nth-child(n+7),
+.sudoku-row:nth-child(8) .sudoku-cell:nth-child(n+7),
+.sudoku-row:nth-child(9) .sudoku-cell:nth-child(n+7) {
+  background: linear-gradient(145deg, #dbeafe 0%, #bfdbfe 100%);
 }
 
-.sudoku-cell:nth-child(n+19):nth-child(-n+27),
-.sudoku-cell:nth-child(n+46):nth-child(-n+54) {
-  border-bottom: 2px solid #1d1d1f;
+.sudoku-cell.initial.border-right,
+.sudoku-cell.initial.border-bottom {
+  background: linear-gradient(145deg, #dbeafe 0%, #bfdbfe 100%);
 }
 
 .sudoku-numpad {
@@ -471,185 +512,664 @@
   justify-content: center;
   gap: 0.5rem;
   flex-wrap: wrap;
-  max-width: 360px;
+  max-width: 380px;
   margin: 0 auto;
 }
 
 .numpad-btn {
-  width: 36px;
-  height: 36px;
-  border: 2px solid #e5e5e5;
-  border-radius: 8px;
-  background: white;
-  font-size: 1.1rem;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #e0f2fe 0%, #bae6fd 100%);
+  font-size: 1.2rem;
   font-weight: 600;
+  color: #0369a1;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
 }
 
 .numpad-btn:hover {
-  border-color: #3b82f6;
-  background: #f0f7ff;
+  background: linear-gradient(145deg, #7dd3fc 0%, #38bdf8 100%);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+}
+
+.numpad-btn:active {
+  transform: translateY(0);
 }
 
 .numpad-btn.erase {
   width: auto;
-  padding: 0 1rem;
-  font-size: 0.9rem;
+  padding: 0 1.25rem;
+  font-size: 1rem;
+  background: linear-gradient(145deg, #fecaca 0%, #fca5a5 100%);
+  color: #dc2626;
 }
 
-/* ==================== 고스톱 ==================== */
+.numpad-btn.erase:hover {
+  background: linear-gradient(145deg, #f87171 0%, #ef4444 100%);
+  color: white;
+}
+
+/* 수도쿠 남은 기회 표시 - 미니멀 디자인 */
+.sudoku-lives {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 0.875rem 1.25rem;
+  background: white;
+  border-radius: 16px;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(220, 38, 38, 0.1);
+}
+
+.lives-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lives-label::before {
+  content: '❤️';
+  font-size: 1rem;
+}
+
+.lives-hearts {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+  justify-content: center;
+}
+
+.lives-hearts .heart {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.3);
+}
+
+.lives-hearts .heart.lost {
+  background: #e5e5e5;
+  box-shadow: none;
+  transform: scale(0.8);
+}
+
+.lives-count {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #dc2626;
+  min-width: 55px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* 수도쿠 게임오버 - 모던 디자인 */
+.sudoku-gameover {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  max-width: 380px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 8px 32px rgba(220, 38, 38, 0.15);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sudoku-gameover h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #dc2626;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
+}
+
+.sudoku-gameover p {
+  color: #666;
+  margin: 0 0 1.5rem 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.sudoku-gameover .game-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  padding: 0.875rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.sudoku-gameover .game-btn:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: scale(1.02);
+}
+
+.sudoku-board.game-over {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: grayscale(0.3) blur(1px);
+  transition: all 0.3s ease;
+}
+
+/* ==================== 고스톱 / 맞고 ==================== */
 .gostop-area {
   text-align: center;
 }
 
-.gostop-info {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.gostop-score {
-  background: #f5f5f5;
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
-}
-
-.gostop-score span {
+.gostop-message {
+  font-size: 1.1rem;
   font-weight: 600;
   color: #1d1d1f;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 12px;
 }
 
-.gostop-table {
-  background: linear-gradient(135deg, #1a472a 0%, #2d5a3c 100%);
-  border-radius: 16px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.gostop-section {
-  margin-bottom: 1.5rem;
-}
-
-.gostop-section:last-child {
-  margin-bottom: 0;
-}
-
-.gostop-label {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.85rem;
-  margin-bottom: 0.5rem;
-}
-
-.gostop-cards {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  min-height: 60px;
-}
-
-.hwatu-card {
-  width: 45px;
-  height: 65px;
+/* 베팅 화면 */
+.matgo-betting {
   background: white;
-  border-radius: 6px;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+.betting-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin-bottom: 1.25rem;
+}
+
+.bet-buttons {
   display: flex;
-  align-items: center;
+  gap: 0.75rem;
   justify-content: center;
-  font-size: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.bet-btn {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 12px;
+  background: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1d1d1f;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  min-width: 80px;
 }
 
-.hwatu-card:hover:not(.disabled) {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+.bet-btn:hover:not(:disabled) {
+  border-color: #3b82f6;
+  background: #f0f7ff;
 }
 
-.hwatu-card.selected {
-  transform: translateY(-8px);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
-  border: 2px solid #3b82f6;
-}
-
-.hwatu-card.disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-.hwatu-card.hidden {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  font-size: 1rem;
+.bet-btn.active {
+  border-color: #3b82f6;
+  background: #3b82f6;
   color: white;
 }
 
-.gostop-center {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 1rem;
+.bet-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.gostop-message {
-  color: white;
+.start-btn {
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  padding: 0.875rem 2.5rem;
   font-size: 1.1rem;
-  font-weight: 500;
+}
+
+.start-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.matgo-rules {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: #f9fafb;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.matgo-rules h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 0.75rem;
+}
+
+.matgo-rules ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.matgo-rules li {
+  margin-bottom: 0.25rem;
+}
+
+/* 게임 테이블 */
+.matgo-table {
+  background: linear-gradient(145deg, #1a472a 0%, #2d5a3c 50%, #1a472a 100%);
+  border-radius: 20px;
+  padding: 1.25rem;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 컴퓨터 영역 */
+.matgo-opponent {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 0.875rem;
   margin-bottom: 1rem;
 }
 
-.gostop-actions {
+.opponent-info {
   display: flex;
+  align-items: center;
   justify-content: center;
   gap: 1rem;
+  margin-bottom: 0.5rem;
 }
 
-.gostop-btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
+.opponent-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
-.gostop-btn.primary {
-  background: #fbbf24;
+.opponent-cards {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+}
+
+.opponent-score {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.opponent-collected {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 수집 배지 */
+.collected-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.collected-badge.gwang {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
   color: #1d1d1f;
 }
 
-.gostop-btn.primary:hover {
-  background: #f59e0b;
+.collected-badge.yeol {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
 }
 
-.gostop-btn.secondary {
+.collected-badge.tti {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.collected-badge.pi {
   background: rgba(255, 255, 255, 0.2);
   color: white;
 }
 
-.gostop-btn.secondary:hover {
-  background: rgba(255, 255, 255, 0.3);
+/* 바닥 카드 영역 */
+.matgo-field {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
-.gostop-captured {
+.field-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.field-cards-grid {
   display: flex;
-  justify-content: center;
-  gap: 1rem;
   flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+  min-height: 70px;
 }
 
-.captured-group {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.5rem 1rem;
+/* 화투 카드 스타일 */
+.matgo-card {
+  width: 48px;
+  height: 68px;
+  background: linear-gradient(145deg, #fffef5 0%, #f5f0e0 100%);
   border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.matgo-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 7px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.matgo-card .card-month {
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: #666;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+
+.matgo-card .card-image {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.matgo-card .card-type-badge {
+  font-size: 0.5rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* 카드 타입별 색상 */
+.matgo-card.광 .card-type-badge {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1d1d1f;
+}
+
+.matgo-card.열끗 .card-type-badge {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
+}
+
+.matgo-card.띠 .card-type-badge {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.matgo-card.피 .card-type-badge {
+  background: #e5e5e5;
+  color: #666;
+}
+
+/* 손패 카드 */
+.matgo-card.hand-card:hover:not(.disabled)::before {
+  border-color: #3b82f6;
+}
+
+.matgo-card.hand-card:hover:not(.disabled) {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.matgo-card.hand-card.selected {
+  transform: translateY(-10px);
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.3);
+}
+
+.matgo-card.hand-card.selected::before {
+  border-color: #3b82f6;
+}
+
+.matgo-card.disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* 플레이어 수집 영역 */
+.matgo-player-collected {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.player-score-badge {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  padding: 0.35rem 1rem;
+  border-radius: 20px;
+  font-weight: 700;
   font-size: 0.9rem;
 }
 
-.captured-group span {
+/* 플레이어 패 */
+.matgo-player-hand {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hand-cards {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.play-card-btn {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1d1d1f;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.play-card-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.4);
+}
+
+/* 고/스톱 버튼 */
+.go-stop-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.go-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.go-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4);
+}
+
+.stop-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.stop-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+}
+
+/* 결과 화면 */
+.matgo-result {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.result-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin-bottom: 1.5rem;
+}
+
+.result-scores {
+  margin-bottom: 1.5rem;
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+}
+
+.score-row.player {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+}
+
+.score-row.player span:first-child {
+  font-weight: 600;
+  color: #059669;
+}
+
+.score-row.player span:last-child {
+  font-weight: 700;
+  color: #059669;
+  font-size: 1.1rem;
+}
+
+.score-row.computer {
+  background: #f5f5f5;
+}
+
+.score-row.computer span:first-child {
+  font-weight: 600;
+  color: #666;
+}
+
+.score-row.computer span:last-child {
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.score-breakdown {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.breakdown-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 0.75rem;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e5e5e5;
+  font-size: 0.9rem;
+}
+
+.breakdown-item:last-child {
+  border-bottom: none;
+}
+
+.breakdown-item span:first-child {
+  color: #1d1d1f;
+}
+
+.breakdown-item span:last-child {
+  color: #10b981;
   font-weight: 600;
 }
 
@@ -1298,7 +1818,7 @@
 /* ==================== 모바일 반응형 ==================== */
 @media (max-width: 768px) {
   .games-container {
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 1rem;
   }
 
   .games-title-row {
@@ -1307,7 +1827,7 @@
   }
 
   .games-header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 
   .header-buttons {
@@ -1315,14 +1835,680 @@
   }
 
   .ranking-btn {
-    padding: 0.4rem 0.75rem;
+    padding: 0.5rem 1rem;
     font-size: 0.85rem;
   }
 
   .games-header p {
+    font-size: 0.95rem;
+  }
+
+  .games-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .game-card {
+    padding: 1.25rem 1rem;
+    border-radius: 14px;
+  }
+
+  .game-icon {
+    font-size: 2.5rem;
+    height: 3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .game-card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .game-card p {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+
+  .game-top-score {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  /* 게임 플레이 영역 공통 */
+  .game-play-area {
+    padding: 0.75rem;
+  }
+
+  .game-header-bar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .game-header-bar h2 {
+    font-size: 1.1rem;
+    text-align: center;
+    margin: 0;
+  }
+
+  .back-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .game-score {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.6rem;
+    white-space: nowrap;
+  }
+
+  .sound-toggle {
+    width: 34px;
+    height: 34px;
     font-size: 1rem;
   }
 
+  .ranking-btn:not(.main) {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.85rem;
+    min-width: 34px;
+  }
+
+  /* 메모리 게임 모바일 */
+  .memory-grid {
+    gap: 0.4rem;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  .card-front,
+  .card-back {
+    font-size: 1.4rem;
+    border-radius: 10px;
+  }
+
+  .memory-card {
+    border-radius: 10px;
+  }
+
+  .game-complete {
+    padding: 1.25rem;
+    border-radius: 14px;
+    margin-bottom: 1rem;
+  }
+
+  .game-complete h3 {
+    font-size: 1.25rem;
+  }
+
+  .game-complete p {
+    font-size: 0.9rem;
+  }
+
+  /* 틱택토 모바일 */
+  .ttt-status {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .ttt-board {
+    max-width: 280px;
+    gap: 6px;
+  }
+
+  .ttt-cell {
+    font-size: 2.25rem;
+    border-radius: 10px;
+  }
+
+  .game-buttons {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+
+  .game-btn {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+
+  /* 스도쿠 모바일 */
+  .sudoku-area .game-header-bar {
+    margin-bottom: 0.75rem;
+  }
+
+  .sudoku-lives {
+    padding: 0.6rem 0.875rem;
+    gap: 0.6rem;
+    max-width: 100%;
+    margin-bottom: 0.875rem;
+    border-radius: 12px;
+  }
+
+  .lives-label {
+    font-size: 0.8rem;
+  }
+
+  .lives-label::before {
+    font-size: 0.85rem;
+  }
+
+  .lives-hearts {
+    gap: 2px;
+  }
+
+  .lives-hearts .heart {
+    width: 10px;
+    height: 10px;
+  }
+
+  .lives-count {
+    font-size: 0.85rem;
+    min-width: 45px;
+  }
+
+  .sudoku-controls {
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .difficulty-select {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.85rem;
+    border-radius: 10px;
+  }
+
+  .game-btn.small {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border-radius: 10px;
+  }
+
+  .sudoku-board {
+    max-width: 100%;
+    padding: 4px;
+    border-radius: 12px;
+    border-width: 2px;
+    margin-bottom: 1rem;
+  }
+
+  .sudoku-cell {
+    font-size: 1rem;
+    border-width: 1px;
+  }
+
+  .sudoku-cell.border-right {
+    border-right-width: 2px;
+  }
+
+  .sudoku-cell.border-bottom {
+    border-bottom-width: 2px;
+  }
+
+  .sudoku-numpad {
+    gap: 0.35rem;
+    max-width: 100%;
+  }
+
+  .numpad-btn {
+    width: 32px;
+    height: 38px;
+    font-size: 1.1rem;
+    border-radius: 8px;
+  }
+
+  .numpad-btn.erase {
+    padding: 0 0.875rem;
+    font-size: 0.9rem;
+  }
+
+  .sudoku-gameover {
+    padding: 1.5rem;
+    max-width: 100%;
+    border-radius: 16px;
+  }
+
+  .sudoku-gameover h3 {
+    font-size: 1.35rem;
+  }
+
+  .sudoku-gameover p {
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .sudoku-gameover .game-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+  }
+
+  /* 고스톱/맞고 모바일 */
+  .gostop-area .game-header-bar {
+    margin-bottom: 0.75rem;
+  }
+
+  .gostop-message {
+    font-size: 0.95rem;
+    padding: 0.6rem 0.875rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+  }
+
+  /* 베팅 화면 모바일 */
+  .matgo-betting {
+    padding: 1.25rem;
+    border-radius: 16px;
+  }
+
+  .betting-title {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .bet-buttons {
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .bet-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+    min-width: 60px;
+    border-radius: 10px;
+  }
+
+  .start-btn {
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+  }
+
+  .matgo-rules {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .matgo-rules h4 {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .matgo-rules ul {
+    font-size: 0.8rem;
+    padding-left: 1rem;
+  }
+
+  /* 게임 테이블 모바일 */
+  .matgo-table {
+    padding: 0.875rem;
+    border-radius: 16px;
+  }
+
+  .matgo-opponent {
+    padding: 0.6rem;
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+  }
+
+  .opponent-info {
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .opponent-label {
+    font-size: 0.85rem;
+  }
+
+  .opponent-cards,
+  .opponent-score {
+    font-size: 0.75rem;
+  }
+
+  .opponent-score {
+    padding: 0.2rem 0.5rem;
+  }
+
+  .opponent-collected {
+    gap: 0.35rem;
+  }
+
+  .collected-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  /* 바닥 카드 모바일 */
+  .matgo-field {
+    padding: 0.75rem;
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+  }
+
+  .field-label {
+    font-size: 0.7rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .field-cards-grid {
+    gap: 0.3rem;
+    min-height: 60px;
+  }
+
+  /* 화투 카드 모바일 */
+  .matgo-card {
+    width: 38px;
+    height: 54px;
+    padding: 3px 2px;
+    border-radius: 6px;
+  }
+
+  .matgo-card .card-month {
+    font-size: 0.45rem;
+    padding: 1px 3px;
+  }
+
+  .matgo-card .card-image {
+    font-size: 0.95rem;
+  }
+
+  .matgo-card .card-type-badge {
+    font-size: 0.4rem;
+    padding: 1px 3px;
+  }
+
+  /* 플레이어 수집 영역 모바일 */
+  .matgo-player-collected {
+    gap: 0.35rem;
+    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+    border-radius: 10px;
+  }
+
+  .player-score-badge {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  /* 손패 모바일 */
+  .matgo-player-hand {
+    padding-top: 0.75rem;
+  }
+
+  .hand-cards {
+    gap: 0.3rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .matgo-card.hand-card:hover:not(.disabled) {
+    transform: translateY(-4px);
+  }
+
+  .matgo-card.hand-card.selected {
+    transform: translateY(-7px);
+  }
+
+  .play-card-btn {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+
+  /* 고/스톱 버튼 모바일 */
+  .go-stop-buttons {
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+  }
+
+  .go-btn,
+  .stop-btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
+
+  /* 결과 화면 모바일 */
+  .matgo-result {
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+
+  .result-title {
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .result-scores {
+    margin-bottom: 1.25rem;
+  }
+
+  .score-row {
+    padding: 0.65rem 0.875rem;
+    border-radius: 10px;
+    margin-bottom: 0.4rem;
+  }
+
+  .score-row.player span:last-child {
+    font-size: 1rem;
+  }
+
+  .score-breakdown {
+    padding: 0.875rem;
+    border-radius: 10px;
+    margin-bottom: 1.25rem;
+  }
+
+  .breakdown-title {
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .breakdown-item {
+    padding: 0.4rem 0;
+    font-size: 0.85rem;
+  }
+
+  /* 포커 모바일 */
+  .poker-area .game-header-bar {
+    margin-bottom: 0.75rem;
+  }
+
+  .poker-message {
+    font-size: 1rem;
+    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .poker-table {
+    padding: 1rem;
+    border-radius: 14px;
+  }
+
+  .opponent-hand,
+  .player-hand {
+    margin-bottom: 1rem;
+  }
+
+  .opponent-hand p,
+  .player-hand p {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 0.5rem;
+  }
+
+  .cards {
+    display: flex;
+    gap: 0.35rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .poker-card {
+    width: 44px;
+    height: 62px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+  }
+
+  .poker-card .card-value {
+    font-size: 0.95rem;
+  }
+
+  .poker-card .card-suit {
+    font-size: 1.1rem;
+  }
+
+  .poker-card.selected {
+    transform: translateY(-6px);
+  }
+
+  .exchange-controls {
+    margin-top: 1rem;
+  }
+
+  .exchange-controls .game-btn {
+    padding: 0.65rem 1.25rem;
+  }
+
+  /* 리더보드 모바일 */
+  .leaderboard-overlay {
+    padding: 0.75rem;
+  }
+
+  .leaderboard-modal {
+    padding: 1.25rem;
+    margin: 0;
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 16px;
+  }
+
+  .leaderboard-header {
+    margin-bottom: 1rem;
+  }
+
+  .leaderboard-header h3 {
+    font-size: 1.15rem;
+  }
+
+  .close-btn {
+    font-size: 1.25rem;
+    padding: 0.25rem;
+  }
+
+  .leaderboard-table {
+    font-size: 0.85rem;
+  }
+
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 0.5rem 0.4rem;
+  }
+
+  .leaderboard-table .rank {
+    font-size: 1rem;
+  }
+
+  .leaderboard-table .date {
+    font-size: 0.75rem;
+  }
+
+  /* 점수 등록 모달 */
+  .leaderboard-modal.score-submit {
+    padding: 1.5rem;
+  }
+
+  .final-score {
+    font-size: 1.25rem;
+  }
+
+  .rank-notice {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .name-input-area {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .name-input {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    font-size: 1rem;
+  }
+
+  .name-input-area .game-btn {
+    width: 100%;
+    padding: 0.65rem;
+  }
+
+  .skip-btn {
+    margin-top: 0.5rem;
+  }
+
+  /* 전체 랭킹 모달 */
+  .leaderboard-modal.all-rankings {
+    max-width: 100%;
+  }
+
+  .all-rankings-content {
+    gap: 1rem;
+  }
+
+  .game-ranking-section {
+    padding: 0.875rem;
+    border-radius: 10px;
+  }
+
+  .game-ranking-section h4 {
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .top-3 {
+    gap: 0.4rem;
+  }
+
+  .rank-item {
+    padding: 0.5rem;
+    border-radius: 8px;
+  }
+
+  .rank-item .rank-badge {
+    font-size: 1rem;
+  }
+
+  .rank-item .rank-name {
+    font-size: 0.9rem;
+  }
+
+  .rank-item .rank-score {
+    font-size: 0.85rem;
+  }
+
+  .no-scores {
+    padding: 1rem;
+    font-size: 0.85rem;
+  }
+
+  .loading-scores {
+    padding: 2rem;
+  }
+}
+
+/* 아주 작은 화면 (360px 이하) */
+@media (max-width: 360px) {
   .games-grid {
     grid-template-columns: 1fr;
   }
@@ -1336,161 +2522,55 @@
     height: 3.5rem;
   }
 
-  .game-top-score {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.75rem;
-  }
-
-  .game-play-area {
-    padding: 0.5rem;
-  }
-
-  .game-header-bar {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .game-header-bar h2 {
-    font-size: 1.25rem;
-    order: 1;
-    width: 100%;
-    text-align: center;
-    margin-bottom: 0.5rem;
-  }
-
-  .back-btn {
-    order: 0;
-  }
-
-  .header-right {
-    order: 2;
-  }
-
-  .game-score {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.75rem;
-  }
-
-  .sound-toggle {
-    width: 36px;
-    height: 36px;
-    font-size: 1.1rem;
-  }
-
-  /* 메모리 게임 모바일 */
-  .memory-grid {
-    gap: 0.5rem;
-  }
-
-  .card-front,
-  .card-back {
-    font-size: 1.5rem;
-  }
-
-  /* 틱택토 모바일 */
-  .ttt-board {
-    max-width: 250px;
-  }
-
-  .ttt-cell {
-    font-size: 2rem;
-  }
-
-  /* 스도쿠 모바일 */
-  .sudoku-board {
-    max-width: 300px;
-  }
-
   .sudoku-cell {
-    font-size: 1rem;
-  }
-
-  .numpad-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 1rem;
-  }
-
-  /* 고스톱 모바일 */
-  .gostop-table {
-    padding: 1rem;
-  }
-
-  .hwatu-card {
-    width: 38px;
-    height: 55px;
-    font-size: 1.2rem;
-  }
-
-  .gostop-info {
-    gap: 1rem;
-  }
-
-  /* 포커 모바일 */
-  .poker-table {
-    padding: 1rem;
-  }
-
-  .poker-card {
-    width: 45px;
-    height: 65px;
     font-size: 0.9rem;
   }
 
-  .poker-card .suit {
-    font-size: 1.2rem;
+  .numpad-btn {
+    width: 28px;
+    height: 34px;
+    font-size: 1rem;
   }
 
-  .poker-info {
-    gap: 1rem;
+  .lives-hearts .heart {
+    width: 8px;
+    height: 8px;
   }
 
-  .betting-area {
-    flex-direction: column;
-    gap: 0.75rem;
+  /* 맞고 카드 - 작은 화면 */
+  .matgo-card {
+    width: 32px;
+    height: 46px;
+    padding: 2px;
   }
 
-  .bet-input {
-    width: 100%;
-    max-width: 150px;
+  .matgo-card .card-month {
+    font-size: 0.4rem;
+    padding: 0 2px;
   }
 
-  /* 리더보드 모바일 */
-  .leaderboard-modal {
-    padding: 1.5rem;
-    margin: 1rem;
-    max-width: calc(100% - 2rem);
+  .matgo-card .card-image {
+    font-size: 0.8rem;
   }
 
-  .leaderboard-header h3 {
-    font-size: 1.25rem;
+  .matgo-card .card-type-badge {
+    font-size: 0.35rem;
   }
 
-  .name-input-area {
-    flex-direction: column;
+  .bet-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    min-width: 50px;
   }
 
-  .name-input {
-    width: 100%;
+  .go-btn,
+  .stop-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
   }
 
-  .game-ranking-section {
-    padding: 0.75rem;
-  }
-
-  .rank-item {
-    padding: 0.4rem;
-  }
-
-  .score-submit-form {
-    flex-direction: column;
-  }
-
-  .rankings-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .game-buttons {
-    flex-direction: column;
+  .poker-card {
+    width: 38px;
+    height: 54px;
   }
 }

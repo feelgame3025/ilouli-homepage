@@ -499,6 +499,21 @@
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  position: relative;
+}
+
+.server-file-number {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: linear-gradient(135deg, #0071e3 0%, #00c7be 100%);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
 }
 
 .server-file-card:hover {

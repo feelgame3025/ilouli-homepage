@@ -18,7 +18,7 @@ const FileUpload = () => {
   // 서버 파일 목록 로드
   const loadServerFiles = useCallback(async () => {
     try {
-      const response = await api.get('/files/list');
+      const response = await api.get('/api/files/list');
       setServerFiles(response.data.files || []);
     } catch (error) {
       console.error('Failed to load server files:', error);
@@ -125,7 +125,7 @@ const FileUpload = () => {
       const formData = new FormData();
       formData.append('file', fileData.file);
 
-      const response = await api.post('/files/upload', formData, {
+      const response = await api.post('/api/files/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -157,7 +157,7 @@ const FileUpload = () => {
     if (!window.confirm('서버에서 파일을 삭제하시겠습니까?')) return;
 
     try {
-      await api.delete(`/files/${fileId}`);
+      await api.delete(`/api/files/${fileId}`);
       setServerFiles((prev) => prev.filter((f) => f.id !== fileId));
     } catch (error) {
       console.error('Delete from server failed:', error);
@@ -360,8 +360,9 @@ const FileUpload = () => {
               </div>
             ) : (
               <div className="server-files-grid">
-                {serverFiles.map((file) => (
+                {serverFiles.map((file, index) => (
                   <div key={file.id} className="server-file-card">
+                    <div className="server-file-number">#{index + 1}</div>
                     <div className="server-file-preview">
                       {file.mimeType?.startsWith('image/') ? (
                         <img
@@ -375,7 +376,7 @@ const FileUpload = () => {
                     <div className="server-file-info">
                       <h3>{file.originalName}</h3>
                       <p className="file-meta">
-                        {formatFileSize(file.size)} • {formatDate(file.uploadedAt)}
+                        #{index + 1} • {formatFileSize(file.size)} • {formatDate(file.uploadedAt)}
                       </p>
                     </div>
                     <div className="server-file-actions">
