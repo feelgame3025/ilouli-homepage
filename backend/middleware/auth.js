@@ -27,6 +27,26 @@ const adminMiddleware = (req, res, next) => {
   next();
 };
 
+// Optional auth - doesn't require token but populates req.user if present
+const optionalAuth = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    req.user = null;
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+  } catch (err) {
+    req.user = null;
+  }
+  next();
+};
+
 const generateToken = (user) => {
   return jwt.sign(
     { id: user.id, email: user.email, tier: user.tier },
@@ -35,4 +55,11 @@ const generateToken = (user) => {
   );
 };
 
-module.exports = { authMiddleware, adminMiddleware, generateToken, JWT_SECRET };
+module.exports = {
+  authMiddleware,
+  authenticateToken: authMiddleware,
+  adminMiddleware,
+  optionalAuth,
+  generateToken,
+  JWT_SECRET
+};

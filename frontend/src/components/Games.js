@@ -1,36 +1,102 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import api from '../services/api';
 import gameSound from '../utils/gameSound';
 import './Games.css';
 
 // ==================== 리더보드 시스템 ====================
+// 서버 기반 리더보드 (로컬 캐시 포함)
 const Leaderboard = {
+  cache: {},
+
+  // 로컬 스토리지에서 점수 가져오기 (캐시 또는 폴백)
   getScores(gameId) {
+    // 캐시가 있으면 캐시 사용
+    if (this.cache[gameId]) {
+      return this.cache[gameId];
+    }
+    // 없으면 로컬 스토리지에서 가져오기
     const data = localStorage.getItem(`leaderboard_${gameId}`);
     return data ? JSON.parse(data) : [];
   },
 
-  addScore(gameId, name, score, details = {}) {
-    const scores = this.getScores(gameId);
-    const newEntry = {
-      id: Date.now(),
-      name: name || '익명',
-      score,
-      details,
-      date: new Date().toISOString()
-    };
-    scores.push(newEntry);
-    // 점수 높은 순 정렬 (게임에 따라 다를 수 있음)
-    scores.sort((a, b) => b.score - a.score);
-    // 상위 10개만 유지
-    const top10 = scores.slice(0, 10);
-    localStorage.setItem(`leaderboard_${gameId}`, JSON.stringify(top10));
-    return top10.findIndex(s => s.id === newEntry.id) + 1; // 순위 반환
+  // 서버에서 점수 가져오기
+  async fetchScores(gameId) {
+    try {
+      const response = await api.get(`/games/scores/${gameId}`);
+      const scores = response.data.scores.map(s => ({
+        id: s.id,
+        name: s.playerName,
+        userName: s.userName,
+        score: s.score,
+        date: s.createdAt
+      }));
+      this.cache[gameId] = scores;
+      localStorage.setItem(`leaderboard_${gameId}`, JSON.stringify(scores));
+      return scores;
+    } catch (error) {
+      console.error('Failed to fetch scores:', error);
+      return this.getScores(gameId);
+    }
+  },
+
+  // 서버에 점수 저장
+  async addScore(gameId, name, score, details = {}) {
+    try {
+      const response = await api.post('/games/scores', {
+        gameId,
+        playerName: name || '익명',
+        score,
+        details
+      });
+      // 캐시 새로고침
+      await this.fetchScores(gameId);
+      return response.data.rank;
+    } catch (error) {
+      console.error('Failed to save score:', error);
+      // 서버 실패 시 로컬에만 저장
+      const scores = this.getScores(gameId);
+      const newEntry = {
+        id: Date.now(),
+        name: name || '익명',
+        score,
+        details,
+        date: new Date().toISOString()
+      };
+      scores.push(newEntry);
+      scores.sort((a, b) => b.score - a.score);
+      const top10 = scores.slice(0, 10);
+      localStorage.setItem(`leaderboard_${gameId}`, JSON.stringify(top10));
+      return top10.findIndex(s => s.id === newEntry.id) + 1;
+    }
   },
 
   getRank(gameId, score) {
     const scores = this.getScores(gameId);
     const rank = scores.filter(s => s.score > score).length + 1;
     return rank;
+  },
+
+  // 모든 게임 점수 가져오기
+  async fetchAllScores() {
+    try {
+      const response = await api.get('/games/scores');
+      const rankings = response.data.rankings;
+      for (const gameId in rankings) {
+        const scores = rankings[gameId].map(s => ({
+          id: s.id,
+          name: s.playerName,
+          userName: s.userName,
+          score: s.score,
+          date: s.createdAt
+        }));
+        this.cache[gameId] = scores;
+        localStorage.setItem(`leaderboard_${gameId}`, JSON.stringify(scores));
+      }
+      return true;
+    } catch (error) {
+      console.error('Failed to fetch all scores:', error);
+      return false;
+    }
   }
 };
 
@@ -47,7 +113,17 @@ const SoundToggle = ({ isMuted, onToggle }) => (
 
 // 리더보드 표시 컴포넌트
 const LeaderboardDisplay = ({ gameId, gameName, onClose }) => {
-  const scores = Leaderboard.getScores(gameId);
+  const [scores, setScores] = useState(Leaderboard.getScores(gameId));
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchScores = async () => {
+      const data = await Leaderboard.fetchScores(gameId);
+      setScores(data);
+      setLoading(false);
+    };
+    fetchScores();
+  }, [gameId]);
 
   return (
     <div className="leaderboard-overlay" onClick={onClose}>
@@ -57,7 +133,9 @@ const LeaderboardDisplay = ({ gameId, gameName, onClose }) => {
           <button className="close-btn" onClick={onClose}>×</button>
         </div>
         <div className="leaderboard-content">
-          {scores.length === 0 ? (
+          {loading ? (
+            <p className="loading-scores">로딩 중...</p>
+          ) : scores.length === 0 ? (
             <p className="no-scores">아직 기록이 없습니다.</p>
           ) : (
             <table className="leaderboard-table">
@@ -75,7 +153,7 @@ const LeaderboardDisplay = ({ gameId, gameName, onClose }) => {
                     <td className="rank">
                       {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
                     </td>
-                    <td>{entry.name}</td>
+                    <td>{entry.userName || entry.name}</td>
                     <td className="score">{entry.score.toLocaleString()}</td>
                     <td className="date">{new Date(entry.date).toLocaleDateString('ko-KR')}</td>
                   </tr>
@@ -1216,9 +1294,14 @@ const Games = () => {
   const [selectedGame, setSelectedGame] = useState(null);
   const [isMuted, setIsMuted] = useState(gameSound.getMuted());
   const [showAllRankings, setShowAllRankings] = useState(false);
+  const [, forceUpdate] = useState(0);
 
   useEffect(() => {
     gameSound.init();
+    // 서버에서 모든 점수 가져오기
+    Leaderboard.fetchAllScores().then(() => {
+      forceUpdate(n => n + 1); // 점수 로드 후 UI 업데이트
+    });
   }, []);
 
   const games = [
@@ -1298,7 +1381,7 @@ const Games = () => {
                             <span className="rank-badge">
                               {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
                             </span>
-                            <span className="rank-name">{entry.name}</span>
+                            <span className="rank-name">{entry.userName || entry.name}</span>
                             <span className="rank-score">{entry.score.toLocaleString()}</span>
                           </div>
                         ))}

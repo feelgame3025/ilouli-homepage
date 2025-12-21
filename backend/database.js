@@ -31,6 +31,35 @@ try {
   // 이미 존재하면 무시
 }
 
+// 파일 업로드 테이블
+db.exec(`
+  CREATE TABLE IF NOT EXISTS uploaded_files (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    filename TEXT NOT NULL,
+    original_name TEXT NOT NULL,
+    file_size INTEGER,
+    mime_type TEXT,
+    file_path TEXT NOT NULL,
+    uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+  )
+`);
+
+// 게임 점수 테이블
+db.exec(`
+  CREATE TABLE IF NOT EXISTS game_scores (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    game_id TEXT NOT NULL,
+    player_name TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    details TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+  )
+`);
+
 // 기본 관리자 계정 생성
 const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get('admin@ilouli.com');
 if (!adminExists) {
