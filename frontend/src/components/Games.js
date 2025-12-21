@@ -474,6 +474,7 @@ const Sudoku = ({ onBack }) => {
   const [showSubmit, setShowSubmit] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [finalRank, setFinalRank] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // 수도쿠 생성 함수
   const generateSudoku = useCallback(() => {
@@ -619,13 +620,18 @@ const Sudoku = ({ onBack }) => {
   };
 
   return (
-    <div className="game-play-area sudoku-area">
+    <div className={`game-play-area sudoku-area ${isFullscreen ? 'fullscreen-mode' : ''}`}>
       <div className="game-header-bar">
-        <button onClick={() => { gameSound.playClick(); onBack(); }} className="back-btn">← 뒤로</button>
+        <button onClick={() => { gameSound.playClick(); isFullscreen ? setIsFullscreen(false) : onBack(); }} className="back-btn">
+          {isFullscreen ? '✕ 닫기' : '← 뒤로'}
+        </button>
         <h2>수도쿠</h2>
         <div className="header-right">
           <button onClick={() => setShowLeaderboard(true)} className="ranking-btn">🏆</button>
           <span className="game-score">{formatTime(elapsedTime)}</span>
+          <button onClick={() => setIsFullscreen(!isFullscreen)} className="fullscreen-toggle" title="전체화면">
+            {isFullscreen ? '⤓' : '⤢'}
+          </button>
           <SoundToggle isMuted={isMuted} onToggle={toggleSound} />
         </div>
       </div>
@@ -700,68 +706,68 @@ const Sudoku = ({ onBack }) => {
 };
 
 // ==================== 맞고 게임 ====================
-// 화투패 48장 정의 (정확한 구성)
+// 화투패 48장 정의 - 전통 화투 스타일
 const HWATU_DECK = [
   // 1월 (송학) - 광, 홍단, 피, 피
-  { month: 1, name: '송학', type: '광', subtype: null, image: '🏯', piCount: 0 },
-  { month: 1, name: '송학', type: '띠', subtype: '홍단', image: '🎋', piCount: 0 },
-  { month: 1, name: '송학', type: '피', subtype: null, image: '🌲', piCount: 1 },
-  { month: 1, name: '송학', type: '피', subtype: null, image: '🌲', piCount: 1 },
+  { month: 1, name: '송학', type: '광', subtype: null, symbol: '鶴', color: '#dc2626', piCount: 0 },
+  { month: 1, name: '송학', type: '띠', subtype: '홍단', symbol: '紅', color: '#dc2626', piCount: 0 },
+  { month: 1, name: '송학', type: '피', subtype: null, symbol: '松', color: '#166534', piCount: 1 },
+  { month: 1, name: '송학', type: '피', subtype: null, symbol: '松', color: '#166534', piCount: 1 },
   // 2월 (매조) - 열끗(새), 홍단, 피, 피
-  { month: 2, name: '매조', type: '열끗', subtype: '고도리', image: '🐦', piCount: 0 },
-  { month: 2, name: '매조', type: '띠', subtype: '홍단', image: '🎋', piCount: 0 },
-  { month: 2, name: '매조', type: '피', subtype: null, image: '🌸', piCount: 1 },
-  { month: 2, name: '매조', type: '피', subtype: null, image: '🌸', piCount: 1 },
+  { month: 2, name: '매조', type: '열끗', subtype: '고도리', symbol: '鳥', color: '#dc2626', piCount: 0 },
+  { month: 2, name: '매조', type: '띠', subtype: '홍단', symbol: '紅', color: '#dc2626', piCount: 0 },
+  { month: 2, name: '매조', type: '피', subtype: null, symbol: '梅', color: '#be185d', piCount: 1 },
+  { month: 2, name: '매조', type: '피', subtype: null, symbol: '梅', color: '#be185d', piCount: 1 },
   // 3월 (벚꽃) - 광, 홍단, 피, 피
-  { month: 3, name: '벚꽃', type: '광', subtype: null, image: '🌸', piCount: 0 },
-  { month: 3, name: '벚꽃', type: '띠', subtype: '홍단', image: '🎋', piCount: 0 },
-  { month: 3, name: '벚꽃', type: '피', subtype: null, image: '🌸', piCount: 1 },
-  { month: 3, name: '벚꽃', type: '피', subtype: null, image: '🌸', piCount: 1 },
+  { month: 3, name: '벚꽃', type: '광', subtype: null, symbol: '幕', color: '#dc2626', piCount: 0 },
+  { month: 3, name: '벚꽃', type: '띠', subtype: '홍단', symbol: '紅', color: '#dc2626', piCount: 0 },
+  { month: 3, name: '벚꽃', type: '피', subtype: null, symbol: '櫻', color: '#f472b6', piCount: 1 },
+  { month: 3, name: '벚꽃', type: '피', subtype: null, symbol: '櫻', color: '#f472b6', piCount: 1 },
   // 4월 (흑싸리) - 열끗(새), 초단, 피, 피
-  { month: 4, name: '흑싸리', type: '열끗', subtype: '고도리', image: '🐦', piCount: 0 },
-  { month: 4, name: '흑싸리', type: '띠', subtype: '초단', image: '🎋', piCount: 0 },
-  { month: 4, name: '흑싸리', type: '피', subtype: null, image: '🌿', piCount: 1 },
-  { month: 4, name: '흑싸리', type: '피', subtype: null, image: '🌿', piCount: 1 },
+  { month: 4, name: '흑싸리', type: '열끗', subtype: '고도리', symbol: '鳥', color: '#1d1d1f', piCount: 0 },
+  { month: 4, name: '흑싸리', type: '띠', subtype: '초단', symbol: '草', color: '#dc2626', piCount: 0 },
+  { month: 4, name: '흑싸리', type: '피', subtype: null, symbol: '藤', color: '#1d1d1f', piCount: 1 },
+  { month: 4, name: '흑싸리', type: '피', subtype: null, symbol: '藤', color: '#1d1d1f', piCount: 1 },
   // 5월 (난초) - 열끗, 초단, 피, 피
-  { month: 5, name: '난초', type: '열끗', subtype: null, image: '🦋', piCount: 0 },
-  { month: 5, name: '난초', type: '띠', subtype: '초단', image: '🎋', piCount: 0 },
-  { month: 5, name: '난초', type: '피', subtype: null, image: '🌺', piCount: 1 },
-  { month: 5, name: '난초', type: '피', subtype: null, image: '🌺', piCount: 1 },
+  { month: 5, name: '난초', type: '열끗', subtype: null, symbol: '橋', color: '#92400e', piCount: 0 },
+  { month: 5, name: '난초', type: '띠', subtype: '초단', symbol: '草', color: '#dc2626', piCount: 0 },
+  { month: 5, name: '난초', type: '피', subtype: null, symbol: '蘭', color: '#7c3aed', piCount: 1 },
+  { month: 5, name: '난초', type: '피', subtype: null, symbol: '蘭', color: '#7c3aed', piCount: 1 },
   // 6월 (목단) - 열끗, 청단, 피, 피
-  { month: 6, name: '목단', type: '열끗', subtype: null, image: '🦋', piCount: 0 },
-  { month: 6, name: '목단', type: '띠', subtype: '청단', image: '📘', piCount: 0 },
-  { month: 6, name: '목단', type: '피', subtype: null, image: '🌺', piCount: 1 },
-  { month: 6, name: '목단', type: '피', subtype: null, image: '🌺', piCount: 1 },
+  { month: 6, name: '목단', type: '열끗', subtype: null, symbol: '蝶', color: '#1d1d1f', piCount: 0 },
+  { month: 6, name: '목단', type: '띠', subtype: '청단', symbol: '靑', color: '#1d4ed8', piCount: 0 },
+  { month: 6, name: '목단', type: '피', subtype: null, symbol: '牧', color: '#dc2626', piCount: 1 },
+  { month: 6, name: '목단', type: '피', subtype: null, symbol: '牧', color: '#dc2626', piCount: 1 },
   // 7월 (홍싸리) - 열끗(멧돼지), 초단, 피, 피
-  { month: 7, name: '홍싸리', type: '열끗', subtype: null, image: '🐗', piCount: 0 },
-  { month: 7, name: '홍싸리', type: '띠', subtype: '초단', image: '🎋', piCount: 0 },
-  { month: 7, name: '홍싸리', type: '피', subtype: null, image: '🍂', piCount: 1 },
-  { month: 7, name: '홍싸리', type: '피', subtype: null, image: '🍂', piCount: 1 },
+  { month: 7, name: '홍싸리', type: '열끗', subtype: null, symbol: '猪', color: '#1d1d1f', piCount: 0 },
+  { month: 7, name: '홍싸리', type: '띠', subtype: '초단', symbol: '草', color: '#dc2626', piCount: 0 },
+  { month: 7, name: '홍싸리', type: '피', subtype: null, symbol: '萩', color: '#dc2626', piCount: 1 },
+  { month: 7, name: '홍싸리', type: '피', subtype: null, symbol: '萩', color: '#dc2626', piCount: 1 },
   // 8월 (공산) - 광(달), 열끗(새), 피, 피
-  { month: 8, name: '공산', type: '광', subtype: null, image: '🌕', piCount: 0 },
-  { month: 8, name: '공산', type: '열끗', subtype: '고도리', image: '🦢', piCount: 0 },
-  { month: 8, name: '공산', type: '피', subtype: null, image: '🍃', piCount: 1 },
-  { month: 8, name: '공산', type: '피', subtype: null, image: '🍃', piCount: 1 },
+  { month: 8, name: '공산', type: '광', subtype: null, symbol: '月', color: '#fbbf24', piCount: 0 },
+  { month: 8, name: '공산', type: '열끗', subtype: '고도리', symbol: '雁', color: '#1d1d1f', piCount: 0 },
+  { month: 8, name: '공산', type: '피', subtype: null, symbol: '芒', color: '#166534', piCount: 1 },
+  { month: 8, name: '공산', type: '피', subtype: null, symbol: '芒', color: '#166534', piCount: 1 },
   // 9월 (국화) - 열끗(술잔), 청단, 피, 피
-  { month: 9, name: '국화', type: '열끗', subtype: null, image: '🍶', piCount: 0 },
-  { month: 9, name: '국화', type: '띠', subtype: '청단', image: '📘', piCount: 0 },
-  { month: 9, name: '국화', type: '피', subtype: null, image: '🌼', piCount: 1 },
-  { month: 9, name: '국화', type: '피', subtype: null, image: '🌼', piCount: 1 },
+  { month: 9, name: '국화', type: '열끗', subtype: null, symbol: '盃', color: '#dc2626', piCount: 0 },
+  { month: 9, name: '국화', type: '띠', subtype: '청단', symbol: '靑', color: '#1d4ed8', piCount: 0 },
+  { month: 9, name: '국화', type: '피', subtype: null, symbol: '菊', color: '#ca8a04', piCount: 1 },
+  { month: 9, name: '국화', type: '피', subtype: null, symbol: '菊', color: '#ca8a04', piCount: 1 },
   // 10월 (단풍) - 열끗(사슴), 청단, 피, 피
-  { month: 10, name: '단풍', type: '열끗', subtype: null, image: '🦌', piCount: 0 },
-  { month: 10, name: '단풍', type: '띠', subtype: '청단', image: '📘', piCount: 0 },
-  { month: 10, name: '단풍', type: '피', subtype: null, image: '🍁', piCount: 1 },
-  { month: 10, name: '단풍', type: '피', subtype: null, image: '🍁', piCount: 1 },
+  { month: 10, name: '단풍', type: '열끗', subtype: null, symbol: '鹿', color: '#92400e', piCount: 0 },
+  { month: 10, name: '단풍', type: '띠', subtype: '청단', symbol: '靑', color: '#1d4ed8', piCount: 0 },
+  { month: 10, name: '단풍', type: '피', subtype: null, symbol: '楓', color: '#ea580c', piCount: 1 },
+  { month: 10, name: '단풍', type: '피', subtype: null, symbol: '楓', color: '#ea580c', piCount: 1 },
   // 11월 (오동) - 광, 피, 피, 쌍피
-  { month: 11, name: '오동', type: '광', subtype: '비광', image: '🌧️', piCount: 0 },
-  { month: 11, name: '오동', type: '피', subtype: null, image: '🍂', piCount: 1 },
-  { month: 11, name: '오동', type: '피', subtype: null, image: '🍂', piCount: 1 },
-  { month: 11, name: '오동', type: '피', subtype: '쌍피', image: '🍂', piCount: 2 },
+  { month: 11, name: '오동', type: '광', subtype: '비광', symbol: '鳳', color: '#7c3aed', piCount: 0 },
+  { month: 11, name: '오동', type: '피', subtype: null, symbol: '桐', color: '#ca8a04', piCount: 1 },
+  { month: 11, name: '오동', type: '피', subtype: null, symbol: '桐', color: '#ca8a04', piCount: 1 },
+  { month: 11, name: '오동', type: '피', subtype: '쌍피', symbol: '桐', color: '#ca8a04', piCount: 2 },
   // 12월 (비) - 광, 열끗, 띠, 쌍피
-  { month: 12, name: '비', type: '광', subtype: '비광', image: '☔', piCount: 0 },
-  { month: 12, name: '비', type: '열끗', subtype: null, image: '🐦', piCount: 0 },
-  { month: 12, name: '비', type: '띠', subtype: null, image: '🎋', piCount: 0 },
-  { month: 12, name: '비', type: '피', subtype: '쌍피', image: '🌧️', piCount: 2 },
+  { month: 12, name: '비', type: '광', subtype: '비광', symbol: '雨', color: '#475569', piCount: 0 },
+  { month: 12, name: '비', type: '열끗', subtype: null, symbol: '燕', color: '#1d1d1f', piCount: 0 },
+  { month: 12, name: '비', type: '띠', subtype: null, symbol: '雷', color: '#dc2626', piCount: 0 },
+  { month: 12, name: '비', type: '피', subtype: '쌍피', symbol: '雨', color: '#475569', piCount: 2 },
 ];
 
 const GoStop = ({ onBack }) => {
@@ -771,6 +777,7 @@ const GoStop = ({ onBack }) => {
   const [chips, setChips] = useState(1000);
   const [currentBet, setCurrentBet] = useState(100);
   const [message, setMessage] = useState('베팅 금액을 선택하세요');
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const [deck, setDeck] = useState([]);
   const [playerHand, setPlayerHand] = useState([]);
@@ -1157,13 +1164,18 @@ const GoStop = ({ onBack }) => {
   });
 
   return (
-    <div className="game-play-area gostop-area">
+    <div className={`game-play-area gostop-area ${isFullscreen ? 'fullscreen-mode' : ''}`}>
       <div className="game-header-bar">
-        <button onClick={() => { gameSound.playClick(); onBack(); }} className="back-btn">← 뒤로</button>
+        <button onClick={() => { gameSound.playClick(); isFullscreen ? setIsFullscreen(false) : onBack(); }} className="back-btn">
+          {isFullscreen ? '✕ 닫기' : '← 뒤로'}
+        </button>
         <h2>맞고</h2>
         <div className="header-right">
           <button onClick={() => setShowLeaderboard(true)} className="ranking-btn">🏆</button>
           <span className="game-score">💰 {chips}</span>
+          <button onClick={() => setIsFullscreen(!isFullscreen)} className="fullscreen-toggle" title="전체화면">
+            {isFullscreen ? '⤓' : '⤢'}
+          </button>
           <SoundToggle isMuted={isMuted} onToggle={toggleSound} />
         </div>
       </div>
@@ -1228,10 +1240,10 @@ const GoStop = ({ onBack }) => {
             <div className="field-label">바닥 ({fieldCards.length}장)</div>
             <div className="field-cards-grid">
               {fieldCards.map(card => (
-                <div key={card.id} className={`matgo-card field-card ${card.type}`}>
-                  <span className="card-month">{card.month}월</span>
-                  <span className="card-image">{card.image}</span>
-                  <span className="card-type-badge">{card.type === '열끗' ? '열' : card.type}</span>
+                <div key={card.id} className={`hwatu-card field-card ${card.type}`}>
+                  <span className="hwatu-month">{card.month}</span>
+                  <span className="hwatu-symbol" style={{ color: card.color }}>{card.symbol}</span>
+                  <span className={`hwatu-type ${card.type}`}>{card.type === '열끗' ? '열' : card.type}</span>
                 </div>
               ))}
             </div>
@@ -1259,12 +1271,12 @@ const GoStop = ({ onBack }) => {
               {playerHand.map(card => (
                 <div
                   key={card.id}
-                  className={`matgo-card hand-card ${card.type} ${selectedCard?.id === card.id ? 'selected' : ''} ${!isPlayerTurn || canStop ? 'disabled' : ''}`}
+                  className={`hwatu-card hand-card ${card.type} ${selectedCard?.id === card.id ? 'selected' : ''} ${!isPlayerTurn || canStop ? 'disabled' : ''}`}
                   onClick={() => selectCard(card)}
                 >
-                  <span className="card-month">{card.month}월</span>
-                  <span className="card-image">{card.image}</span>
-                  <span className="card-type-badge">{card.type === '열끗' ? '열' : card.type}</span>
+                  <span className="hwatu-month">{card.month}</span>
+                  <span className="hwatu-symbol" style={{ color: card.color }}>{card.symbol}</span>
+                  <span className={`hwatu-type ${card.type}`}>{card.type === '열끗' ? '열' : card.type}</span>
                 </div>
               ))}
             </div>
@@ -1276,8 +1288,8 @@ const GoStop = ({ onBack }) => {
           {/* 고/스톱 버튼 */}
           {canStop && (
             <div className="go-stop-buttons">
-              <button onClick={handleGo} className="go-btn">🔥 고!</button>
-              <button onClick={handleStop} className="stop-btn">✋ 스톱</button>
+              <button onClick={handleGo} className="go-btn">고!</button>
+              <button onClick={handleStop} className="stop-btn">스톱</button>
             </div>
           )}
         </div>
