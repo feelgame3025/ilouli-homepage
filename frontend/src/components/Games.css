@@ -319,259 +319,782 @@
   to { transform: scale(1.05); }
 }
 
-/* 숫자 맞추기 */
-.number-guess-area {
+/* ==================== 스도쿠 ==================== */
+.sudoku-area {
   text-align: center;
 }
 
-.guess-message {
-  font-size: 1.25rem;
-  color: #1d1d1f;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: #f5f5f5;
-  border-radius: 12px;
-}
-
-.guess-message.success {
-  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-  color: #2e7d32;
-}
-
-.guess-input-area {
+.sudoku-controls {
   display: flex;
-  gap: 0.75rem;
   justify-content: center;
+  gap: 1rem;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 
-.guess-input {
-  width: 120px;
-  padding: 0.75rem 1rem;
+.difficulty-btn {
+  padding: 0.5rem 1rem;
   border: 2px solid #e5e5e5;
   border-radius: 8px;
-  font-size: 1.25rem;
-  text-align: center;
-  -moz-appearance: textfield;
-}
-
-.guess-input::-webkit-outer-spin-button,
-.guess-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.guess-input:focus {
-  outline: none;
-  border-color: #3b82f6;
-}
-
-.guess-history {
-  margin-top: 1.5rem;
-  text-align: center;
-}
-
-.guess-history p {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.75rem;
-}
-
-.history-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-}
-
-.history-chip {
-  padding: 0.5rem 0.75rem;
-  border-radius: 20px;
+  background: white;
   font-size: 0.9rem;
   font-weight: 500;
-}
-
-.history-chip.low {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.history-chip.high {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.history-chip.correct {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-/* 반응속도 테스트 */
-.reaction-area {
-  height: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
   cursor: pointer;
-  transition: background 0.3s;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.reaction-message {
-  font-size: 1.5rem;
-  font-weight: 600;
-  text-align: center;
-  padding: 0 1rem;
-}
-
-.reaction-emoji {
-  font-size: 4rem;
-  margin-top: 1rem;
-}
-
-.reaction-results {
-  margin-top: 1.5rem;
-  text-align: center;
-}
-
-.reaction-results p {
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.result-chip {
-  display: inline-block;
-  background: #f5f5f5;
-  padding: 0.25rem 0.5rem;
-  border-radius: 8px;
-  margin: 0.25rem;
-  font-size: 0.85rem;
-}
-
-/* 가위바위보 */
-.rps-arena {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2rem;
-  margin: 2rem 0;
-}
-
-.rps-player {
-  text-align: center;
-}
-
-.rps-label {
-  display: block;
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.5rem;
-}
-
-.rps-choice {
-  width: 100px;
-  height: 100px;
-  background: #f5f5f5;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
   transition: all 0.2s;
 }
 
-.rps-choice.selected {
-  background: #e8f5e9;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.difficulty-btn:hover {
+  border-color: #3b82f6;
+  background: #f0f7ff;
 }
 
-.rps-choice.animating {
-  animation: shake 0.1s infinite;
+.difficulty-btn.active {
+  border-color: #3b82f6;
+  background: #3b82f6;
+  color: white;
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-.rps-vs {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #999;
-}
-
-.rps-result {
-  text-align: center;
-  font-size: 1.5rem;
+.sudoku-timer {
+  font-size: 1.1rem;
   font-weight: 600;
-  margin-bottom: 2rem;
-  padding: 1rem;
+  color: #1d1d1f;
+  margin-bottom: 1rem;
+}
+
+.sudoku-board {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 1px;
+  max-width: 360px;
+  margin: 0 auto 1.5rem;
+  background: #1d1d1f;
+  border: 2px solid #1d1d1f;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sudoku-cell {
+  aspect-ratio: 1;
+  background: white;
+  border: none;
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sudoku-cell:hover:not(.fixed):not(.selected) {
+  background: #f0f7ff;
+}
+
+.sudoku-cell.fixed {
+  background: #f5f5f5;
+  color: #1d1d1f;
+  cursor: default;
+}
+
+.sudoku-cell.selected {
+  background: #dbeafe;
+}
+
+.sudoku-cell.error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.sudoku-cell.user-input {
+  color: #3b82f6;
+}
+
+/* 3x3 박스 구분선 */
+.sudoku-cell:nth-child(3n) {
+  border-right: 2px solid #1d1d1f;
+}
+
+.sudoku-cell:nth-child(9n) {
+  border-right: none;
+}
+
+.sudoku-cell:nth-child(n+19):nth-child(-n+27),
+.sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+  border-bottom: 2px solid #1d1d1f;
+}
+
+.sudoku-numpad {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.numpad-btn {
+  width: 36px;
+  height: 36px;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  background: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.numpad-btn:hover {
+  border-color: #3b82f6;
+  background: #f0f7ff;
+}
+
+.numpad-btn.erase {
+  width: auto;
+  padding: 0 1rem;
+  font-size: 0.9rem;
+}
+
+/* ==================== 고스톱 ==================== */
+.gostop-area {
+  text-align: center;
+}
+
+.gostop-info {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.gostop-score {
+  background: #f5f5f5;
+  padding: 0.75rem 1.5rem;
   border-radius: 12px;
 }
 
-.rps-result.win {
-  background: #d1fae5;
-  color: #065f46;
+.gostop-score span {
+  font-weight: 600;
+  color: #1d1d1f;
 }
 
-.rps-result.lose {
-  background: #fee2e2;
-  color: #991b1b;
+.gostop-table {
+  background: linear-gradient(135deg, #1a472a 0%, #2d5a3c 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.rps-result.draw {
-  background: #fef3c7;
-  color: #92400e;
+.gostop-section {
+  margin-bottom: 1.5rem;
 }
 
-.rps-buttons {
+.gostop-section:last-child {
+  margin-bottom: 0;
+}
+
+.gostop-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.gostop-cards {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-height: 60px;
+}
+
+.hwatu-card {
+  width: 45px;
+  height: 65px;
+  background: white;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.hwatu-card:hover:not(.disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.hwatu-card.selected {
+  transform: translateY(-8px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  border: 2px solid #3b82f6;
+}
+
+.hwatu-card.disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.hwatu-card.hidden {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-size: 1rem;
+  color: white;
+}
+
+.gostop-center {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.gostop-message {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.gostop-actions {
   display: flex;
   justify-content: center;
   gap: 1rem;
 }
 
-.rps-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 1.5rem;
-  background: white;
-  border: 2px solid #e5e5e5;
-  border-radius: 12px;
+.gostop-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.rps-btn:hover:not(:disabled) {
-  border-color: #3b82f6;
-  background: #f0f7ff;
+.gostop-btn.primary {
+  background: #fbbf24;
+  color: #1d1d1f;
 }
 
-.rps-btn:disabled {
+.gostop-btn.primary:hover {
+  background: #f59e0b;
+}
+
+.gostop-btn.secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.gostop-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.gostop-captured {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.captured-group {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.captured-group span {
+  font-weight: 600;
+}
+
+/* ==================== 포커 ==================== */
+.poker-area {
+  text-align: center;
+}
+
+.poker-info {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.poker-chips {
+  background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.poker-pot {
+  background: #f5f5f5;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.poker-table {
+  background: linear-gradient(135deg, #1a472a 0%, #2d5a3c 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.poker-section {
+  margin-bottom: 1.5rem;
+}
+
+.poker-section:last-child {
+  margin-bottom: 0;
+}
+
+.poker-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.poker-cards {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-height: 80px;
+}
+
+.poker-card {
+  width: 55px;
+  height: 80px;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  gap: 0.25rem;
+}
+
+.poker-card.red {
+  color: #dc2626;
+}
+
+.poker-card.black {
+  color: #1d1d1f;
+}
+
+.poker-card:hover:not(.disabled):not(.hidden) {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.poker-card.selected {
+  transform: translateY(-10px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  border: 2px solid #3b82f6;
+}
+
+.poker-card.hidden {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.poker-card.disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.poker-card .suit {
+  font-size: 1.5rem;
+}
+
+.poker-card .rank {
+  font-size: 1rem;
+}
+
+.poker-center {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.poker-message {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.poker-result {
+  color: #fbbf24;
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.poker-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.poker-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.poker-btn.primary {
+  background: #fbbf24;
+  color: #1d1d1f;
+}
+
+.poker-btn.primary:hover {
+  background: #f59e0b;
+}
+
+.poker-btn.secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.poker-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.poker-btn.danger {
+  background: #ef4444;
+  color: white;
+}
+
+.poker-btn.danger:hover {
+  background: #dc2626;
+}
+
+.poker-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.rps-btn.active {
-  border-color: #3b82f6;
-  background: #e8f5e9;
+.betting-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.rps-btn-emoji {
-  font-size: 2rem;
+.bet-input {
+  width: 100px;
+  padding: 0.5rem 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  text-align: center;
+  -moz-appearance: textfield;
 }
 
-.rps-btn-label {
+.bet-input::-webkit-outer-spin-button,
+.bet-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.bet-input:focus {
+  outline: none;
+  border-color: #fbbf24;
+}
+
+.bet-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ==================== 리더보드 ==================== */
+.leaderboard-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.leaderboard-modal {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.leaderboard-modal h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.leaderboard-table th {
+  font-weight: 600;
+  color: #666;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.leaderboard-table td {
+  color: #1d1d1f;
+}
+
+.leaderboard-table tr:last-child td {
+  border-bottom: none;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-weight: 600;
   font-size: 0.9rem;
-  font-weight: 500;
-  color: #333;
 }
 
-/* 모바일 반응형 */
+.rank-badge.gold {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+}
+
+.rank-badge.silver {
+  background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+  color: white;
+}
+
+.rank-badge.bronze {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: white;
+}
+
+.rank-badge.normal {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.leaderboard-empty {
+  text-align: center;
+  color: #666;
+  padding: 2rem;
+}
+
+.score-submit {
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.score-submit h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 1rem;
+}
+
+.score-submit-form {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.score-submit-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.score-submit-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.score-submit-btn {
+  padding: 0.75rem 1.5rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.score-submit-btn:hover {
+  background: #2563eb;
+}
+
+.leaderboard-close {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  background: #1d1d1f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.leaderboard-close:hover {
+  background: #333;
+}
+
+/* 전체 랭킹 섹션 */
+.all-rankings {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e5e5;
+}
+
+.all-rankings h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.rankings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.ranking-card {
+  background: white;
+  border: 1px solid #e5e5e5;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.ranking-card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ranking-card .game-emoji {
+  font-size: 1.5rem;
+}
+
+.ranking-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.ranking-item:last-child {
+  border-bottom: none;
+}
+
+.ranking-item .rank {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 50%;
+  background: #f5f5f5;
+  color: #666;
+}
+
+.ranking-item .rank.top-1 {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+}
+
+.ranking-item .rank.top-2 {
+  background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+  color: white;
+}
+
+.ranking-item .rank.top-3 {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: white;
+}
+
+.ranking-item .name {
+  flex: 1;
+  font-weight: 500;
+  color: #1d1d1f;
+}
+
+.ranking-item .score {
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.ranking-empty {
+  color: #999;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ==================== 모바일 반응형 ==================== */
 @media (max-width: 768px) {
   .games-container {
     padding: 1.5rem 1rem;
@@ -652,40 +1175,77 @@
     font-size: 2rem;
   }
 
-  /* 반응속도 모바일 */
-  .reaction-area {
-    height: 250px;
+  /* 스도쿠 모바일 */
+  .sudoku-board {
+    max-width: 300px;
   }
 
-  .reaction-message {
-    font-size: 1.25rem;
+  .sudoku-cell {
+    font-size: 1rem;
   }
 
-  /* 가위바위보 모바일 */
-  .rps-arena {
+  .numpad-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  /* 고스톱 모바일 */
+  .gostop-table {
+    padding: 1rem;
+  }
+
+  .hwatu-card {
+    width: 38px;
+    height: 55px;
+    font-size: 1.2rem;
+  }
+
+  .gostop-info {
     gap: 1rem;
   }
 
-  .rps-choice {
-    width: 80px;
-    height: 80px;
-    font-size: 2.5rem;
+  /* 포커 모바일 */
+  .poker-table {
+    padding: 1rem;
   }
 
-  .rps-buttons {
-    gap: 0.5rem;
+  .poker-card {
+    width: 45px;
+    height: 65px;
+    font-size: 0.9rem;
   }
 
-  .rps-btn {
-    padding: 0.75rem 1rem;
+  .poker-card .suit {
+    font-size: 1.2rem;
   }
 
-  .rps-btn-emoji {
-    font-size: 1.5rem;
+  .poker-info {
+    gap: 1rem;
   }
 
-  .rps-btn-label {
-    font-size: 0.8rem;
+  .betting-area {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .bet-input {
+    width: 100%;
+    max-width: 150px;
+  }
+
+  /* 리더보드 모바일 */
+  .leaderboard-modal {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+
+  .score-submit-form {
+    flex-direction: column;
+  }
+
+  .rankings-grid {
+    grid-template-columns: 1fr;
   }
 
   .game-buttons {
