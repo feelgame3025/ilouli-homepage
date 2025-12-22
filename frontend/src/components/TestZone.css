@@ -80,6 +80,465 @@
   font-size: 1rem;
 }
 
+/* ===== GoStop Card Test ===== */
+.gostop-card-test {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gostop-card-test .test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.gostop-card-test .test-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.view-toggle {
+  display: flex;
+  background: #f5f5f7;
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.view-toggle button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #86868b;
+  transition: all 0.2s;
+}
+
+.view-toggle button.active {
+  background: white;
+  color: #1d1d1f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Selection Panel */
+.selection-panel {
+  background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f5 100%);
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.selection-panel h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  color: #1d1d1f;
+}
+
+.selected-cards-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  min-height: 120px;
+  align-items: center;
+}
+
+.selected-cards-row .hint {
+  color: #86868b;
+  font-size: 0.9rem;
+}
+
+.match-result {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  margin-top: 1rem;
+  font-weight: 500;
+}
+
+.match-result.matched {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #16a34a;
+}
+
+.match-result.not-matched {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+}
+
+.match-result .match-icon {
+  font-size: 1.2rem;
+}
+
+.match-result .pi-total {
+  margin-left: auto;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.clear-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover {
+  background: #b91c1c;
+}
+
+/* Card Display */
+.test-hwatu-card {
+  width: 70px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #c41e3a;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.test-hwatu-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.test-hwatu-card.selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  transform: translateY(-4px);
+}
+
+.test-hwatu-card .card-image-wrapper {
+  width: 100%;
+  height: 90px;
+  background: #fffbeb;
+}
+
+.test-hwatu-card .card-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.test-hwatu-card .card-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px;
+  background: #1a1a1a;
+}
+
+.test-hwatu-card .card-month {
+  font-size: 0.6rem;
+  color: white;
+  font-weight: 600;
+}
+
+.test-hwatu-card .card-type-badge {
+  font-size: 0.5rem;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+  color: white;
+}
+
+.test-hwatu-card .card-type-badge.광 {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1d1d1f;
+}
+
+.test-hwatu-card .card-type-badge.열끗 {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.test-hwatu-card .card-type-badge.띠 {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.test-hwatu-card .card-type-badge.피 {
+  background: #9ca3af;
+  color: #1d1d1f;
+}
+
+.test-hwatu-card .card-subtype {
+  font-size: 0.5rem;
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+.test-hwatu-card .card-pi-count {
+  font-size: 0.5rem;
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.test-hwatu-card .card-desc {
+  font-size: 0.55rem;
+  color: #86868b;
+  padding: 2px 4px 4px;
+  background: #1a1a1a;
+  text-align: center;
+}
+
+/* Cards by Month */
+.cards-by-month {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.month-group {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.month-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f5 100%);
+  border-bottom: 1px solid #e5e5e7;
+}
+
+.month-number {
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.month-name {
+  color: #86868b;
+  font-size: 0.9rem;
+}
+
+.month-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.card-with-edit {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.edit-btn {
+  padding: 0.25rem 0.5rem;
+  background: #f5f5f7;
+  border: 1px solid #e5e5e7;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.edit-btn:hover {
+  background: #e5e5e7;
+}
+
+.edit-panel {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.edit-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #1d1d1f;
+}
+
+.edit-panel select,
+.edit-panel input {
+  padding: 0.5rem;
+  border: 1px solid #e5e5e7;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+/* Cards by Type */
+.cards-by-type {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.type-group {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.type-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  color: white;
+}
+
+.type-header.광 {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #1d1d1f;
+}
+
+.type-header.열끗 {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.type-header.띠 {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.type-header.피 {
+  background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+}
+
+.type-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.type-count {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.type-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+/* Scoring Rules */
+.scoring-rules {
+  background: linear-gradient(135deg, #f8f9fa 0%, #f0f0f5 100%);
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.scoring-rules h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+}
+
+.rules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.rule-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.rule-name {
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.rule-desc {
+  color: #86868b;
+  flex: 1;
+  font-size: 0.75rem;
+}
+
+.rule-score {
+  font-weight: 700;
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+/* JSON Output */
+.json-output {
+  background: #1d1d1f;
+  border-radius: 16px;
+  padding: 1.25rem;
+  color: white;
+}
+
+.json-output h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+}
+
+.json-output button {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.json-output button:hover {
+  background: #2563eb;
+}
+
+.json-output pre {
+  background: #2d2d2d;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.75rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .test-zone-container {
