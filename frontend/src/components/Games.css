@@ -1068,58 +1068,76 @@
   border-radius: 16px;
 }
 
-/* ===== 새로운 화투 카드 디자인 ===== */
+/* ===== 새로운 화투 카드 디자인 - 실제 이미지 사용 ===== */
 .hwatu-card-new {
   width: 60px;
-  height: 84px;
-  background: linear-gradient(145deg, #fffbeb 0%, #fff7ed 50%, #fef3c7 100%);
-  border-radius: 8px;
+  height: 90px;
+  background: #1a1a1a;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.15),
-    0 1px 3px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  border: 1.5px solid #d4a574;
+    0 4px 12px rgba(0, 0, 0, 0.3),
+    0 1px 3px rgba(0, 0, 0, 0.2);
+  border: 2px solid #c41e3a;
   overflow: hidden;
+  position: relative;
 }
 
 .hwatu-card-new.small {
-  width: 50px;
-  height: 70px;
+  width: 52px;
+  height: 78px;
 }
 
 .hwatu-card-new.mini {
-  width: 36px;
-  height: 50px;
-  border-radius: 5px;
+  width: 40px;
+  height: 60px;
+  border-radius: 4px;
   cursor: default;
-  border-width: 1px;
+  border-width: 1.5px;
 }
 
-.hwatu-card-new.mini .hwatu-card-inner {
+.hwatu-card-inner {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.hwatu-image-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #fffbeb 0%, #fff7ed 100%);
+}
+
+.hwatu-real-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hwatu-fallback {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.hwatu-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 2px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  display: flex;
   justify-content: center;
 }
 
-.hwatu-card-new.mini .hwatu-image {
-  font-size: 1.1rem;
-}
-
-.hwatu-mini-badge {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  font-size: 0.4rem;
-  font-weight: 700;
-  padding: 1px 3px;
-  border-radius: 3px;
-}
-
-.mini-month {
-  font-size: 0.4rem;
+.hwatu-card-new.mini .hwatu-overlay {
+  display: none;
 }
 
 /* 수집된 카드 디스플레이 */
@@ -1250,53 +1268,7 @@
   cursor: default;
 }
 
-.hwatu-card-inner {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 4px;
-}
-
-.hwatu-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2px;
-}
-
-.hwatu-month-badge {
-  font-size: 0.5rem;
-  font-weight: 700;
-  color: white;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  padding: 1px 4px;
-  border-radius: 6px;
-}
-
-.hwatu-name {
-  font-size: 0.45rem;
-  color: #78716c;
-  font-weight: 500;
-}
-
-.hwatu-image {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.75rem;
-}
-
-.hwatu-card-new.small .hwatu-image {
-  font-size: 1.5rem;
-}
-
-.hwatu-footer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 3px;
-}
+/* 화투 타입 뱃지 - 오버레이용 */
 
 .hwatu-type-badge {
   font-size: 0.5rem;
@@ -2705,50 +2677,30 @@
     font-size: 0.8rem;
   }
 
-  /* 화투 카드 모바일 */
+  /* 화투 카드 모바일 - 실제 이미지 */
   .hwatu-cards-grid {
     gap: 5px;
   }
 
   .hwatu-card-new {
-    width: 48px;
-    height: 68px;
-    border-radius: 6px;
+    width: 52px;
+    height: 78px;
+    border-radius: 5px;
+    border-width: 1.5px;
   }
 
   .hwatu-card-new.small {
-    width: 42px;
-    height: 58px;
+    width: 46px;
+    height: 69px;
   }
 
-  .hwatu-card-inner {
-    padding: 3px;
-  }
-
-  .hwatu-month-badge {
-    font-size: 0.4rem;
-    padding: 0.5px 3px;
-  }
-
-  .hwatu-name {
-    font-size: 0.35rem;
-  }
-
-  .hwatu-image {
-    font-size: 1.35rem;
-  }
-
-  .hwatu-card-new.small .hwatu-image {
-    font-size: 1.15rem;
+  .hwatu-overlay {
+    padding: 1px;
   }
 
   .hwatu-type-badge {
     font-size: 0.4rem;
     padding: 0.5px 4px;
-  }
-
-  .hwatu-subtype {
-    font-size: 0.3rem;
   }
 
   /* 손패 섹션 모바일 */
@@ -2794,18 +2746,10 @@
   }
 
   .hwatu-card-new.mini {
-    width: 30px;
-    height: 42px;
-    border-radius: 4px;
-  }
-
-  .hwatu-card-new.mini .hwatu-image {
-    font-size: 0.9rem;
-  }
-
-  .hwatu-mini-badge {
-    font-size: 0.35rem;
-    padding: 0.5px 2px;
+    width: 34px;
+    height: 51px;
+    border-radius: 3px;
+    border-width: 1px;
   }
 
   .player-collected-section {

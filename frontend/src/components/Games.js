@@ -706,70 +706,128 @@ const Sudoku = ({ onBack }) => {
 };
 
 // ==================== 맞고 게임 ====================
+// 화투 이미지 매핑 (서버 업로드된 실제 화투 이미지)
+const HWATU_IMAGE_MAP = {
+  '1-1': '1766365648113-246585907.png',
+  '1-2': '1766365648040-398829771.png',
+  '1-3': '1766365647990-957864677.png',
+  '1-4': '1766365647901-991381946.png',
+  '2-1': '1766365648299-896721373.png',
+  '2-2': '1766365648264-567946987.png',
+  '2-3': '1766365648281-422771943.png',
+  '2-4': '1766365648146-136778318.png',
+  '3-1': '1766365648007-26931206.png',
+  '3-2': '1766365648061-457781584.png',
+  '3-3': '1766365648096-895991008.png',
+  '3-4': '1766365647920-205705528.png',
+  '4-1': '1766365648213-442459374.png',
+  '4-2': '1766365648129-211245955.png',
+  '4-3': '1766365648162-58848333.png',
+  '4-4': '1766365648246-955995828.png',
+  '5-1': '1766365647802-768277004.png',
+  '5-2': '1766365647936-615083179.png',
+  '5-3': '1766365647975-673220710.png',
+  '5-4': '1766365648079-717804224.png',
+  '6-1': '1766365648179-819603995.png',
+  '6-2': '1766365648229-284854545.png',
+  '6-3': '1766365648195-217754773.png',
+  '6-4': '1766365648315-903974657.png',
+  '7-1': '1766365647954-486907208.png',
+  '7-2': '1766365647885-332796171.png',
+  '7-3': '1766365647859-981807374.png',
+  '7-4': '1766365648024-379925920.png',
+  '8-1': '1766365648470-903551197.png',
+  '8-2': '1766365648518-775832240.png',
+  '8-3': '1766365648485-208944818.png',
+  '8-4': '1766365648437-74352903.png',
+  '9-1': '1766365648656-182981457.png',
+  '9-2': '1766365648622-253389898.png',
+  '9-3': '1766365648605-469820217.png',
+  '9-4': '1766365648553-51756069.png',
+  '10-1': '1766365648367-911477294.png',
+  '10-2': '1766365648422-610609444.png',
+  '10-3': '1766365648386-728581906.png',
+  '10-4': '1766365648502-932841805.png',
+  '11-1': '1766365648588-806626211.png',
+  '11-2': '1766365648570-323944655.png',
+  '11-3': '1766365648536-891418201.png',
+  '11-4': '1766365648639-790562712.png',
+  '12-1': '1766365648403-709711113.png',
+  '12-2': '1766365648334-202283624.png',
+  '12-3': '1766365648349-721958801.png',
+  '12-4': '1766365648454-752753178.png',
+};
+
+const getHwatuImageUrl = (month, index) => {
+  const key = `${month}-${index}`;
+  const filename = HWATU_IMAGE_MAP[key];
+  return filename ? `https://api.ilouli.com/api/files/view/${filename}` : null;
+};
+
 // 화투패 48장 정의 - 한국식 전통 화투 (나무위키 참고)
 // 각 월별 테마: 1월 송학, 2월 매조, 3월 벚꽃, 4월 흑싸리, 5월 난초, 6월 모란
 // 7월 홍싸리, 8월 공산(억새), 9월 국화, 10월 단풍, 11월 오동, 12월 비
 const HWATU_DECK = [
   // 1월 (송학/松鶴) - 소나무와 두루미, 태양
-  { month: 1, name: '송학', type: '광', subtype: null, image: '🌅', symbol: '鶴', desc: '학+태양', color: '#dc2626', piCount: 0 },
-  { month: 1, name: '송학', type: '띠', subtype: '홍단', image: '📜', symbol: '紅', desc: '홍단', color: '#dc2626', piCount: 0 },
-  { month: 1, name: '송학', type: '피', subtype: null, image: '🌲', symbol: '松', desc: '소나무', color: '#166534', piCount: 1 },
-  { month: 1, name: '송학', type: '피', subtype: null, image: '🌲', symbol: '松', desc: '소나무', color: '#166534', piCount: 1 },
+  { month: 1, imageIndex: 1, name: '송학', type: '광', subtype: null, desc: '학+태양', piCount: 0 },
+  { month: 1, imageIndex: 2, name: '송학', type: '띠', subtype: '홍단', desc: '홍단', piCount: 0 },
+  { month: 1, imageIndex: 3, name: '송학', type: '피', subtype: null, desc: '소나무', piCount: 1 },
+  { month: 1, imageIndex: 4, name: '송학', type: '피', subtype: null, desc: '소나무', piCount: 1 },
   // 2월 (매조/梅鳥) - 매화와 휘파람새(꾀꼬리)
-  { month: 2, name: '매조', type: '열끗', subtype: '고도리', image: '🐦', symbol: '鶯', desc: '꾀꼬리', color: '#84cc16', piCount: 0 },
-  { month: 2, name: '매조', type: '띠', subtype: '홍단', image: '📜', symbol: '紅', desc: '홍단', color: '#dc2626', piCount: 0 },
-  { month: 2, name: '매조', type: '피', subtype: null, image: '🌸', symbol: '梅', desc: '매화', color: '#ec4899', piCount: 1 },
-  { month: 2, name: '매조', type: '피', subtype: null, image: '🌸', symbol: '梅', desc: '매화', color: '#ec4899', piCount: 1 },
+  { month: 2, imageIndex: 1, name: '매조', type: '열끗', subtype: '고도리', desc: '꾀꼬리', piCount: 0 },
+  { month: 2, imageIndex: 2, name: '매조', type: '띠', subtype: '홍단', desc: '홍단', piCount: 0 },
+  { month: 2, imageIndex: 3, name: '매조', type: '피', subtype: null, desc: '매화', piCount: 1 },
+  { month: 2, imageIndex: 4, name: '매조', type: '피', subtype: null, desc: '매화', piCount: 1 },
   // 3월 (벚꽃/桜) - 벚꽃과 장막(만막)
-  { month: 3, name: '벚꽃', type: '광', subtype: null, image: '🏯', symbol: '幕', desc: '장막', color: '#f472b6', piCount: 0 },
-  { month: 3, name: '벚꽃', type: '띠', subtype: '홍단', image: '📜', symbol: '紅', desc: '홍단', color: '#dc2626', piCount: 0 },
-  { month: 3, name: '벚꽃', type: '피', subtype: null, image: '🌸', symbol: '櫻', desc: '벚꽃', color: '#f9a8d4', piCount: 1 },
-  { month: 3, name: '벚꽃', type: '피', subtype: null, image: '🌸', symbol: '櫻', desc: '벚꽃', color: '#f9a8d4', piCount: 1 },
+  { month: 3, imageIndex: 1, name: '벚꽃', type: '광', subtype: null, desc: '장막', piCount: 0 },
+  { month: 3, imageIndex: 2, name: '벚꽃', type: '띠', subtype: '홍단', desc: '홍단', piCount: 0 },
+  { month: 3, imageIndex: 3, name: '벚꽃', type: '피', subtype: null, desc: '벚꽃', piCount: 1 },
+  { month: 3, imageIndex: 4, name: '벚꽃', type: '피', subtype: null, desc: '벚꽃', piCount: 1 },
   // 4월 (흑싸리/藤) - 등나무와 두견새
-  { month: 4, name: '흑싸리', type: '열끗', subtype: '고도리', image: '🐦', symbol: '鵑', desc: '두견새', color: '#7c3aed', piCount: 0 },
-  { month: 4, name: '흑싸리', type: '띠', subtype: '초단', image: '📜', symbol: '草', desc: '초단', color: '#dc2626', piCount: 0 },
-  { month: 4, name: '흑싸리', type: '피', subtype: null, image: '🌿', symbol: '藤', desc: '등나무', color: '#6b21a8', piCount: 1 },
-  { month: 4, name: '흑싸리', type: '피', subtype: null, image: '🌿', symbol: '藤', desc: '등나무', color: '#6b21a8', piCount: 1 },
+  { month: 4, imageIndex: 1, name: '흑싸리', type: '열끗', subtype: '고도리', desc: '두견새', piCount: 0 },
+  { month: 4, imageIndex: 2, name: '흑싸리', type: '띠', subtype: '초단', desc: '초단', piCount: 0 },
+  { month: 4, imageIndex: 3, name: '흑싸리', type: '피', subtype: null, desc: '등나무', piCount: 1 },
+  { month: 4, imageIndex: 4, name: '흑싸리', type: '피', subtype: null, desc: '등나무', piCount: 1 },
   // 5월 (난초/菖蒲) - 창포(제비붓꽃)와 팔교다리
-  { month: 5, name: '난초', type: '열끗', subtype: null, image: '🌉', symbol: '橋', desc: '팔교', color: '#92400e', piCount: 0 },
-  { month: 5, name: '난초', type: '띠', subtype: '초단', image: '📜', symbol: '草', desc: '초단', color: '#dc2626', piCount: 0 },
-  { month: 5, name: '난초', type: '피', subtype: null, image: '💜', symbol: '菖', desc: '창포', color: '#8b5cf6', piCount: 1 },
-  { month: 5, name: '난초', type: '피', subtype: null, image: '💜', symbol: '菖', desc: '창포', color: '#8b5cf6', piCount: 1 },
+  { month: 5, imageIndex: 1, name: '난초', type: '열끗', subtype: null, desc: '팔교', piCount: 0 },
+  { month: 5, imageIndex: 2, name: '난초', type: '띠', subtype: '초단', desc: '초단', piCount: 0 },
+  { month: 5, imageIndex: 3, name: '난초', type: '피', subtype: null, desc: '창포', piCount: 1 },
+  { month: 5, imageIndex: 4, name: '난초', type: '피', subtype: null, desc: '창포', piCount: 1 },
   // 6월 (모란/牡丹) - 모란과 나비
-  { month: 6, name: '모란', type: '열끗', subtype: null, image: '🦋', symbol: '蝶', desc: '나비', color: '#0ea5e9', piCount: 0 },
-  { month: 6, name: '모란', type: '띠', subtype: '청단', image: '📜', symbol: '靑', desc: '청단', color: '#1d4ed8', piCount: 0 },
-  { month: 6, name: '모란', type: '피', subtype: null, image: '🌺', symbol: '牡', desc: '모란', color: '#e11d48', piCount: 1 },
-  { month: 6, name: '모란', type: '피', subtype: null, image: '🌺', symbol: '牡', desc: '모란', color: '#e11d48', piCount: 1 },
+  { month: 6, imageIndex: 1, name: '모란', type: '열끗', subtype: null, desc: '나비', piCount: 0 },
+  { month: 6, imageIndex: 2, name: '모란', type: '띠', subtype: '청단', desc: '청단', piCount: 0 },
+  { month: 6, imageIndex: 3, name: '모란', type: '피', subtype: null, desc: '모란', piCount: 1 },
+  { month: 6, imageIndex: 4, name: '모란', type: '피', subtype: null, desc: '모란', piCount: 1 },
   // 7월 (홍싸리/萩) - 홍싸리와 멧돼지
-  { month: 7, name: '홍싸리', type: '열끗', subtype: null, image: '🐗', symbol: '猪', desc: '멧돼지', color: '#78716c', piCount: 0 },
-  { month: 7, name: '홍싸리', type: '띠', subtype: '초단', image: '📜', symbol: '草', desc: '초단', color: '#dc2626', piCount: 0 },
-  { month: 7, name: '홍싸리', type: '피', subtype: null, image: '🌾', symbol: '萩', desc: '싸리', color: '#dc2626', piCount: 1 },
-  { month: 7, name: '홍싸리', type: '피', subtype: null, image: '🌾', symbol: '萩', desc: '싸리', color: '#dc2626', piCount: 1 },
+  { month: 7, imageIndex: 1, name: '홍싸리', type: '열끗', subtype: null, desc: '멧돼지', piCount: 0 },
+  { month: 7, imageIndex: 2, name: '홍싸리', type: '띠', subtype: '초단', desc: '초단', piCount: 0 },
+  { month: 7, imageIndex: 3, name: '홍싸리', type: '피', subtype: null, desc: '싸리', piCount: 1 },
+  { month: 7, imageIndex: 4, name: '홍싸리', type: '피', subtype: null, desc: '싸리', piCount: 1 },
   // 8월 (공산/芒) - 억새밭과 보름달, 기러기
-  { month: 8, name: '공산', type: '광', subtype: null, image: '🌕', symbol: '月', desc: '보름달', color: '#fbbf24', piCount: 0 },
-  { month: 8, name: '공산', type: '열끗', subtype: '고도리', image: '🦢', symbol: '雁', desc: '기러기', color: '#475569', piCount: 0 },
-  { month: 8, name: '공산', type: '피', subtype: null, image: '🌾', symbol: '芒', desc: '억새', color: '#65a30d', piCount: 1 },
-  { month: 8, name: '공산', type: '피', subtype: null, image: '🌾', symbol: '芒', desc: '억새', color: '#65a30d', piCount: 1 },
+  { month: 8, imageIndex: 1, name: '공산', type: '광', subtype: null, desc: '보름달', piCount: 0 },
+  { month: 8, imageIndex: 2, name: '공산', type: '열끗', subtype: '고도리', desc: '기러기', piCount: 0 },
+  { month: 8, imageIndex: 3, name: '공산', type: '피', subtype: null, desc: '억새', piCount: 1 },
+  { month: 8, imageIndex: 4, name: '공산', type: '피', subtype: null, desc: '억새', piCount: 1 },
   // 9월 (국화/菊) - 국화와 술잔(壽)
-  { month: 9, name: '국화', type: '열끗', subtype: null, image: '🍶', symbol: '盃', desc: '술잔', color: '#dc2626', piCount: 0 },
-  { month: 9, name: '국화', type: '띠', subtype: '청단', image: '📜', symbol: '靑', desc: '청단', color: '#1d4ed8', piCount: 0 },
-  { month: 9, name: '국화', type: '피', subtype: null, image: '🌼', symbol: '菊', desc: '국화', color: '#eab308', piCount: 1 },
-  { month: 9, name: '국화', type: '피', subtype: null, image: '🌼', symbol: '菊', desc: '국화', color: '#eab308', piCount: 1 },
+  { month: 9, imageIndex: 1, name: '국화', type: '열끗', subtype: null, desc: '술잔', piCount: 0 },
+  { month: 9, imageIndex: 2, name: '국화', type: '띠', subtype: '청단', desc: '청단', piCount: 0 },
+  { month: 9, imageIndex: 3, name: '국화', type: '피', subtype: null, desc: '국화', piCount: 1 },
+  { month: 9, imageIndex: 4, name: '국화', type: '피', subtype: null, desc: '국화', piCount: 1 },
   // 10월 (단풍/紅葉) - 단풍과 사슴
-  { month: 10, name: '단풍', type: '열끗', subtype: null, image: '🦌', symbol: '鹿', desc: '사슴', color: '#b45309', piCount: 0 },
-  { month: 10, name: '단풍', type: '띠', subtype: '청단', image: '📜', symbol: '靑', desc: '청단', color: '#1d4ed8', piCount: 0 },
-  { month: 10, name: '단풍', type: '피', subtype: null, image: '🍁', symbol: '楓', desc: '단풍', color: '#ea580c', piCount: 1 },
-  { month: 10, name: '단풍', type: '피', subtype: null, image: '🍁', symbol: '楓', desc: '단풍', color: '#ea580c', piCount: 1 },
+  { month: 10, imageIndex: 1, name: '단풍', type: '열끗', subtype: null, desc: '사슴', piCount: 0 },
+  { month: 10, imageIndex: 2, name: '단풍', type: '띠', subtype: '청단', desc: '청단', piCount: 0 },
+  { month: 10, imageIndex: 3, name: '단풍', type: '피', subtype: null, desc: '단풍', piCount: 1 },
+  { month: 10, imageIndex: 4, name: '단풍', type: '피', subtype: null, desc: '단풍', piCount: 1 },
   // 11월 (오동/桐) - 오동나무와 봉황
-  { month: 11, name: '오동', type: '광', subtype: '비광', image: '🦅', symbol: '鳳', desc: '봉황', color: '#7c3aed', piCount: 0 },
-  { month: 11, name: '오동', type: '피', subtype: null, image: '🌳', symbol: '桐', desc: '오동', color: '#a16207', piCount: 1 },
-  { month: 11, name: '오동', type: '피', subtype: null, image: '🌳', symbol: '桐', desc: '오동', color: '#a16207', piCount: 1 },
-  { month: 11, name: '오동', type: '피', subtype: '쌍피', image: '🌳', symbol: '桐', desc: '쌍피', color: '#a16207', piCount: 2 },
+  { month: 11, imageIndex: 1, name: '오동', type: '광', subtype: '비광', desc: '봉황', piCount: 0 },
+  { month: 11, imageIndex: 2, name: '오동', type: '피', subtype: null, desc: '오동', piCount: 1 },
+  { month: 11, imageIndex: 3, name: '오동', type: '피', subtype: null, desc: '오동', piCount: 1 },
+  { month: 11, imageIndex: 4, name: '오동', type: '피', subtype: '쌍피', desc: '쌍피', piCount: 2 },
   // 12월 (비/雨) - 버드나무, 비, 오노노 도후(우산 쓴 인물)
-  { month: 12, name: '비', type: '광', subtype: '비광', image: '☂️', symbol: '傘', desc: '비광', color: '#475569', piCount: 0 },
-  { month: 12, name: '비', type: '열끗', subtype: null, image: '🐦', symbol: '燕', desc: '제비', color: '#1e293b', piCount: 0 },
-  { month: 12, name: '비', type: '띠', subtype: null, image: '📜', symbol: '雷', desc: '띠', color: '#dc2626', piCount: 0 },
-  { month: 12, name: '비', type: '피', subtype: '쌍피', image: '🌧️', symbol: '雨', desc: '쌍피', color: '#64748b', piCount: 2 },
+  { month: 12, imageIndex: 1, name: '비', type: '광', subtype: '비광', desc: '비광', piCount: 0 },
+  { month: 12, imageIndex: 2, name: '비', type: '열끗', subtype: null, desc: '제비', piCount: 0 },
+  { month: 12, imageIndex: 3, name: '비', type: '띠', subtype: null, desc: '띠', piCount: 0 },
+  { month: 12, imageIndex: 4, name: '비', type: '피', subtype: '쌍피', desc: '쌍피', piCount: 2 },
 ];
 
 const GoStop = ({ onBack }) => {
@@ -1165,36 +1223,34 @@ const GoStop = ({ onBack }) => {
     피: collected.피.reduce((sum, c) => sum + c.piCount, 0)
   });
 
-  // 화투 카드 렌더링 컴포넌트
-  const HwatuCard = ({ card, isSelected, isDisabled, onClick, size = 'normal' }) => (
-    <div
-      className={`hwatu-card-new ${size} ${card.type} ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
-      onClick={onClick}
-    >
-      <div className="hwatu-card-inner">
-        {size !== 'mini' && (
-          <div className="hwatu-header">
-            <span className="hwatu-month-badge">{card.month}월</span>
-            <span className="hwatu-name">{card.name}</span>
+  // 화투 카드 렌더링 컴포넌트 - 실제 이미지 사용
+  const HwatuCard = ({ card, isSelected, isDisabled, onClick, size = 'normal' }) => {
+    const imageUrl = getHwatuImageUrl(card.month, card.imageIndex);
+
+    return (
+      <div
+        className={`hwatu-card-new ${size} ${card.type} ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+        onClick={onClick}
+      >
+        <div className="hwatu-card-inner">
+          <div className="hwatu-image-container">
+            {imageUrl ? (
+              <img src={imageUrl} alt={`${card.month}월 ${card.name}`} className="hwatu-real-image" />
+            ) : (
+              <span className="hwatu-fallback">{card.month}월</span>
+            )}
           </div>
-        )}
-        <div className="hwatu-image">{card.image}</div>
-        {size !== 'mini' && (
-          <div className="hwatu-footer">
-            <span className={`hwatu-type-badge ${card.type}`}>
-              {card.type === '열끗' ? '열' : card.type}
-            </span>
-            {card.subtype && <span className="hwatu-subtype">{card.subtype}</span>}
-          </div>
-        )}
-        {size === 'mini' && (
-          <div className="hwatu-mini-badge">
-            <span className="mini-month">{card.month}</span>
-          </div>
-        )}
+          {size !== 'mini' && (
+            <div className="hwatu-overlay">
+              <span className={`hwatu-type-badge ${card.type}`}>
+                {card.type === '열끗' ? '열' : card.type}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className={`gostop-container ${isFullscreen ? 'fullscreen-mode' : ''}`}>
