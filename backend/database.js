@@ -41,10 +41,18 @@ db.exec(`
     file_size INTEGER,
     mime_type TEXT,
     file_path TEXT NOT NULL,
+    folder TEXT DEFAULT '기본',
     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
   )
 `);
+
+// folder 컬럼 추가 (기존 DB 마이그레이션)
+try {
+  db.exec(`ALTER TABLE uploaded_files ADD COLUMN folder TEXT DEFAULT '기본'`);
+} catch (e) {
+  // 이미 존재하면 무시
+}
 
 // 게임 점수 테이블
 db.exec(`

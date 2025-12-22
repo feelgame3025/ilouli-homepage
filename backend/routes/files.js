@@ -57,9 +57,11 @@ router.post('/upload', optionalAuth, upload.single('file'), (req, res) => {
     }
 
     const userId = req.user?.id || null;
+    const folder = req.body.folder || '기본';
+
     const stmt = db.prepare(`
-      INSERT INTO uploaded_files (user_id, filename, original_name, file_size, mime_type, file_path)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO uploaded_files (user_id, filename, original_name, file_size, mime_type, file_path, folder)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
     const result = stmt.run(
@@ -68,7 +70,8 @@ router.post('/upload', optionalAuth, upload.single('file'), (req, res) => {
       req.file.originalname,
       req.file.size,
       req.file.mimetype,
-      req.file.path
+      req.file.path,
+      folder
     );
 
     res.json({
@@ -79,6 +82,7 @@ router.post('/upload', optionalAuth, upload.single('file'), (req, res) => {
         originalName: req.file.originalname,
         size: req.file.size,
         mimeType: req.file.mimetype,
+        folder: folder,
         url: `/api/files/view/${req.file.filename}`,
         uploadedAt: new Date().toISOString()
       }
@@ -93,9 +97,9 @@ router.post('/upload', optionalAuth, upload.single('file'), (req, res) => {
 router.get('/list', optionalAuth, (req, res) => {
   try {
     const files = db.prepare(`
-      SELECT id, filename, original_name, file_size, mime_type, uploaded_at
+      SELECT id, filename, original_name, file_size, mime_type, folder, uploaded_at
       FROM uploaded_files
-      ORDER BY uploaded_at DESC
+      ORDER BY folder, uploaded_at DESC
       LIMIT 100
     `).all();
 
@@ -106,6 +110,7 @@ router.get('/list', optionalAuth, (req, res) => {
         originalName: f.original_name,
         size: f.file_size,
         mimeType: f.mime_type,
+        folder: f.folder || '기본',
         url: `/api/files/view/${f.filename}`,
         uploadedAt: f.uploaded_at
       }))
