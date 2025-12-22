@@ -1172,17 +1172,26 @@ const GoStop = ({ onBack }) => {
       onClick={onClick}
     >
       <div className="hwatu-card-inner">
-        <div className="hwatu-header">
-          <span className="hwatu-month-badge">{card.month}월</span>
-          <span className="hwatu-name">{card.name}</span>
-        </div>
+        {size !== 'mini' && (
+          <div className="hwatu-header">
+            <span className="hwatu-month-badge">{card.month}월</span>
+            <span className="hwatu-name">{card.name}</span>
+          </div>
+        )}
         <div className="hwatu-image">{card.image}</div>
-        <div className="hwatu-footer">
-          <span className={`hwatu-type-badge ${card.type}`}>
-            {card.type === '열끗' ? '열' : card.type}
-          </span>
-          {card.subtype && <span className="hwatu-subtype">{card.subtype}</span>}
-        </div>
+        {size !== 'mini' && (
+          <div className="hwatu-footer">
+            <span className={`hwatu-type-badge ${card.type}`}>
+              {card.type === '열끗' ? '열' : card.type}
+            </span>
+            {card.subtype && <span className="hwatu-subtype">{card.subtype}</span>}
+          </div>
+        )}
+        {size === 'mini' && (
+          <div className="hwatu-mini-badge">
+            <span className="mini-month">{card.month}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1297,18 +1306,64 @@ const GoStop = ({ onBack }) => {
                 <span className="score-label">점</span>
               </div>
             </div>
-            <div className="collected-cards-bar">
-              {(() => {
-                const counts = getCollectedCount(computerCollected);
-                return (
-                  <>
-                    {counts.광 > 0 && <span className="collected-chip gwang">광 {counts.광}</span>}
-                    {counts.열끗 > 0 && <span className="collected-chip yeol">열 {counts.열끗}</span>}
-                    {counts.띠 > 0 && <span className="collected-chip tti">띠 {counts.띠}</span>}
-                    {counts.피 > 0 && <span className="collected-chip pi">피 {counts.피}</span>}
-                  </>
-                );
-              })()}
+            {/* 상대 수집 카드 표시 */}
+            <div className="collected-cards-display">
+              {computerCollected.광.length > 0 && (
+                <div className="collected-group gwang">
+                  <div className="collected-group-header">
+                    <span className="group-label">광</span>
+                    <span className="group-count">{computerCollected.광.length}</span>
+                  </div>
+                  <div className="collected-cards-row">
+                    {computerCollected.광.map(card => (
+                      <HwatuCard key={card.id} card={card} size="mini" />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {computerCollected.열끗.length > 0 && (
+                <div className="collected-group yeol">
+                  <div className="collected-group-header">
+                    <span className="group-label">열끗</span>
+                    <span className="group-count">{computerCollected.열끗.length}</span>
+                  </div>
+                  <div className="collected-cards-row">
+                    {computerCollected.열끗.map(card => (
+                      <HwatuCard key={card.id} card={card} size="mini" />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {computerCollected.띠.length > 0 && (
+                <div className="collected-group tti">
+                  <div className="collected-group-header">
+                    <span className="group-label">띠</span>
+                    <span className="group-count">{computerCollected.띠.length}</span>
+                  </div>
+                  <div className="collected-cards-row">
+                    {computerCollected.띠.map(card => (
+                      <HwatuCard key={card.id} card={card} size="mini" />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {computerCollected.피.length > 0 && (
+                <div className="collected-group pi">
+                  <div className="collected-group-header">
+                    <span className="group-label">피</span>
+                    <span className="group-count">{getCollectedCount(computerCollected).피}</span>
+                  </div>
+                  <div className="collected-cards-row">
+                    {computerCollected.피.map(card => (
+                      <HwatuCard key={card.id} card={card} size="mini" />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {computerCollected.광.length === 0 && computerCollected.열끗.length === 0 &&
+               computerCollected.띠.length === 0 && computerCollected.피.length === 0 && (
+                <div className="no-collected">아직 획득한 카드 없음</div>
+              )}
             </div>
           </div>
 
@@ -1332,21 +1387,71 @@ const GoStop = ({ onBack }) => {
           </div>
 
           {/* 플레이어 수집 카드 */}
-          <div className="player-collected-bar">
-            {(() => {
-              const counts = getCollectedCount(playerCollected);
-              return (
-                <>
-                  {counts.광 > 0 && <span className="collected-chip gwang">광 {counts.광}</span>}
-                  {counts.열끗 > 0 && <span className="collected-chip yeol">열 {counts.열끗}</span>}
-                  {counts.띠 > 0 && <span className="collected-chip tti">띠 {counts.띠}</span>}
-                  {counts.피 > 0 && <span className="collected-chip pi">피 {counts.피}</span>}
-                </>
-              );
-            })()}
-            <span className="player-score-chip">
-              {playerScore}점 {goCount > 0 && `(고${goCount})`}
-            </span>
+          <div className="section-card player-collected-section">
+            <div className="player-collected-header">
+              <span className="collected-title">내 획득 카드</span>
+              <span className="player-score-chip">
+                {playerScore}점 {goCount > 0 && `(고${goCount})`}
+              </span>
+            </div>
+            <div className="collected-cards-display player">
+              {playerCollected.광.length > 0 && (
+                <div className="collected-group gwang">
+                  <div className="collected-group-header">
+                    <span className="group-label">광</span>
+                    <span className="group-count">{playerCollected.광.length}</span>
+                  </div>
+                  <div className="collected-cards-row">
+                    {playerCollected.광.map(card => (
+                      <HwatuCard key={card.id} card={card} size="mini" />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {playerCollected.열끗.length > 0 && (
+                <div className="collected-group yeol">
+                  <div className="collected-group-header">
+                    <span className="group-label">열끗</span>
+                    <span className="group-count">{playerCollected.열끗.length}</span>
+                  </div>
+                  <div className="collected-cards-row">
+                    {playerCollected.열끗.map(card => (
+                      <HwatuCard key={card.id} card={card} size="mini" />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {playerCollected.띠.length > 0 && (
+                <div className="collected-group tti">
+                  <div className="collected-group-header">
+                    <span className="group-label">띠</span>
+                    <span className="group-count">{playerCollected.띠.length}</span>
+                  </div>
+                  <div className="collected-cards-row">
+                    {playerCollected.띠.map(card => (
+                      <HwatuCard key={card.id} card={card} size="mini" />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {playerCollected.피.length > 0 && (
+                <div className="collected-group pi">
+                  <div className="collected-group-header">
+                    <span className="group-label">피</span>
+                    <span className="group-count">{getCollectedCount(playerCollected).피}</span>
+                  </div>
+                  <div className="collected-cards-row">
+                    {playerCollected.피.map(card => (
+                      <HwatuCard key={card.id} card={card} size="mini" />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {playerCollected.광.length === 0 && playerCollected.열끗.length === 0 &&
+               playerCollected.띠.length === 0 && playerCollected.피.length === 0 && (
+                <div className="no-collected">아직 획득한 카드 없음</div>
+              )}
+            </div>
           </div>
 
           {/* 플레이어 패 */}
