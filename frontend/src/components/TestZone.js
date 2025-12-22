@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AssetLibrary from './AssetLibrary';
+import {
+  CARD_TYPES,
+  CARD_SUBTYPES,
+  MONTH_INFO,
+  SCORING_RULES,
+  MATCHING_RULES,
+  SPECIAL_RULES,
+  GAME_SETTINGS,
+} from './GoStopSpec';
 import './TestZone.css';
 
 // ===== 테스트 존 페이지 관리 =====
 const TEST_PAGES = [
   { id: 'gostop-cards', name: '🎴 고스톱 카드', icon: '🎴' },
   { id: 'gostop-rules', name: '📜 고스톱 룰', icon: '📜' },
+  { id: 'gostop-spec', name: '📋 스펙 문서', icon: '📋' },
   { id: 'assets', name: '📁 에셋 라이브러리', icon: '📁' },
 ];
 
@@ -571,6 +581,232 @@ const GoStopCardTest = () => {
   );
 };
 
+// ===== 고스톱 스펙 문서 컴포넌트 =====
+const GoStopSpecDoc = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+
+  return (
+    <div className="gostop-spec-doc">
+      <div className="spec-header">
+        <h2>📋 고스톱 게임 스펙 문서</h2>
+        <p className="spec-subtitle">GoStopSpec.js 파일에서 모든 규칙을 관리합니다</p>
+      </div>
+
+      <div className="spec-nav">
+        <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => setActiveTab('overview')}>개요</button>
+        <button className={activeTab === 'cards' ? 'active' : ''} onClick={() => setActiveTab('cards')}>카드 타입</button>
+        <button className={activeTab === 'scoring' ? 'active' : ''} onClick={() => setActiveTab('scoring')}>점수 규칙</button>
+        <button className={activeTab === 'matching' ? 'active' : ''} onClick={() => setActiveTab('matching')}>매칭 규칙</button>
+        <button className={activeTab === 'special' ? 'active' : ''} onClick={() => setActiveTab('special')}>특수 규칙</button>
+      </div>
+
+      <div className="spec-content">
+        {activeTab === 'overview' && (
+          <div className="spec-section">
+            <h3>🎮 게임 설정</h3>
+            <div className="spec-grid">
+              <div className="spec-card">
+                <h4>플레이어</h4>
+                <ul>
+                  <li>최소: {GAME_SETTINGS.players.min}명</li>
+                  <li>최대: {GAME_SETTINGS.players.max}명</li>
+                  <li>기본: {GAME_SETTINGS.players.default}명</li>
+                </ul>
+              </div>
+              <div className="spec-card">
+                <h4>카드 배분 (2인)</h4>
+                <ul>
+                  <li>총 카드: {GAME_SETTINGS.cards.total}장</li>
+                  <li>1인당: {GAME_SETTINGS.cards.perPlayer[2]}장</li>
+                  <li>바닥: {GAME_SETTINGS.cards.floor[2]}장</li>
+                </ul>
+              </div>
+              <div className="spec-card">
+                <h4>승리 조건</h4>
+                <ul>
+                  <li>최소 점수: {GAME_SETTINGS.winCondition.minScore}점</li>
+                  <li>목표 점수: {GAME_SETTINGS.winCondition.defaultTarget}점</li>
+                </ul>
+              </div>
+            </div>
+
+            <h3>📁 파일 구조</h3>
+            <pre className="code-block">{`
+// GoStopSpec.js 구조
+export const CARD_TYPES = { ... };      // 카드 종류 (광, 열끗, 띠, 피)
+export const CARD_SUBTYPES = { ... };   // 서브타입 (홍단, 청단, 고도리 등)
+export const MONTH_INFO = { ... };      // 월별 정보
+export const HWATU_DECK = [ ... ];      // 48장 카드 데이터
+export const SCORING_RULES = [ ... ];   // 점수 규칙 (checkFn 포함)
+export const MATCHING_RULES = { ... };  // 매칭 규칙
+export const SPECIAL_RULES = [ ... ];   // 특수 규칙
+export const GAME_SETTINGS = { ... };   // 게임 설정
+            `.trim()}</pre>
+          </div>
+        )}
+
+        {activeTab === 'cards' && (
+          <div className="spec-section">
+            <h3>🃏 카드 타입 정의</h3>
+            <div className="spec-grid">
+              {Object.values(CARD_TYPES).map(type => (
+                <div key={type.id} className="spec-card" style={{ borderLeftColor: type.color }}>
+                  <h4>{type.name} ({type.nameEn})</h4>
+                  <p>{type.description}</p>
+                  <div className="spec-meta">총 {type.totalCount}장</div>
+                </div>
+              ))}
+            </div>
+
+            <h3>🏷️ 서브타입 정의</h3>
+            <div className="spec-grid">
+              {Object.values(CARD_SUBTYPES).map(sub => (
+                <div key={sub.id} className="spec-card" style={{ borderLeftColor: sub.color }}>
+                  <h4>{sub.name} ({sub.nameEn})</h4>
+                  <p>{sub.description}</p>
+                  <div className="spec-meta">해당 월: {sub.months.join(', ')}월</div>
+                </div>
+              ))}
+            </div>
+
+            <h3>📅 월별 정보</h3>
+            <table className="spec-table">
+              <thead>
+                <tr><th>월</th><th>이름</th><th>꽃/식물</th><th>설명</th></tr>
+              </thead>
+              <tbody>
+                {Object.entries(MONTH_INFO).map(([month, info]) => (
+                  <tr key={month}>
+                    <td>{month}월</td>
+                    <td>{info.name}</td>
+                    <td>{info.flower}</td>
+                    <td>{info.description}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {activeTab === 'scoring' && (
+          <div className="spec-section">
+            <h3>💰 점수 규칙 ({SCORING_RULES.length}개)</h3>
+            <p className="spec-note">각 규칙에는 <code>checkFn</code> 함수가 있어 자동으로 점수를 계산합니다.</p>
+
+            {['광', '열끗', '띠', '피'].map(category => {
+              const rules = SCORING_RULES.filter(r => r.category === category);
+              if (rules.length === 0) return null;
+              return (
+                <div key={category} className="scoring-category">
+                  <h4>{category} 조합</h4>
+                  <table className="spec-table">
+                    <thead>
+                      <tr><th>ID</th><th>이름</th><th>조건</th><th>점수</th></tr>
+                    </thead>
+                    <tbody>
+                      {rules.map(rule => (
+                        <tr key={rule.id}>
+                          <td><code>{rule.id}</code></td>
+                          <td>{rule.name}</td>
+                          <td>{rule.condition}</td>
+                          <td className="score">{rule.score ?? '동적'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })}
+
+            <h4>규칙 추가 방법</h4>
+            <pre className="code-block">{`
+// GoStopSpec.js의 SCORING_RULES 배열에 추가
+{
+  id: 'new-rule',           // 고유 ID
+  name: '새 규칙',           // 표시 이름
+  category: '광',           // 카테고리
+  score: 10,               // 고정 점수 (또는 null)
+  condition: '조건 설명',    // 조건 텍스트
+  scoreFn: (cards) => ..., // 동적 점수 계산 (선택)
+  checkFn: (cards) => ..., // 조건 체크 함수 (필수)
+}
+            `.trim()}</pre>
+          </div>
+        )}
+
+        {activeTab === 'matching' && (
+          <div className="spec-section">
+            <h3>🔗 매칭 규칙</h3>
+            <div className="rule-block">
+              <h4>기본 규칙</h4>
+              <p><strong>{MATCHING_RULES.basic.name}:</strong> {MATCHING_RULES.basic.description}</p>
+            </div>
+
+            <h4>매칭 시나리오</h4>
+            <table className="spec-table">
+              <thead>
+                <tr><th>바닥 카드 수</th><th>액션</th><th>설명</th><th>보너스</th></tr>
+              </thead>
+              <tbody>
+                {MATCHING_RULES.scenarios.map((scenario, idx) => (
+                  <tr key={idx}>
+                    <td>{scenario.floorCount}장</td>
+                    <td><code>{scenario.action}</code></td>
+                    <td>{scenario.description}<br/><small>{scenario.detail}</small></td>
+                    <td>{scenario.bonus ? `${scenario.bonus.name} (피 +${scenario.bonus.count})` : '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <h4>매칭 로직</h4>
+            <pre className="code-block">{`
+// 카드 매칭 체크
+import { canMatch, getMatchingScenario } from './GoStopSpec';
+
+// 두 카드가 매칭 가능한지 확인
+if (canMatch(myCard, floorCard)) {
+  // 같은 월의 카드
+}
+
+// 바닥 상황에 따른 액션 결정
+const scenario = getMatchingScenario(floorCardsOfSameMonth);
+// scenario.action: 'place', 'take', 'select', 'takeAll'
+            `.trim()}</pre>
+          </div>
+        )}
+
+        {activeTab === 'special' && (
+          <div className="spec-section">
+            <h3>⚡ 특수 규칙 ({SPECIAL_RULES.length}개)</h3>
+            <div className="special-rules-list">
+              {SPECIAL_RULES.map(rule => (
+                <div key={rule.id} className="special-rule-card">
+                  <h4>{rule.name}</h4>
+                  <p>{rule.description}</p>
+                  {rule.effects && (
+                    <ul>
+                      {rule.effects.map((e, i) => (
+                        <li key={i}>{e.description}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {rule.bonus && (
+                    <div className="spec-meta">
+                      보너스: {rule.bonus.type} +{rule.bonus.count || rule.bonus.multiplier + '배'}
+                    </div>
+                  )}
+                  {rule.effect && <div className="spec-meta">효과: {rule.effect}</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // ===== 고스톱 룰 문서 컴포넌트 =====
 const GoStopRules = () => {
   const [activeSection, setActiveSection] = useState('basic');
@@ -828,6 +1064,13 @@ const TestZone = () => {
         {activePage === 'gostop-rules' && (
           <section className="test-section">
             <GoStopRules />
+          </section>
+        )}
+
+        {/* 고스톱 스펙 문서 */}
+        {activePage === 'gostop-spec' && (
+          <section className="test-section">
+            <GoStopSpecDoc />
           </section>
         )}
 
