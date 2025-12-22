@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 import gameSound from '../utils/gameSound';
+import {
+  HWATU_DECK,
+  getHwatuImageUrl,
+  SCORING_RULES,
+} from './GoStopSpec';
 import './Games.css';
 
 // ==================== 리더보드 시스템 ====================
@@ -706,129 +711,7 @@ const Sudoku = ({ onBack }) => {
 };
 
 // ==================== 맞고 게임 ====================
-// 화투 이미지 매핑 (서버 업로드된 실제 화투 이미지)
-const HWATU_IMAGE_MAP = {
-  '1-1': '1766365648113-246585907.png',
-  '1-2': '1766365648040-398829771.png',
-  '1-3': '1766365647990-957864677.png',
-  '1-4': '1766365647901-991381946.png',
-  '2-1': '1766365648299-896721373.png',
-  '2-2': '1766365648264-567946987.png',
-  '2-3': '1766365648281-422771943.png',
-  '2-4': '1766365648146-136778318.png',
-  '3-1': '1766365648007-26931206.png',
-  '3-2': '1766365648061-457781584.png',
-  '3-3': '1766365648096-895991008.png',
-  '3-4': '1766365647920-205705528.png',
-  '4-1': '1766365648213-442459374.png',
-  '4-2': '1766365648129-211245955.png',
-  '4-3': '1766365648162-58848333.png',
-  '4-4': '1766365648246-955995828.png',
-  '5-1': '1766365647802-768277004.png',
-  '5-2': '1766365647936-615083179.png',
-  '5-3': '1766365647975-673220710.png',
-  '5-4': '1766365648079-717804224.png',
-  '6-1': '1766365648179-819603995.png',
-  '6-2': '1766365648229-284854545.png',
-  '6-3': '1766365648195-217754773.png',
-  '6-4': '1766365648315-903974657.png',
-  '7-1': '1766365647954-486907208.png',
-  '7-2': '1766365647885-332796171.png',
-  '7-3': '1766365647859-981807374.png',
-  '7-4': '1766365648024-379925920.png',
-  '8-1': '1766365648470-903551197.png',
-  '8-2': '1766365648518-775832240.png',
-  '8-3': '1766365648485-208944818.png',
-  '8-4': '1766365648437-74352903.png',
-  '9-1': '1766365648656-182981457.png',
-  '9-2': '1766365648622-253389898.png',
-  '9-3': '1766365648605-469820217.png',
-  '9-4': '1766365648553-51756069.png',
-  '10-1': '1766365648367-911477294.png',
-  '10-2': '1766365648422-610609444.png',
-  '10-3': '1766365648386-728581906.png',
-  '10-4': '1766365648502-932841805.png',
-  '11-1': '1766365648588-806626211.png',
-  '11-2': '1766365648570-323944655.png',
-  '11-3': '1766365648536-891418201.png',
-  '11-4': '1766365648639-790562712.png',
-  '12-1': '1766365648403-709711113.png',
-  '12-2': '1766365648334-202283624.png',
-  '12-3': '1766365648349-721958801.png',
-  '12-4': '1766365648454-752753178.png',
-};
-
-const getHwatuImageUrl = (month, index) => {
-  const key = `${month}-${index}`;
-  const filename = HWATU_IMAGE_MAP[key];
-  return filename ? `https://api.ilouli.com/api/files/view/${filename}` : null;
-};
-
-// 화투패 48장 정의 - 한국식 전통 화투 (나무위키 참고)
-// 각 월별 테마: 1월 송학, 2월 매조, 3월 벚꽃, 4월 흑싸리, 5월 난초, 6월 모란
-// 7월 홍싸리, 8월 공산(억새), 9월 국화, 10월 단풍, 11월 오동, 12월 비
-const HWATU_DECK = [
-  // 1월 (송학/松鶴) - 소나무와 두루미, 태양
-  { month: 1, imageIndex: 1, name: '송학', type: '광', subtype: null, desc: '학+태양', piCount: 0 },
-  { month: 1, imageIndex: 2, name: '송학', type: '띠', subtype: '홍단', desc: '홍단', piCount: 0 },
-  { month: 1, imageIndex: 3, name: '송학', type: '피', subtype: null, desc: '소나무', piCount: 1 },
-  { month: 1, imageIndex: 4, name: '송학', type: '피', subtype: null, desc: '소나무', piCount: 1 },
-  // 2월 (매조/梅鳥) - 매화와 휘파람새(꾀꼬리)
-  { month: 2, imageIndex: 1, name: '매조', type: '열끗', subtype: '고도리', desc: '꾀꼬리', piCount: 0 },
-  { month: 2, imageIndex: 2, name: '매조', type: '띠', subtype: '홍단', desc: '홍단', piCount: 0 },
-  { month: 2, imageIndex: 3, name: '매조', type: '피', subtype: null, desc: '매화', piCount: 1 },
-  { month: 2, imageIndex: 4, name: '매조', type: '피', subtype: null, desc: '매화', piCount: 1 },
-  // 3월 (벚꽃/桜) - 벚꽃과 장막(만막)
-  { month: 3, imageIndex: 1, name: '벚꽃', type: '광', subtype: null, desc: '장막', piCount: 0 },
-  { month: 3, imageIndex: 2, name: '벚꽃', type: '띠', subtype: '홍단', desc: '홍단', piCount: 0 },
-  { month: 3, imageIndex: 3, name: '벚꽃', type: '피', subtype: null, desc: '벚꽃', piCount: 1 },
-  { month: 3, imageIndex: 4, name: '벚꽃', type: '피', subtype: null, desc: '벚꽃', piCount: 1 },
-  // 4월 (흑싸리/藤) - 등나무와 두견새
-  { month: 4, imageIndex: 1, name: '흑싸리', type: '열끗', subtype: '고도리', desc: '두견새', piCount: 0 },
-  { month: 4, imageIndex: 2, name: '흑싸리', type: '띠', subtype: '초단', desc: '초단', piCount: 0 },
-  { month: 4, imageIndex: 3, name: '흑싸리', type: '피', subtype: null, desc: '등나무', piCount: 1 },
-  { month: 4, imageIndex: 4, name: '흑싸리', type: '피', subtype: null, desc: '등나무', piCount: 1 },
-  // 5월 (난초/菖蒲) - 창포(제비붓꽃)와 팔교다리
-  { month: 5, imageIndex: 1, name: '난초', type: '열끗', subtype: null, desc: '팔교', piCount: 0 },
-  { month: 5, imageIndex: 2, name: '난초', type: '띠', subtype: '초단', desc: '초단', piCount: 0 },
-  { month: 5, imageIndex: 3, name: '난초', type: '피', subtype: null, desc: '창포', piCount: 1 },
-  { month: 5, imageIndex: 4, name: '난초', type: '피', subtype: null, desc: '창포', piCount: 1 },
-  // 6월 (모란/牡丹) - 모란과 나비
-  { month: 6, imageIndex: 1, name: '모란', type: '열끗', subtype: null, desc: '나비', piCount: 0 },
-  { month: 6, imageIndex: 2, name: '모란', type: '띠', subtype: '청단', desc: '청단', piCount: 0 },
-  { month: 6, imageIndex: 3, name: '모란', type: '피', subtype: null, desc: '모란', piCount: 1 },
-  { month: 6, imageIndex: 4, name: '모란', type: '피', subtype: null, desc: '모란', piCount: 1 },
-  // 7월 (홍싸리/萩) - 홍싸리와 멧돼지
-  { month: 7, imageIndex: 1, name: '홍싸리', type: '열끗', subtype: null, desc: '멧돼지', piCount: 0 },
-  { month: 7, imageIndex: 2, name: '홍싸리', type: '띠', subtype: '초단', desc: '초단', piCount: 0 },
-  { month: 7, imageIndex: 3, name: '홍싸리', type: '피', subtype: null, desc: '싸리', piCount: 1 },
-  { month: 7, imageIndex: 4, name: '홍싸리', type: '피', subtype: null, desc: '싸리', piCount: 1 },
-  // 8월 (공산/芒) - 억새밭과 보름달, 기러기
-  { month: 8, imageIndex: 1, name: '공산', type: '광', subtype: null, desc: '보름달', piCount: 0 },
-  { month: 8, imageIndex: 2, name: '공산', type: '열끗', subtype: '고도리', desc: '기러기', piCount: 0 },
-  { month: 8, imageIndex: 3, name: '공산', type: '피', subtype: null, desc: '억새', piCount: 1 },
-  { month: 8, imageIndex: 4, name: '공산', type: '피', subtype: null, desc: '억새', piCount: 1 },
-  // 9월 (국화/菊) - 국화와 술잔(壽)
-  { month: 9, imageIndex: 1, name: '국화', type: '열끗', subtype: null, desc: '술잔', piCount: 0 },
-  { month: 9, imageIndex: 2, name: '국화', type: '띠', subtype: '청단', desc: '청단', piCount: 0 },
-  { month: 9, imageIndex: 3, name: '국화', type: '피', subtype: null, desc: '국화', piCount: 1 },
-  { month: 9, imageIndex: 4, name: '국화', type: '피', subtype: null, desc: '국화', piCount: 1 },
-  // 10월 (단풍/紅葉) - 단풍과 사슴
-  { month: 10, imageIndex: 1, name: '단풍', type: '열끗', subtype: null, desc: '사슴', piCount: 0 },
-  { month: 10, imageIndex: 2, name: '단풍', type: '띠', subtype: '청단', desc: '청단', piCount: 0 },
-  { month: 10, imageIndex: 3, name: '단풍', type: '피', subtype: null, desc: '단풍', piCount: 1 },
-  { month: 10, imageIndex: 4, name: '단풍', type: '피', subtype: null, desc: '단풍', piCount: 1 },
-  // 11월 (오동/桐) - 오동나무와 봉황
-  { month: 11, imageIndex: 1, name: '오동', type: '광', subtype: '비광', desc: '봉황', piCount: 0 },
-  { month: 11, imageIndex: 2, name: '오동', type: '피', subtype: null, desc: '오동', piCount: 1 },
-  { month: 11, imageIndex: 3, name: '오동', type: '피', subtype: null, desc: '오동', piCount: 1 },
-  { month: 11, imageIndex: 4, name: '오동', type: '피', subtype: '쌍피', desc: '쌍피', piCount: 2 },
-  // 12월 (비/雨) - 버드나무, 비, 오노노 도후(우산 쓴 인물)
-  { month: 12, imageIndex: 1, name: '비', type: '광', subtype: '비광', desc: '비광', piCount: 0 },
-  { month: 12, imageIndex: 2, name: '비', type: '열끗', subtype: null, desc: '제비', piCount: 0 },
-  { month: 12, imageIndex: 3, name: '비', type: '띠', subtype: null, desc: '띠', piCount: 0 },
-  { month: 12, imageIndex: 4, name: '비', type: '피', subtype: '쌍피', desc: '쌍피', piCount: 2 },
-];
+// 화투 데이터는 GoStopSpec.js에서 import
 
 const GoStop = ({ onBack }) => {
   const [isMuted, setIsMuted] = useState(gameSound.getMuted());
@@ -883,80 +766,41 @@ const GoStop = ({ onBack }) => {
     return newDeck;
   };
 
-  // 점수 계산 (맞고 룰)
+  // 점수 계산 (GoStopSpec의 SCORING_RULES 사용)
   const calculateScore = useCallback((collected) => {
+    // collected 객체를 flat array로 변환
+    const allCards = [
+      ...collected.광,
+      ...collected.열끗,
+      ...collected.띠,
+      ...collected.피,
+    ];
+
     let score = 0;
     const breakdown = [];
 
-    // 광 점수
-    const gwangCards = collected.광;
-    const hasBiGwang = gwangCards.some(c => c.subtype === '비광');
-    const gwangCount = gwangCards.length;
+    for (const rule of SCORING_RULES) {
+      if (rule.checkFn(allCards)) {
+        const ruleScore = rule.scoreFn
+          ? rule.scoreFn(allCards)
+          : rule.score;
 
-    if (gwangCount === 5) {
-      score += 15;
-      breakdown.push({ name: '오광', score: 15 });
-    } else if (gwangCount === 4) {
-      score += 4;
-      breakdown.push({ name: '사광', score: 4 });
-    } else if (gwangCount === 3) {
-      if (hasBiGwang) {
-        score += 2;
-        breakdown.push({ name: '비삼광', score: 2 });
-      } else {
-        score += 3;
-        breakdown.push({ name: '삼광', score: 3 });
+        if (ruleScore > 0) {
+          // 동적 점수 규칙의 경우 상세 정보 추가
+          let name = rule.name;
+          if (rule.id === 'yeolkkeut') {
+            name = `열끗 ${collected.열끗.length}장`;
+          } else if (rule.id === 'ddi') {
+            name = `띠 ${collected.띠.length}장`;
+          } else if (rule.id === 'pi') {
+            const piCount = collected.피.reduce((sum, c) => sum + c.piCount, 0);
+            name = `피 ${piCount}장`;
+          }
+
+          breakdown.push({ name, score: ruleScore });
+          score += ruleScore;
+        }
       }
-    }
-
-    // 고도리 (2,4,8월 새)
-    const godoriCards = collected.열끗.filter(c => c.subtype === '고도리');
-    if (godoriCards.length === 3) {
-      score += 5;
-      breakdown.push({ name: '고도리', score: 5 });
-    }
-
-    // 홍단 (1,2,3월 홍단)
-    const hongdanCards = collected.띠.filter(c => c.subtype === '홍단');
-    if (hongdanCards.length === 3) {
-      score += 3;
-      breakdown.push({ name: '홍단', score: 3 });
-    }
-
-    // 청단 (6,9,10월 청단)
-    const cheongdanCards = collected.띠.filter(c => c.subtype === '청단');
-    if (cheongdanCards.length === 3) {
-      score += 3;
-      breakdown.push({ name: '청단', score: 3 });
-    }
-
-    // 초단 (4,5,7월 초단)
-    const chodanCards = collected.띠.filter(c => c.subtype === '초단');
-    if (chodanCards.length === 3) {
-      score += 3;
-      breakdown.push({ name: '초단', score: 3 });
-    }
-
-    // 열끗 (5장 이상)
-    if (collected.열끗.length >= 5) {
-      const yeolkkeut = collected.열끗.length - 4;
-      score += yeolkkeut;
-      breakdown.push({ name: `열끗 ${collected.열끗.length}장`, score: yeolkkeut });
-    }
-
-    // 띠 (5장 이상)
-    if (collected.띠.length >= 5) {
-      const tti = collected.띠.length - 4;
-      score += tti;
-      breakdown.push({ name: `띠 ${collected.띠.length}장`, score: tti });
-    }
-
-    // 피 (10장 이상, 쌍피는 2장으로 계산)
-    const piCount = collected.피.reduce((sum, c) => sum + c.piCount, 0);
-    if (piCount >= 10) {
-      const piScore = piCount - 9;
-      score += piScore;
-      breakdown.push({ name: `피 ${piCount}장`, score: piScore });
     }
 
     return { score, breakdown };
