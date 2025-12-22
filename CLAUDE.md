@@ -196,6 +196,32 @@ homepage/
 
 Follow Apple-inspired minimalism: clean layouts, generous whitespace, smooth animations, and high-quality visuals. Ensure responsive design across devices.
 
+## Asset Management
+
+**에셋 사용 원칙:** 사용자 업로드 파일(`backend/uploads/`)을 앱 에셋으로 사용할 때는 반드시 별도 위치에 복사해서 사용한다.
+
+| 구분 | 위치 | 용도 |
+|------|------|------|
+| 사용자 업로드 | `backend/uploads/` | 임시 저장, 사용자가 삭제 가능 |
+| 앱 에셋 | `frontend/public/assets/` 또는 `backend/assets/` | 앱에서 사용하는 고정 리소스 |
+
+**에셋 적용 절차:**
+1. 파일 업로드 페이지(`lab.ilouli.com/file-upload`)에서 이미지 업로드
+2. 테스트 존에서 확인 및 검증
+3. 확정된 에셋은 `assets/` 폴더로 복사
+4. 코드에서 복사된 에셋 경로 사용
+5. 원본 업로드 파일은 삭제 가능
+
+**예시 - 고스톱 화투 이미지:**
+```
+# 현재: uploads에서 직접 사용 (임시)
+backend/uploads/1766365648113-246585907.png
+
+# 권장: assets로 복사 후 사용
+backend/assets/hwatu/1-1.png
+frontend/public/assets/hwatu/1-1.png
+```
+
 ## Development Workflow
 
 **개발 프로세스:**
