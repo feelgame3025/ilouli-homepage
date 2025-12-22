@@ -861,9 +861,10 @@ const GoStop = ({ onBack }) => {
 
   // 애니메이션 상태
   const [playingCard, setPlayingCard] = useState(null);
+  const [computerPlayingCard, setComputerPlayingCard] = useState(null);
   const [matchedCards, setMatchedCards] = useState([]);
   const [showMatchEffect, setShowMatchEffect] = useState(false);
-  const [lastAction, setLastAction] = useState(null); // 'play' | 'match' | 'collect'
+  const [matchEffectText, setMatchEffectText] = useState('매칭!');
 
   useEffect(() => {
     gameSound.init();
@@ -1011,20 +1012,22 @@ const GoStop = ({ onBack }) => {
 
     // 애니메이션 시작
     setPlayingCard(card);
-    setLastAction('play');
     gameSound.playFlip();
 
     const matchingCards = fieldCards.filter(f => f.month === card.month);
 
-    // 매칭되는 카드 하이라이트
-    if (matchingCards.length > 0) {
-      setMatchedCards(matchingCards.map(c => c.id));
-    }
+    // 매칭되는 카드 하이라이트 (0.5초 후)
+    setTimeout(() => {
+      if (matchingCards.length > 0) {
+        setMatchedCards(matchingCards.map(c => c.id));
+        setMatchEffectText(matchingCards.length === 3 ? '싹쓸이!' : '매칭!');
+      }
+    }, 500);
 
-    // 애니메이션 후 실제 카드 내기 처리
+    // 애니메이션 후 실제 카드 내기 처리 (1초 후)
     setTimeout(() => {
       processPlayCard(card, matchingCards);
-    }, 400);
+    }, 1000);
   };
 
   // 실제 카드 처리 로직
@@ -1036,7 +1039,6 @@ const GoStop = ({ onBack }) => {
     if (matchingCards.length === 0) {
       // 매칭 카드 없음 - 바닥에 놓기
       newFieldCards.push(card);
-      setLastAction('play');
     } else if (matchingCards.length === 1) {
       // 1장 매칭 - 둘 다 가져오기
       const matched = matchingCards[0];
@@ -1044,7 +1046,6 @@ const GoStop = ({ onBack }) => {
       newCollected[card.type].push(card);
       newCollected[matched.type].push(matched);
       setShowMatchEffect(true);
-      setLastAction('match');
       gameSound.playMatch();
     } else if (matchingCards.length === 2) {
       // 2장 매칭 - 하나 선택 (자동으로 첫 번째 선택)
@@ -1053,7 +1054,6 @@ const GoStop = ({ onBack }) => {
       newCollected[card.type].push(card);
       newCollected[matched.type].push(matched);
       setShowMatchEffect(true);
-      setLastAction('match');
       gameSound.playMatch();
     } else if (matchingCards.length === 3) {
       // 3장 매칭 - 모두 가져오기
@@ -1061,11 +1061,10 @@ const GoStop = ({ onBack }) => {
       newCollected[card.type].push(card);
       matchingCards.forEach(m => newCollected[m.type].push(m));
       setShowMatchEffect(true);
-      setLastAction('match');
       gameSound.playMatch();
     }
 
-    // 이펙트 표시 후 처리
+    // 이펙트 표시 후 처리 (0.8초 후)
     setTimeout(() => {
       setShowMatchEffect(false);
       setMatchedCards([]);
@@ -1115,11 +1114,11 @@ const GoStop = ({ onBack }) => {
         return;
       }
 
-      // 컴퓨터 턴
+      // 컴퓨터 턴 (1초 후)
       setIsPlayerTurn(false);
       setMessage('컴퓨터 턴...');
-      setTimeout(() => computerTurn(newFieldCards), 600);
-    }, 300);
+      setTimeout(() => computerTurnWithAnimation(newFieldCards), 1000);
+    }, 800);
   };
 
   // 카드 내기 버튼용
@@ -1127,8 +1126,8 @@ const GoStop = ({ onBack }) => {
     playCardWithAnimation(selectedCard);
   };
 
-  // 컴퓨터 턴
-  const computerTurn = (currentFieldCards) => {
+  // 컴퓨터 턴 (애니메이션 포함)
+  const computerTurnWithAnimation = (currentFieldCards) => {
     if (computerHand.length === 0) {
       endGame(playerCollected, computerCollected);
       return;
@@ -1152,55 +1151,89 @@ const GoStop = ({ onBack }) => {
     }
 
     const matchingCards = currentFieldCards.filter(f => f.month === bestCard.month);
-    let newFieldCards = [...currentFieldCards];
-    let newCollected = JSON.parse(JSON.stringify(computerCollected));
-    let newHand = computerHand.filter(c => c.id !== bestCard.id);
 
-    if (matchingCards.length === 0) {
-      newFieldCards.push(bestCard);
-    } else {
-      const matched = matchingCards[0];
-      newFieldCards = currentFieldCards.filter(f => f.id !== matched.id);
-      if (matchingCards.length === 3) {
-        newFieldCards = currentFieldCards.filter(f => f.month !== bestCard.month);
-        matchingCards.forEach(m => newCollected[m.type].push(m));
-      } else {
-        newCollected[matched.type].push(matched);
+    // 1단계: 컴퓨터 카드 선택 애니메이션
+    setComputerPlayingCard(bestCard);
+    gameSound.playFlip();
+    setMessage(`컴퓨터가 ${bestCard.month}월 ${bestCard.name} 카드를 냅니다`);
+
+    // 2단계: 매칭 카드 하이라이트 (0.6초 후)
+    setTimeout(() => {
+      if (matchingCards.length > 0) {
+        setMatchedCards(matchingCards.map(c => c.id));
+        setMatchEffectText(matchingCards.length === 3 ? '싹쓸이!' : '매칭!');
+        setShowMatchEffect(true);
+        gameSound.playMatch();
       }
-      newCollected[bestCard.type].push(bestCard);
-    }
+    }, 600);
 
-    // 덱에서 뽑기
-    if (deck.length > 0) {
-      const drawnCard = deck[0];
-      const newDeck = deck.slice(1);
-      setDeck(newDeck);
+    // 3단계: 실제 처리 (1.2초 후)
+    setTimeout(() => {
+      let newFieldCards = [...currentFieldCards];
+      let newCollected = JSON.parse(JSON.stringify(computerCollected));
+      let newHand = computerHand.filter(c => c.id !== bestCard.id);
 
-      const drawnMatches = newFieldCards.filter(f => f.month === drawnCard.month);
-      if (drawnMatches.length === 0) {
-        newFieldCards.push(drawnCard);
+      if (matchingCards.length === 0) {
+        newFieldCards.push(bestCard);
       } else {
-        const matched = drawnMatches[0];
-        newFieldCards = newFieldCards.filter(f => f.id !== matched.id);
-        newCollected[drawnCard.type].push(drawnCard);
-        newCollected[matched.type].push(matched);
+        const matched = matchingCards[0];
+        newFieldCards = currentFieldCards.filter(f => f.id !== matched.id);
+        if (matchingCards.length === 3) {
+          newFieldCards = currentFieldCards.filter(f => f.month !== bestCard.month);
+          matchingCards.forEach(m => newCollected[m.type].push(m));
+        } else {
+          newCollected[matched.type].push(matched);
+        }
+        newCollected[bestCard.type].push(bestCard);
       }
-    }
 
-    setComputerHand(newHand);
-    setFieldCards(newFieldCards);
-    setComputerCollected(newCollected);
+      // 4단계: 이펙트 정리 및 덱에서 뽑기 (0.6초 후)
+      setTimeout(() => {
+        setShowMatchEffect(false);
+        setMatchedCards([]);
+        setComputerPlayingCard(null);
 
-    const { score } = calculateScore(newCollected);
-    setComputerScore(score);
+        // 덱에서 뽑기
+        if (deck.length > 0) {
+          const drawnCard = deck[0];
+          const newDeck = deck.slice(1);
+          setDeck(newDeck);
 
-    if (newHand.length === 0) {
-      endGame(playerCollected, newCollected);
-      return;
-    }
+          const drawnMatches = newFieldCards.filter(f => f.month === drawnCard.month);
+          if (drawnMatches.length === 0) {
+            newFieldCards.push(drawnCard);
+          } else {
+            const matched = drawnMatches[0];
+            newFieldCards = newFieldCards.filter(f => f.id !== matched.id);
+            newCollected[drawnCard.type].push(drawnCard);
+            newCollected[matched.type].push(matched);
+          }
+        }
 
-    setIsPlayerTurn(true);
-    setMessage('카드를 선택하세요');
+        setComputerHand(newHand);
+        setFieldCards(newFieldCards);
+        setComputerCollected(newCollected);
+
+        const { score } = calculateScore(newCollected);
+        setComputerScore(score);
+
+        if (newHand.length === 0) {
+          endGame(playerCollected, newCollected);
+          return;
+        }
+
+        // 플레이어 턴으로 전환 (0.5초 후)
+        setTimeout(() => {
+          setIsPlayerTurn(true);
+          setMessage('카드를 선택하세요');
+        }, 500);
+      }, 600);
+    }, 1200);
+  };
+
+  // 기존 computerTurn (handleGo에서 사용)
+  const computerTurn = (currentFieldCards) => {
+    computerTurnWithAnimation(currentFieldCards);
   };
 
   // 고
@@ -1415,6 +1448,19 @@ const GoStop = ({ onBack }) => {
                 <span className="score-label">점</span>
               </div>
             </div>
+            {/* 컴퓨터가 내는 카드 표시 */}
+            {computerPlayingCard && (
+              <div className="computer-playing-card-section">
+                <span className="computer-action-label">컴퓨터가 내는 카드</span>
+                <div className="computer-playing-card-container">
+                  <HwatuCard
+                    card={computerPlayingCard}
+                    isPlaying={true}
+                    size="normal"
+                  />
+                </div>
+              </div>
+            )}
             {/* 상대 수집 카드 표시 */}
             <div className="collected-cards-display">
               {computerCollected.광.length > 0 && (
@@ -1499,7 +1545,7 @@ const GoStop = ({ onBack }) => {
               )}
               {showMatchEffect && (
                 <div className="match-effect-overlay">
-                  <span className="match-text">매칭!</span>
+                  <span className="match-text">{matchEffectText}</span>
                 </div>
               )}
             </div>
