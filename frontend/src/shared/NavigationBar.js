@@ -239,13 +239,15 @@ const NavigationBar = () => {
 
                 {/* Family Space - Family/Admin */}
                 {showFamilySpace && (
-                  <li className="nav-item">
-                    <a
-                      href={getHostUrl(HOSTS.FAMILY, '/')}
+                  <li
+                    className={`nav-item has-flyout ${activeDropdown === 'family' ? 'flyout-open' : ''}`}
+                    onMouseEnter={() => handleDropdownEnter('family')}
+                  >
+                    <button
                       className={`nav-link ${isActiveHost(HOSTS.FAMILY) ? 'active' : ''}`}
                     >
                       {t('nav.familySpace')}
-                    </a>
+                    </button>
                   </li>
                 )}
 
@@ -538,6 +540,33 @@ const NavigationBar = () => {
               </div>
             )}
 
+            {/* Family Space Flyout */}
+            {showFamilySpace && (
+              <div className={`flyout-panel ${activeDropdown === 'family' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('family')}>
+                <div className="flyout-content">
+                  <div className="flyout-section">
+                    <h3 className="flyout-section-title">가족 공간</h3>
+                    <div className="flyout-links">
+                      <a href={getHostUrl(HOSTS.FAMILY, '/')} className="flyout-link">
+                        <span className="flyout-link-icon">🏠</span>
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">가족 홈</span>
+                          <span className="flyout-link-desc">가족 공간 메인</span>
+                        </div>
+                      </a>
+                      <a href={getHostUrl(HOSTS.FAMILY, '/calendar')} className="flyout-link">
+                        <span className="flyout-link-icon">📅</span>
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">캘린더</span>
+                          <span className="flyout-link-desc">가족 일정 관리</span>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Admin Lab Flyout */}
             {showAdminLab && (
               <div className={`flyout-panel ${activeDropdown === 'lab' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('lab')}>
@@ -642,13 +671,23 @@ const NavigationBar = () => {
 
               {/* Family Space - Family/Admin */}
               {showFamilySpace && (
-                <li className="nav-item">
-                  <a
-                    href={getHostUrl(HOSTS.FAMILY, '/')}
+                <li
+                  className={`nav-item has-flyout ${activeDropdown === 'family' ? 'flyout-open' : ''}`}
+                >
+                  <button
                     className={`nav-link ${isActiveHost(HOSTS.FAMILY) ? 'active' : ''}`}
+                    onClick={() => toggleMobileDropdown('family')}
                   >
                     {t('nav.familySpace')}
-                  </a>
+                  </button>
+                  <div className="mobile-submenu">
+                    <a href={getHostUrl(HOSTS.FAMILY, '/')} className="mobile-submenu-link">
+                      가족 홈
+                    </a>
+                    <a href={getHostUrl(HOSTS.FAMILY, '/calendar')} className="mobile-submenu-link">
+                      캘린더
+                    </a>
+                  </div>
                 </li>
               )}
 
