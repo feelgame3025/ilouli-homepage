@@ -504,11 +504,25 @@ const NavigationBar = () => {
                   <div className="flyout-section">
                     <h3 className="flyout-section-title">AI 콘텐츠 도구</h3>
                     <div className="flyout-links">
-                      <a href={getHostUrl(HOSTS.AI, '/video-creator')} className="flyout-link">
+                      <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=shortform')} className="flyout-link">
                         <span className="flyout-link-icon">🎬</span>
                         <div className="flyout-link-text">
-                          <span className="flyout-link-title">AI 영상 제작</span>
-                          <span className="flyout-link-desc">AI 기반 숏폼 영상 제작</span>
+                          <span className="flyout-link-title">숏폼</span>
+                          <span className="flyout-link-desc">AI 숏폼 영상 제작</span>
+                        </div>
+                      </a>
+                      <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=upscale')} className="flyout-link">
+                        <span className="flyout-link-icon">🔍</span>
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">이미지 업스케일링</span>
+                          <span className="flyout-link-desc">저해상도 → 고해상도</span>
+                        </div>
+                      </a>
+                      <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=img2video')} className="flyout-link">
+                        <span className="flyout-link-icon">🎞️</span>
+                        <div className="flyout-link-text">
+                          <span className="flyout-link-title">이미지 영상</span>
+                          <span className="flyout-link-desc">정적 이미지를 영상으로</span>
                         </div>
                       </a>
                       <a href={getHostUrl(HOSTS.AI, '/storyboard')} className="flyout-link">
@@ -610,8 +624,14 @@ const NavigationBar = () => {
                     {t('nav.aiContentTools')}
                   </button>
                   <div className="mobile-submenu">
-                    <a href={getHostUrl(HOSTS.AI, '/video-creator')} className="mobile-submenu-link">
-                      AI 영상 제작
+                    <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=shortform')} className="mobile-submenu-link">
+                      숏폼
+                    </a>
+                    <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=upscale')} className="mobile-submenu-link">
+                      이미지 업스케일링
+                    </a>
+                    <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=img2video')} className="mobile-submenu-link">
+                      이미지 영상
                     </a>
                     <a href={getHostUrl(HOSTS.AI, '/storyboard')} className="mobile-submenu-link">
                       {t('nav.aiStoryboard')}

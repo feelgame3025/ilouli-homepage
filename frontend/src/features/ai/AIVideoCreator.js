@@ -1,13 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import './AIVideoCreator.css';
 
 const AIVideoCreator = () => {
-  const [activeTab, setActiveTab] = useState('shortform');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => {
+    const tabParam = searchParams.get('tab');
+    return ['shortform', 'upscale', 'img2video'].includes(tabParam) ? tabParam : 'shortform';
+  });
   const [topic, setTopic] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+
+  // URL 파라미터 변경 시 탭 업데이트
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (['shortform', 'upscale', 'img2video'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
+
+  // 탭 변경 핸들러
+  const handleTabChange = (tabId, disabled) => {
+    if (disabled) return;
+    setActiveTab(tabId);
+    setSearchParams({ tab: tabId });
+  };
 
   // 탭별 설정
   const tabs = [
@@ -84,7 +104,7 @@ const AIVideoCreator = () => {
           <button
             key={tab.id}
             className={`tab-btn ${activeTab === tab.id ? 'active' : ''} ${tab.disabled ? 'disabled' : ''}`}
-            onClick={() => !tab.disabled && setActiveTab(tab.id)}
+            onClick={() => handleTabChange(tab.id, tab.disabled)}
             disabled={tab.disabled}
           >
             <span className="tab-icon">{tab.icon}</span>
