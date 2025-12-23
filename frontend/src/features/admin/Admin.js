@@ -34,6 +34,24 @@ const Admin = () => {
   const [savingKeys, setSavingKeys] = useState(false);
   const [keyMessage, setKeyMessage] = useState('');
 
+  // API 키 모달 상태
+  const [keyModal, setKeyModal] = useState({ open: false, keyName: '', keyLabel: '', keyDesc: '' });
+  const [modalKeyValue, setModalKeyValue] = useState('');
+
+  // API 키 정보 매핑
+  const apiKeyInfo = {
+    openai: { label: 'OpenAI', desc: 'GPT-4, TTS, 숏폼 영상 생성에 사용', placeholder: 'sk-...' },
+    kling: { label: 'Kling AI', desc: '이미지→영상 변환에 사용', placeholder: 'API 키 입력...' },
+    replicate: { label: 'Replicate', desc: '이미지 업스케일링 (Real-ESRGAN)에 사용', placeholder: 'r8_...' }
+  };
+
+  // API ID와 필요한 키 매핑
+  const apiKeyMapping = {
+    11: 'kling',      // 이미지→영상
+    12: 'replicate',  // 업스케일링
+    13: 'openai'      // 숏폼 생성
+  };
+
   // API 목록 정의 (상세 설명 포함)
   const apiList = [
     // 인증 API (완료)
@@ -196,7 +214,7 @@ const Admin = () => {
 
   // API 키 삭제
   const deleteApiKey = async (keyName) => {
-    if (!window.confirm(`${keyName.toUpperCase()} API 키를 삭제하시겠습니까?`)) return;
+    if (!window.confirm(`${apiKeyInfo[keyName]?.label || keyName} API 키를 삭제하시겠습니까?`)) return;
 
     try {
       const response = await fetch(`https://api.ilouli.com/api/admin/api-keys/${keyName}`, {
@@ -205,13 +223,48 @@ const Admin = () => {
       });
 
       if (response.ok) {
-        setKeyMessage(`${keyName.toUpperCase()} API 키가 삭제되었습니다.`);
+        setKeyMessage(`${apiKeyInfo[keyName]?.label || keyName} API 키가 삭제되었습니다.`);
         loadApiKeyStatus();
+        setKeyModal({ open: false, keyName: '', keyLabel: '', keyDesc: '' });
       }
     } catch (err) {
       setKeyMessage('API 키 삭제 중 오류 발생');
     }
     setTimeout(() => setKeyMessage(''), 3000);
+  };
+
+  // API 키 모달 열기
+  const openKeyModal = (keyName) => {
+    const info = apiKeyInfo[keyName];
+    if (!info) return;
+    setKeyModal({
+      open: true,
+      keyName,
+      keyLabel: info.label,
+      keyDesc: info.desc
+    });
+    setModalKeyValue('');
+  };
+
+  // API 키 모달에서 저장
+  const saveKeyFromModal = async () => {
+    if (!modalKeyValue.trim()) {
+      setKeyMessage('API 키를 입력해주세요.');
+      setTimeout(() => setKeyMessage(''), 3000);
+      return;
+    }
+    await saveApiKey(keyModal.keyName, modalKeyValue);
+    setKeyModal({ open: false, keyName: '', keyLabel: '', keyDesc: '' });
+    setModalKeyValue('');
+  };
+
+  // 상태 버튼 클릭 핸들러
+  const handleStatusClick = (api) => {
+    // needs-key 상태이거나, 이미 키가 설정된 AI API인 경우 모달 열기
+    const keyName = apiKeyMapping[api.id];
+    if (keyName) {
+      openKeyModal(keyName);
+    }
   };
 
   useEffect(() => {
@@ -692,109 +745,37 @@ const Admin = () => {
             </div>
           </div>
 
-          {/* API 키 설정 섹션 */}
-          <div className="api-keys-section">
-            <h2>API 키 설정</h2>
-            <p className="section-desc">AI 기능을 사용하려면 각 서비스의 API 키가 필요합니다.</p>
-
-            {keyMessage && (
-              <div className={`key-message ${keyMessage.includes('실패') || keyMessage.includes('오류') ? 'error' : 'success'}`}>
-                {keyMessage}
-              </div>
-            )}
-
-            <div className="api-keys-grid">
-              {/* OpenAI */}
-              <div className="api-key-card">
-                <div className="key-header">
-                  <span className="key-name">OpenAI</span>
-                  <span className={`key-status ${apiKeyStatus.openai ? 'active' : 'inactive'}`}>
-                    {apiKeyStatus.openai ? '✅ 설정됨' : '❌ 미설정'}
-                  </span>
-                </div>
-                <p className="key-desc">GPT-4, TTS, 숏폼 영상 생성에 사용</p>
-                <div className="key-input-group">
-                  <input
-                    type="password"
-                    placeholder="sk-..."
-                    value={apiKeys.openai}
-                    onChange={(e) => setApiKeys(prev => ({ ...prev, openai: e.target.value }))}
-                  />
-                  <button
-                    onClick={() => saveApiKey('openai', apiKeys.openai)}
-                    disabled={savingKeys}
-                  >
-                    저장
-                  </button>
-                  {apiKeyStatus.openai && (
-                    <button className="delete-key-btn" onClick={() => deleteApiKey('openai')}>
-                      삭제
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Kling AI */}
-              <div className="api-key-card">
-                <div className="key-header">
-                  <span className="key-name">Kling AI</span>
-                  <span className={`key-status ${apiKeyStatus.kling ? 'active' : 'inactive'}`}>
-                    {apiKeyStatus.kling ? '✅ 설정됨' : '❌ 미설정'}
-                  </span>
-                </div>
-                <p className="key-desc">이미지→영상 변환에 사용</p>
-                <div className="key-input-group">
-                  <input
-                    type="password"
-                    placeholder="API 키 입력..."
-                    value={apiKeys.kling}
-                    onChange={(e) => setApiKeys(prev => ({ ...prev, kling: e.target.value }))}
-                  />
-                  <button
-                    onClick={() => saveApiKey('kling', apiKeys.kling)}
-                    disabled={savingKeys}
-                  >
-                    저장
-                  </button>
-                  {apiKeyStatus.kling && (
-                    <button className="delete-key-btn" onClick={() => deleteApiKey('kling')}>
-                      삭제
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Replicate */}
-              <div className="api-key-card">
-                <div className="key-header">
-                  <span className="key-name">Replicate</span>
-                  <span className={`key-status ${apiKeyStatus.replicate ? 'active' : 'inactive'}`}>
-                    {apiKeyStatus.replicate ? '✅ 설정됨' : '❌ 미설정'}
-                  </span>
-                </div>
-                <p className="key-desc">이미지 업스케일링 (Real-ESRGAN)에 사용</p>
-                <div className="key-input-group">
-                  <input
-                    type="password"
-                    placeholder="r8_..."
-                    value={apiKeys.replicate}
-                    onChange={(e) => setApiKeys(prev => ({ ...prev, replicate: e.target.value }))}
-                  />
-                  <button
-                    onClick={() => saveApiKey('replicate', apiKeys.replicate)}
-                    disabled={savingKeys}
-                  >
-                    저장
-                  </button>
-                  {apiKeyStatus.replicate && (
-                    <button className="delete-key-btn" onClick={() => deleteApiKey('replicate')}>
-                      삭제
-                    </button>
-                  )}
-                </div>
-              </div>
+          {/* API 키 상태 요약 */}
+          <div className="api-keys-summary">
+            <h3>API 키 상태</h3>
+            <p className="section-desc">아래 표에서 "API키 필요" 또는 "키 설정됨" 버튼을 클릭하여 API 키를 설정하거나 변경할 수 있습니다.</p>
+            <div className="key-status-chips">
+              <button
+                className={`key-chip ${apiKeyStatus.openai ? 'active' : 'inactive'}`}
+                onClick={() => openKeyModal('openai')}
+              >
+                OpenAI {apiKeyStatus.openai ? '✅' : '❌'}
+              </button>
+              <button
+                className={`key-chip ${apiKeyStatus.kling ? 'active' : 'inactive'}`}
+                onClick={() => openKeyModal('kling')}
+              >
+                Kling AI {apiKeyStatus.kling ? '✅' : '❌'}
+              </button>
+              <button
+                className={`key-chip ${apiKeyStatus.replicate ? 'active' : 'inactive'}`}
+                onClick={() => openKeyModal('replicate')}
+              >
+                Replicate {apiKeyStatus.replicate ? '✅' : '❌'}
+              </button>
             </div>
           </div>
+
+          {keyMessage && (
+            <div className={`key-message ${keyMessage.includes('실패') || keyMessage.includes('오류') || keyMessage.includes('입력') ? 'error' : 'success'}`}>
+              {keyMessage}
+            </div>
+          )}
 
           <div className="api-section">
             <div className="api-header">
@@ -880,9 +861,22 @@ const Admin = () => {
                           </div>
                         </td>
                         <td>
-                          <span className={`status-badge api-status-${api.status}`}>
-                            {api.status === 'completed' ? '✅ 완료' : api.status === 'needs-key' ? '🔑 API키 필요' : api.status === 'pending' ? '⏳ 대기' : '🔧 진행중'}
-                          </span>
+                          {apiKeyMapping[api.id] ? (
+                            // AI API - 클릭 가능한 버튼
+                            <button
+                              className={`status-btn api-status-${apiKeyStatus[apiKeyMapping[api.id]] ? 'key-set' : 'needs-key'}`}
+                              onClick={() => handleStatusClick(api)}
+                            >
+                              {apiKeyStatus[apiKeyMapping[api.id]]
+                                ? '✅ 키 설정됨'
+                                : '🔑 API키 필요'}
+                            </button>
+                          ) : (
+                            // 일반 API - 일반 배지
+                            <span className={`status-badge api-status-${api.status}`}>
+                              {api.status === 'completed' ? '✅ 완료' : api.status === 'pending' ? '⏳ 대기' : '🔧 진행중'}
+                            </span>
+                          )}
                         </td>
                         <td>
                           <span className={`priority-badge priority-${api.priority}`}>
@@ -925,6 +919,66 @@ const Admin = () => {
             </div>
           </div>
         </>
+      )}
+
+      {/* API 키 입력 모달 */}
+      {keyModal.open && (
+        <div className="modal-overlay" onClick={() => setKeyModal({ open: false, keyName: '', keyLabel: '', keyDesc: '' })}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>{keyModal.keyLabel} API 키 {apiKeyStatus[keyModal.keyName] ? '변경' : '설정'}</h3>
+              <button
+                className="modal-close"
+                onClick={() => setKeyModal({ open: false, keyName: '', keyLabel: '', keyDesc: '' })}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <p className="modal-desc">{keyModal.keyDesc}</p>
+
+              {apiKeyStatus[keyModal.keyName] && (
+                <div className="current-key-status">
+                  <span className="key-status active">✅ 현재 키가 설정되어 있습니다</span>
+                </div>
+              )}
+
+              <div className="modal-input-group">
+                <label>API 키</label>
+                <input
+                  type="password"
+                  placeholder={apiKeyInfo[keyModal.keyName]?.placeholder || 'API 키 입력...'}
+                  value={modalKeyValue}
+                  onChange={(e) => setModalKeyValue(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              {apiKeyStatus[keyModal.keyName] && (
+                <button
+                  className="modal-btn delete"
+                  onClick={() => deleteApiKey(keyModal.keyName)}
+                >
+                  키 삭제
+                </button>
+              )}
+              <button
+                className="modal-btn cancel"
+                onClick={() => setKeyModal({ open: false, keyName: '', keyLabel: '', keyDesc: '' })}
+              >
+                취소
+              </button>
+              <button
+                className="modal-btn save"
+                onClick={saveKeyFromModal}
+                disabled={savingKeys}
+              >
+                {savingKeys ? '저장 중...' : apiKeyStatus[keyModal.keyName] ? '키 변경' : '키 저장'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

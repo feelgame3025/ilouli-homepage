@@ -764,6 +764,254 @@
   background-color: #fecaca !important;
 }
 
+/* API 키 상태 요약 */
+.api-keys-summary {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.5rem;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+}
+
+.api-keys-summary h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: #1d1d1f;
+}
+
+.key-status-chips {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.key-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.key-chip.active {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.key-chip.active:hover {
+  background-color: #a7f3d0;
+}
+
+.key-chip.inactive {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.key-chip.inactive:hover {
+  background-color: #fecaca;
+}
+
+/* 상태 버튼 */
+.status-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.status-btn.api-status-needs-key {
+  background-color: #ede9fe;
+  color: #7c3aed;
+}
+
+.status-btn.api-status-needs-key:hover {
+  background-color: #ddd6fe;
+}
+
+.status-btn.api-status-key-set {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-btn.api-status-key-set:hover {
+  background-color: #a7f3d0;
+}
+
+/* 모달 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background-color: #ffffff;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.modal-close:hover {
+  color: #1d1d1f;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-desc {
+  margin: 0 0 1rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.current-key-status {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background-color: #f0fdf4;
+  border-radius: 8px;
+}
+
+.modal-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modal-input-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.modal-input-group input {
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+
+.modal-input-group input:focus {
+  outline: none;
+  border-color: #1d1d1f;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e5e5;
+  background-color: #f9f9f9;
+  border-radius: 0 0 16px 16px;
+}
+
+.modal-btn {
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.modal-btn.cancel {
+  background-color: #f3f4f6;
+  color: #666;
+}
+
+.modal-btn.cancel:hover {
+  background-color: #e5e7eb;
+}
+
+.modal-btn.save {
+  background-color: #1d1d1f;
+  color: #fff;
+}
+
+.modal-btn.save:hover:not(:disabled) {
+  background-color: #333;
+}
+
+.modal-btn.save:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.modal-btn.delete {
+  background-color: #fee2e2;
+  color: #dc2626;
+  margin-right: auto;
+}
+
+.modal-btn.delete:hover {
+  background-color: #fecaca;
+}
+
 .api-table-container {
   background-color: #ffffff;
   border: 1px solid #e5e5e5;
