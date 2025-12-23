@@ -43,6 +43,16 @@
   transform: translateY(-2px);
 }
 
+.tool-card.available {
+  border-color: #4caf50;
+  background: linear-gradient(135deg, #ffffff 0%, #f1f8e9 100%);
+}
+
+.tool-card.available:hover {
+  border-color: #2e7d32;
+  box-shadow: 0 4px 20px rgba(76, 175, 80, 0.2);
+}
+
 .tool-icon {
   font-size: 3rem;
   margin-bottom: 1rem;
