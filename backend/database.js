@@ -95,6 +95,91 @@ try {
   // 이미 존재하면 무시
 }
 
+// 커뮤니티 게시글 테이블
+db.exec(`
+  CREATE TABLE IF NOT EXISTS community_posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    board TEXT NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    views INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )
+`);
+
+// 커뮤니티 댓글 테이블
+db.exec(`
+  CREATE TABLE IF NOT EXISTS community_comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    parent_id INTEGER,
+    content TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES community_posts(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES community_comments(id) ON DELETE CASCADE
+  )
+`);
+
+// 커뮤니티 신고 테이블
+db.exec(`
+  CREATE TABLE IF NOT EXISTS community_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    target_type TEXT NOT NULL,
+    target_id INTEGER NOT NULL,
+    reason TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )
+`);
+
+// 커뮤니티 인덱스
+try {
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_community_posts_board ON community_posts(board)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_community_posts_user ON community_posts(user_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_community_comments_post ON community_comments(post_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_community_comments_user ON community_comments(user_id)`);
+} catch (e) {
+  // 이미 존재하면 무시
+}
+
+// 알림 테이블
+db.exec(`
+  CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    title TEXT NOT NULL,
+    message TEXT NOT NULL,
+    link TEXT,
+    metadata TEXT,
+    is_read INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )
+`);
+
+// metadata 컬럼 추가 (기존 DB 마이그레이션)
+try {
+  db.exec(`ALTER TABLE notifications ADD COLUMN metadata TEXT`);
+} catch (e) {
+  // 이미 존재하면 무시
+}
+
+// 알림 인덱스
+try {
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(is_read)`);
+} catch (e) {
+  // 이미 존재하면 무시
+}
+
 // 기본 관리자 계정 생성
 const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get('admin@ilouli.com');
 if (!adminExists) {

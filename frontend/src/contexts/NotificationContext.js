@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
+import * as notificationAPI from '../services/notifications';
 
 export const NOTIFICATION_TYPES = {
   COMMENT: 'comment',           // 내 글에 댓글
@@ -40,17 +41,24 @@ export const NotificationProvider = ({ children }) => {
   });
 
   // 알림 로드
-  const loadNotifications = useCallback(() => {
-    if (!user) {
+  const loadNotifications = useCallback(async () => {
+    if (!user || !user.token) {
       setNotifications([]);
       return;
     }
-    const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
-    if (stored) {
-      const allNotifications = JSON.parse(stored);
-      // 현재 사용자의 알림만 필터링
-      const userNotifications = allNotifications.filter(n => n.userId === user.id);
-      setNotifications(userNotifications);
+
+    try {
+      const data = await notificationAPI.fetchNotifications(user.token);
+      setNotifications(data.notifications || []);
+    } catch (error) {
+      console.error('Failed to load notifications:', error);
+      // Fallback to localStorage on error
+      const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+      if (stored) {
+        const allNotifications = JSON.parse(stored);
+        const userNotifications = allNotifications.filter(n => n.userId === user.id);
+        setNotifications(userNotifications);
+      }
     }
   }, [user]);
 
@@ -88,8 +96,32 @@ export const NotificationProvider = ({ children }) => {
     setSettings(newSettings);
   };
 
-  // 알림 추가
-  const addNotification = (targetUserId, type, title, message, link = null, metadata = {}) => {
+  // 알림 추가 (로컬 전용 - 실시간 알림용)
+  const addNotification = async (targetUserId, type, title, message, link = null, metadata = {}) => {
+    // 서버에 알림 생성 시도 (Admin만 가능)
+    if (user && user.token && user.tier === 'admin') {
+      try {
+        const response = await notificationAPI.createNotification(user.token, {
+          userId: targetUserId,
+          type,
+          title,
+          message,
+          link,
+          metadata
+        });
+
+        // 현재 로그인한 사용자에게 온 알림이면 상태 업데이트
+        if (targetUserId === user.id && response.notification) {
+          setNotifications(prev => [response.notification, ...prev]);
+        }
+
+        return response.notification;
+      } catch (error) {
+        console.error('Failed to create notification on server:', error);
+      }
+    }
+
+    // Fallback: localStorage에 저장 (서버 실패 시 또는 non-admin)
     const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
     const allNotifications = stored ? JSON.parse(stored) : [];
 
@@ -117,35 +149,64 @@ export const NotificationProvider = ({ children }) => {
   };
 
   // 알림 읽음 처리
-  const markAsRead = (notificationId) => {
-    if (!user) return;
+  const markAsRead = async (notificationId) => {
+    if (!user || !user.token) return;
 
-    const updated = notifications.map(n =>
-      n.id === notificationId ? { ...n, read: true } : n
-    );
-    saveNotifications(updated);
+    try {
+      await notificationAPI.markNotificationAsRead(user.token, notificationId);
+
+      // 로컬 상태 업데이트
+      const updated = notifications.map(n =>
+        n.id === notificationId ? { ...n, read: true } : n
+      );
+      setNotifications(updated);
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
   };
 
   // 모든 알림 읽음 처리
-  const markAllAsRead = () => {
-    if (!user) return;
+  const markAllAsRead = async () => {
+    if (!user || !user.token) return;
 
-    const updated = notifications.map(n => ({ ...n, read: true }));
-    saveNotifications(updated);
+    try {
+      await notificationAPI.markAllNotificationsAsRead(user.token);
+
+      // 로컬 상태 업데이트
+      const updated = notifications.map(n => ({ ...n, read: true }));
+      setNotifications(updated);
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
   };
 
   // 알림 삭제
-  const deleteNotification = (notificationId) => {
-    if (!user) return;
+  const deleteNotification = async (notificationId) => {
+    if (!user || !user.token) return;
 
-    const updated = notifications.filter(n => n.id !== notificationId);
-    saveNotifications(updated);
+    try {
+      await notificationAPI.deleteNotification(user.token, notificationId);
+
+      // 로컬 상태 업데이트
+      const updated = notifications.filter(n => n.id !== notificationId);
+      setNotifications(updated);
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+    }
   };
 
   // 모든 알림 삭제
-  const clearAllNotifications = () => {
-    if (!user) return;
-    saveNotifications([]);
+  const clearAllNotifications = async () => {
+    if (!user || !user.token) return;
+
+    try {
+      await notificationAPI.deleteAllNotifications(user.token);
+
+      // 로컬 상태 업데이트
+      setNotifications([]);
+    } catch (error) {
+      console.error('Failed to clear all notifications:', error);
+    }
   };
 
   // 읽지 않은 알림 개수

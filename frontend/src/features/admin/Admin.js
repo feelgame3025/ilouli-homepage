@@ -22,50 +22,83 @@ const Admin = () => {
   const [providerFilter, setProviderFilter] = useState('all'); // all, google, kakao, email
   const [apiFilter, setApiFilter] = useState('all'); // all, completed, pending, in-progress
 
-  // API 목록 정의
+  // API 목록 정의 (상세 설명 포함)
   const apiList = [
     // 인증 API (완료)
-    { id: 1, category: '인증', method: 'POST', endpoint: '/api/auth/login', description: '로그인', status: 'completed', priority: 'high' },
-    { id: 2, category: '인증', method: 'POST', endpoint: '/api/auth/signup', description: '회원가입', status: 'completed', priority: 'high' },
-    { id: 3, category: '인증', method: 'POST', endpoint: '/api/auth/social-login', description: '소셜 로그인 (Google/Kakao)', status: 'completed', priority: 'high' },
-    { id: 4, category: '인증', method: 'GET', endpoint: '/api/auth/me', description: '현재 사용자 정보 조회', status: 'completed', priority: 'high' },
+    { id: 1, category: '인증', method: 'POST', endpoint: '/api/auth/login', description: '로그인', status: 'completed', priority: 'high',
+      tooltip: 'Request: { email, password }\nResponse: { token, user }' },
+    { id: 2, category: '인증', method: 'POST', endpoint: '/api/auth/signup', description: '회원가입', status: 'completed', priority: 'high',
+      tooltip: 'Request: { name, email, password }\nResponse: { success, message }' },
+    { id: 3, category: '인증', method: 'POST', endpoint: '/api/auth/social-login', description: '소셜 로그인 (Google/Kakao)', status: 'completed', priority: 'high',
+      tooltip: 'Request: { provider, token }\nResponse: { token, user, isNewUser }' },
+    { id: 4, category: '인증', method: 'GET', endpoint: '/api/auth/me', description: '현재 사용자 정보 조회', status: 'completed', priority: 'high',
+      tooltip: 'Headers: Authorization Bearer\nResponse: { user }' },
 
     // 사용자 관리 API (완료)
-    { id: 5, category: '사용자', method: 'GET', endpoint: '/api/users', description: '전체 회원 목록 (Admin)', status: 'completed', priority: 'high' },
-    { id: 6, category: '사용자', method: 'GET', endpoint: '/api/users/pending', description: '승인 대기 회원 목록', status: 'completed', priority: 'high' },
-    { id: 7, category: '사용자', method: 'POST', endpoint: '/api/users/:id/approve', description: '회원 승인', status: 'completed', priority: 'high' },
-    { id: 8, category: '사용자', method: 'POST', endpoint: '/api/users/:id/reject', description: '회원 거절', status: 'completed', priority: 'high' },
-    { id: 9, category: '사용자', method: 'PUT', endpoint: '/api/users/:id/tier', description: '회원 등급 변경', status: 'completed', priority: 'high' },
-    { id: 10, category: '사용자', method: 'DELETE', endpoint: '/api/users/:id', description: '회원 삭제', status: 'completed', priority: 'high' },
+    { id: 5, category: '사용자', method: 'GET', endpoint: '/api/users', description: '전체 회원 목록 (Admin)', status: 'completed', priority: 'high',
+      tooltip: 'Admin 전용\nResponse: [{ id, name, email, tier, ... }]' },
+    { id: 6, category: '사용자', method: 'GET', endpoint: '/api/users/pending', description: '승인 대기 회원 목록', status: 'completed', priority: 'high',
+      tooltip: 'Admin 전용\nResponse: [{ id, name, email, joinDate }]' },
+    { id: 7, category: '사용자', method: 'POST', endpoint: '/api/users/:id/approve', description: '회원 승인', status: 'completed', priority: 'high',
+      tooltip: 'Admin 전용\nstatus를 approved로 변경' },
+    { id: 8, category: '사용자', method: 'POST', endpoint: '/api/users/:id/reject', description: '회원 거절', status: 'completed', priority: 'high',
+      tooltip: 'Admin 전용\n사용자 계정 삭제' },
+    { id: 9, category: '사용자', method: 'PUT', endpoint: '/api/users/:id/tier', description: '회원 등급 변경', status: 'completed', priority: 'high',
+      tooltip: 'Admin 전용\nRequest: { tier }\ntier: guest|general|subscriber|family|admin' },
+    { id: 10, category: '사용자', method: 'DELETE', endpoint: '/api/users/:id', description: '회원 삭제', status: 'completed', priority: 'high',
+      tooltip: 'Admin 전용\n본인 계정 삭제 불가' },
 
-    // AI 기능 API (대기)
-    { id: 11, category: 'AI', method: 'POST', endpoint: '/api/ai/image-to-video', description: '이미지→영상 변환', status: 'pending', priority: 'high', note: 'Frontend Mock 완료, Backend 구현 필요' },
-    { id: 12, category: 'AI', method: 'POST', endpoint: '/api/ai/upscale', description: '이미지 업스케일링 (2x/4x)', status: 'pending', priority: 'high', note: 'Frontend Mock 완료, Backend 구현 필요' },
-    { id: 13, category: 'AI', method: 'POST', endpoint: '/api/ai/shortform/generate', description: '숏폼 영상 생성 요청', status: 'pending', priority: 'high', note: 'CLI 파이프라인 완료, API 래핑 필요' },
-    { id: 14, category: 'AI', method: 'GET', endpoint: '/api/ai/shortform/status/:jobId', description: '숏폼 생성 진행 상태 조회', status: 'pending', priority: 'medium' },
-    { id: 15, category: 'AI', method: 'GET', endpoint: '/api/ai/shortform/download/:jobId', description: '숏폼 영상 다운로드', status: 'pending', priority: 'medium' },
-    { id: 16, category: 'AI', method: 'GET', endpoint: '/api/ai/usage', description: 'AI 사용량 통계', status: 'pending', priority: 'low' },
+    // AI 기능 API (완료)
+    { id: 11, category: 'AI', method: 'POST', endpoint: '/api/ai/image-to-video', description: '이미지→영상 변환', status: 'completed', priority: 'high',
+      tooltip: 'Request: FormData { image, motionStyle, duration, resolution }\nResponse: { jobId, statusUrl }' },
+    { id: 12, category: 'AI', method: 'POST', endpoint: '/api/ai/upscale', description: '이미지 업스케일링 (2x/4x)', status: 'completed', priority: 'high',
+      tooltip: 'Request: FormData { image, scale, enhanceDetails }\nResponse: { jobId, statusUrl }' },
+    { id: 13, category: 'AI', method: 'POST', endpoint: '/api/ai/shortform/generate', description: '숏폼 영상 생성 요청', status: 'completed', priority: 'high',
+      tooltip: 'Request: { topic, style, duration, resolution }\nResponse: { jobId, estimatedTime }' },
+    { id: 14, category: 'AI', method: 'GET', endpoint: '/api/ai/job/:jobId', description: 'AI 작업 상태 조회', status: 'completed', priority: 'medium',
+      tooltip: 'Response: { job: { status, parameters, outputFile } }\nstatus: pending|completed|failed' },
+    { id: 15, category: 'AI', method: 'GET', endpoint: '/api/ai/job/:jobId/download', description: 'AI 결과물 다운로드', status: 'completed', priority: 'medium',
+      tooltip: '완료된 작업의 결과 파일 다운로드\nContent-Type: application/octet-stream' },
+    { id: 16, category: 'AI', method: 'GET', endpoint: '/api/ai/usage', description: 'AI 사용량 통계', status: 'completed', priority: 'low',
+      tooltip: 'Admin 전용\nResponse: { stats: { total, today, topUsers } }' },
 
-    // 커뮤니티 API (대기)
-    { id: 17, category: '커뮤니티', method: 'GET', endpoint: '/api/community/posts', description: '게시글 목록 조회', status: 'pending', priority: 'medium', note: '현재 localStorage 사용' },
-    { id: 18, category: '커뮤니티', method: 'POST', endpoint: '/api/community/posts', description: '게시글 작성', status: 'pending', priority: 'medium' },
-    { id: 19, category: '커뮤니티', method: 'GET', endpoint: '/api/community/posts/:id', description: '게시글 상세 조회', status: 'pending', priority: 'medium' },
-    { id: 20, category: '커뮤니티', method: 'PUT', endpoint: '/api/community/posts/:id', description: '게시글 수정', status: 'pending', priority: 'medium' },
-    { id: 21, category: '커뮤니티', method: 'DELETE', endpoint: '/api/community/posts/:id', description: '게시글 삭제', status: 'pending', priority: 'medium' },
-    { id: 22, category: '커뮤니티', method: 'POST', endpoint: '/api/community/posts/:id/comments', description: '댓글 작성', status: 'pending', priority: 'medium' },
-    { id: 23, category: '커뮤니티', method: 'POST', endpoint: '/api/community/posts/:id/report', description: '게시글/댓글 신고', status: 'pending', priority: 'low' },
+    // 커뮤니티 API (완료)
+    { id: 17, category: '커뮤니티', method: 'GET', endpoint: '/api/community/posts', description: '게시글 목록 조회', status: 'completed', priority: 'medium',
+      tooltip: 'Query: { board, page, limit }\nResponse: { posts, total, page }' },
+    { id: 18, category: '커뮤니티', method: 'POST', endpoint: '/api/community/posts', description: '게시글 작성', status: 'completed', priority: 'medium',
+      tooltip: 'Request: { board, title, content }\nResponse: { post }' },
+    { id: 19, category: '커뮤니티', method: 'GET', endpoint: '/api/community/posts/:id', description: '게시글 상세 조회', status: 'completed', priority: 'medium',
+      tooltip: 'Response: { post, comments }\n조회수 증가 처리' },
+    { id: 20, category: '커뮤니티', method: 'PUT', endpoint: '/api/community/posts/:id', description: '게시글 수정', status: 'completed', priority: 'medium',
+      tooltip: 'Request: { title, content }\n작성자만 수정 가능' },
+    { id: 21, category: '커뮤니티', method: 'DELETE', endpoint: '/api/community/posts/:id', description: '게시글 삭제', status: 'completed', priority: 'medium',
+      tooltip: '작성자 또는 Admin만 삭제 가능\n댓글도 함께 삭제' },
+    { id: 22, category: '커뮤니티', method: 'POST', endpoint: '/api/community/posts/:id/comments', description: '댓글 작성', status: 'completed', priority: 'medium',
+      tooltip: 'Request: { content, parentId? }\n대댓글 지원' },
+    { id: 23, category: '커뮤니티', method: 'POST', endpoint: '/api/community/posts/:id/report', description: '게시글/댓글 신고', status: 'completed', priority: 'low',
+      tooltip: 'Request: { type, targetId, reason }\ntype: post|comment' },
 
     // 파일 관리 API (부분 완료)
-    { id: 24, category: '파일', method: 'POST', endpoint: '/api/files/upload', description: '파일 업로드', status: 'completed', priority: 'high' },
-    { id: 25, category: '파일', method: 'GET', endpoint: '/api/files/view/:filename', description: '파일 조회/다운로드', status: 'completed', priority: 'high' },
-    { id: 26, category: '파일', method: 'DELETE', endpoint: '/api/files/:filename', description: '파일 삭제', status: 'pending', priority: 'low' },
-    { id: 27, category: '파일', method: 'GET', endpoint: '/api/files/list', description: '업로드 파일 목록', status: 'pending', priority: 'low' },
+    { id: 24, category: '파일', method: 'POST', endpoint: '/api/files/upload', description: '파일 업로드', status: 'completed', priority: 'high',
+      tooltip: 'Request: FormData { file, folder? }\n최대 50MB, 이미지/문서 지원' },
+    { id: 25, category: '파일', method: 'GET', endpoint: '/api/files/view/:filename', description: '파일 조회/다운로드', status: 'completed', priority: 'high',
+      tooltip: '저장된 파일 직접 서빙\nContent-Type 자동 설정' },
+    { id: 26, category: '파일', method: 'DELETE', endpoint: '/api/files/:id', description: '파일 삭제', status: 'completed', priority: 'low',
+      tooltip: 'DB 레코드 및 실제 파일 삭제\n업로더 또는 Admin만 가능' },
+    { id: 27, category: '파일', method: 'GET', endpoint: '/api/files/list', description: '업로드 파일 목록', status: 'completed', priority: 'low',
+      tooltip: 'Query: { folder?, limit? }\nResponse: { files }' },
 
-    // 알림 API (대기)
-    { id: 28, category: '알림', method: 'GET', endpoint: '/api/notifications', description: '알림 목록 조회', status: 'pending', priority: 'medium', note: '현재 localStorage 사용' },
-    { id: 29, category: '알림', method: 'PUT', endpoint: '/api/notifications/:id/read', description: '알림 읽음 처리', status: 'pending', priority: 'medium' },
-    { id: 30, category: '알림', method: 'DELETE', endpoint: '/api/notifications/:id', description: '알림 삭제', status: 'pending', priority: 'low' },
+    // 알림 API (완료)
+    { id: 28, category: '알림', method: 'GET', endpoint: '/api/notifications', description: '알림 목록 조회', status: 'completed', priority: 'medium',
+      tooltip: 'Query: { unreadOnly?, limit? }\nResponse: { notifications, unreadCount }' },
+    { id: 29, category: '알림', method: 'PUT', endpoint: '/api/notifications/:id/read', description: '알림 읽음 처리', status: 'completed', priority: 'medium',
+      tooltip: 'isRead를 true로 변경\nResponse: { success }' },
+    { id: 30, category: '알림', method: 'DELETE', endpoint: '/api/notifications/:id', description: '알림 삭제', status: 'completed', priority: 'low',
+      tooltip: '해당 알림 삭제\n본인 알림만 삭제 가능' },
   ];
+
+  // 툴팁 상태
+  const [activeTooltip, setActiveTooltip] = useState(null);
 
   const loadUsers = async () => {
     try {
@@ -633,7 +666,12 @@ const Admin = () => {
                       return true;
                     })
                     .map((api) => (
-                      <tr key={api.id} className={`api-row ${api.status}`}>
+                      <tr
+                        key={api.id}
+                        className={`api-row ${api.status}`}
+                        onMouseEnter={() => setActiveTooltip(api.id)}
+                        onMouseLeave={() => setActiveTooltip(null)}
+                      >
                         <td>
                           <span className={`category-badge category-${api.category}`}>
                             {api.category}
@@ -646,6 +684,11 @@ const Admin = () => {
                         </td>
                         <td className="endpoint-cell">
                           <code>{api.endpoint}</code>
+                          {activeTooltip === api.id && api.tooltip && (
+                            <div className="api-tooltip">
+                              <pre>{api.tooltip}</pre>
+                            </div>
+                          )}
                         </td>
                         <td>
                           <div className="api-description">

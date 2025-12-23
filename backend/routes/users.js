@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../database');
 const { authMiddleware, adminMiddleware } = require('../middleware/auth');
+const { createNotification } = require('./notifications');
 
 const router = express.Router();
 
@@ -43,6 +44,13 @@ router.post('/:id/approve', authMiddleware, adminMiddleware, (req, res) => {
   const { id } = req.params;
 
   try {
+    // 사용자 정보 조회
+    const user = db.prepare('SELECT id, name, email FROM users WHERE id = ?').get(id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     const result = db.prepare(`
       UPDATE users SET status = 'approved', updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
@@ -50,6 +58,20 @@ router.post('/:id/approve', authMiddleware, adminMiddleware, (req, res) => {
 
     if (result.changes === 0) {
       return res.status(404).json({ error: 'User not found' });
+    }
+
+    // 승인 알림 전송
+    try {
+      createNotification(
+        parseInt(id),
+        'approval',
+        '가입 승인',
+        '회원가입이 승인되었습니다. 이제 모든 서비스를 이용하실 수 있습니다.',
+        '/',
+        { status: 'approved' }
+      );
+    } catch (notifError) {
+      console.error('Failed to create approval notification:', notifError);
     }
 
     res.json({ message: 'User approved' });
@@ -64,6 +86,28 @@ router.post('/:id/reject', authMiddleware, adminMiddleware, (req, res) => {
   const { id } = req.params;
 
   try {
+    // 사용자 정보 조회 (삭제 전에)
+    const user = db.prepare('SELECT id, name, email FROM users WHERE id = ?').get(id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // 거절 알림 전송 (삭제되기 전에)
+    try {
+      createNotification(
+        parseInt(id),
+        'approval',
+        '가입 거절',
+        '죄송합니다. 회원가입이 거절되었습니다.',
+        '/',
+        { status: 'rejected' }
+      );
+    } catch (notifError) {
+      console.error('Failed to create rejection notification:', notifError);
+    }
+
+    // 알림 전송 후 사용자 삭제
     const result = db.prepare('DELETE FROM users WHERE id = ?').run(id);
 
     if (result.changes === 0) {

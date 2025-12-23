@@ -8,6 +8,8 @@ const usersRoutes = require('./routes/users');
 const filesRoutes = require('./routes/files');
 const gamesRoutes = require('./routes/games');
 const aiRoutes = require('./routes/ai');
+const notificationsRoutes = require('./routes/notifications');
+const communityRoutes = require('./routes/community');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -35,6 +37,8 @@ app.use('/api/users', usersRoutes);
 app.use('/api/files', filesRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/community', communityRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -738,6 +738,10 @@
   color: #dc2626;
 }
 
+.endpoint-cell {
+  position: relative;
+}
+
 .endpoint-cell code {
   background-color: #f3f4f6;
   padding: 0.25rem 0.5rem;
@@ -745,6 +749,54 @@
   font-size: 0.8rem;
   font-family: 'SF Mono', Monaco, monospace;
   color: #1d1d1f;
+}
+
+/* API Tooltip */
+.api-tooltip {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 1000;
+  min-width: 280px;
+  max-width: 400px;
+  margin-top: 8px;
+  padding: 12px 16px;
+  background-color: #1d1d1f;
+  color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+.api-tooltip::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 20px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #1d1d1f;
+}
+
+.api-tooltip pre {
+  margin: 0;
+  font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #e5e5e5;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .api-description {
