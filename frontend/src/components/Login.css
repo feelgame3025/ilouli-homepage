@@ -298,3 +298,47 @@
 .copy-url-btn:hover {
   background: #e3f2fd;
 }
+
+/* Login Tabs */
+.login-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.login-tab {
+  flex: 1;
+  padding: 0.875rem 1rem;
+  background: #f5f5f5;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.login-tab:first-child {
+  border-right: 1px solid #e5e5e5;
+}
+
+.login-tab:hover:not(.active) {
+  background: #eee;
+}
+
+.login-tab.active {
+  background: #1d1d1f;
+  color: #fff;
+}
+
+/* Admin Login Hint */
+.admin-login-hint {
+  margin-top: 1rem;
+  text-align: center;
+  color: #999;
+  font-size: 0.8rem;
+}

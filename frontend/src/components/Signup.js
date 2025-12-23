@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
@@ -7,6 +7,7 @@ import './Login.css';
 const Signup = () => {
   const { t } = useTranslation();
   const { signup } = useAuth();
+  const navigate = useNavigate();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -14,7 +15,7 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isPending, setIsPending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,10 +34,8 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      const result = await signup(name, email, password);
-      if (result.pending) {
-        setIsPending(true);
-      }
+      await signup(name, email, password);
+      setIsSuccess(true);
     } catch (err) {
       setError(t('auth.signup.error'));
     } finally {
@@ -44,18 +43,22 @@ const Signup = () => {
     }
   };
 
-  // 승인 대기 화면
-  if (isPending) {
+  // 계정 생성 성공 화면
+  if (isSuccess) {
     return (
       <div className="auth-container">
         <div className="auth-card">
           <div className="pending-notice">
-            <div className="pending-icon">⏳</div>
-            <h1>{t('auth.signup.pendingTitle')}</h1>
-            <p>{t('auth.signup.pendingMessage')}</p>
-            <Link to="/" className="auth-button" style={{ display: 'inline-block', textDecoration: 'none', textAlign: 'center', marginTop: '1rem' }}>
-              {t('auth.signup.backToHome')}
-            </Link>
+            <div className="pending-icon">✅</div>
+            <h1>계정 생성 완료</h1>
+            <p>새 계정이 성공적으로 생성되었습니다.<br />회원 관리 페이지에서 승인 처리해주세요.</p>
+            <button
+              onClick={() => navigate('/')}
+              className="auth-button"
+              style={{ marginTop: '1rem' }}
+            >
+              관리자 대시보드로 이동
+            </button>
           </div>
         </div>
       </div>
@@ -65,8 +68,8 @@ const Signup = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1>{t('auth.signup.title')}</h1>
-        <p className="auth-subtitle">{t('auth.signup.subtitle')}</p>
+        <h1>새 계정 생성</h1>
+        <p className="auth-subtitle">관리자 전용 - 이메일 계정을 생성합니다</p>
 
         {error && <div className="auth-error">{error}</div>}
 
@@ -128,13 +131,12 @@ const Signup = () => {
             className="auth-button"
             disabled={isLoading}
           >
-            {isLoading ? t('auth.signup.loading') : t('auth.signup.button')}
+            {isLoading ? '생성 중...' : '계정 생성'}
           </button>
         </form>
 
         <p className="auth-switch">
-          {t('auth.signup.hasAccount')}{' '}
-          <Link to="/login">{t('auth.signup.loginLink')}</Link>
+          <Link to="/">← 관리자 대시보드로 돌아가기</Link>
         </p>
       </div>
     </div>
