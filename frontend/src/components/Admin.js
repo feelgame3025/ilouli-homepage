@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth, USER_TIERS } from '../contexts/AuthContext';
 import { useCommunity, REPORT_STATUS } from '../contexts/CommunityContext';
@@ -7,6 +8,7 @@ import './Admin.css';
 
 const Admin = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { getAllUsers, updateUserTier, deleteUser, getPendingUsers, approveUser, rejectUser, user } = useAuth();
   const { getReports, handleReport, getHiddenPosts, restorePost } = useCommunity();
   const { addNotification } = useNotification();
@@ -311,7 +313,15 @@ const Admin = () => {
 
           <div className="users-section">
             <div className="users-header">
-              <h2>{t('admin.members.title')}</h2>
+              <div className="users-header-top">
+                <h2>{t('admin.members.title')}</h2>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="create-account-btn"
+                >
+                  + 새 계정 생성
+                </button>
+              </div>
               <div className="provider-filter">
                 <button
                   className={`filter-btn ${providerFilter === 'all' ? 'active' : ''}`}
