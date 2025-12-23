@@ -131,8 +131,9 @@ class MockTTSGenerator:
         voice: Optional[str] = None,
         speed: Optional[float] = None
     ) -> dict:
-        """더미 음성 파일 생성"""
-        print(f"[MockTTSGenerator] 더미 음성 생성 중...")
+        """더미 음성 파일 생성 - FFmpeg로 실제 오디오 생성"""
+        import subprocess
+        print(f"[MockTTSGenerator] 테스트용 음성 생성 중...")
         print(f"[MockTTSGenerator] Text: {text}")
 
         if output_path is None:
@@ -140,10 +141,25 @@ class MockTTSGenerator:
 
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-        # FFmpeg 없이 빈 파일 생성 (테스트용)
-        duration = len(text.split()) / 2.5  # 단어 수 기반 예상 길이
-        Path(output_path).touch()
-        print(f"[MockTTSGenerator] 더미 파일 생성: {output_path}")
+        # 단어 수 기반 예상 길이
+        duration = max(2, len(text.split()) / 2.5)
+
+        # FFmpeg로 테스트용 무음 오디오 생성
+        cmd = [
+            "ffmpeg", "-y",
+            "-f", "lavfi",
+            "-i", f"anullsrc=r=44100:cl=mono",
+            "-t", str(duration),
+            "-c:a", "libmp3lame",
+            "-q:a", "9",
+            output_path
+        ]
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"[MockTTSGenerator] FFmpeg 경고: {result.stderr[:200] if result.stderr else 'none'}")
+
+        print(f"[MockTTSGenerator] 테스트 음성 생성: {output_path}")
 
         return {
             "audio_path": output_path,

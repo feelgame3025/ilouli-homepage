@@ -176,20 +176,34 @@ class MockVideoGenerator:
         duration: int = 10,
         output_path: Optional[str] = None
     ) -> dict:
-        """더미 비디오 생성 (테스트용)"""
-        print(f"[MockVideoGenerator] 더미 비디오 생성 중...")
+        """더미 비디오 생성 (테스트용) - FFmpeg로 실제 비디오 생성"""
+        import subprocess
+        print(f"[MockVideoGenerator] 테스트용 비디오 생성 중...")
         print(f"[MockVideoGenerator] Prompt: {prompt[:100]}...")
 
-        # 실제 환경에서는 샘플 비디오 사용
         if output_path is None:
             output_path = str(TEMP_DIR / f"mock_video_{int(time.time())}.mp4")
 
-        # 더미 파일 생성
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
-        # FFmpeg 없이 빈 파일 생성 (테스트용)
-        Path(output_path).touch()
-        print(f"[MockVideoGenerator] 더미 파일 생성: {output_path}")
+        # FFmpeg로 테스트용 컬러바 비디오 생성 (9:16 세로)
+        cmd = [
+            "ffmpeg", "-y",
+            "-f", "lavfi",
+            "-i", f"color=c=blue:size=1080x1920:duration={duration}:rate=30",
+            "-f", "lavfi",
+            "-i", f"sine=frequency=440:duration={duration}",
+            "-c:v", "libx264", "-preset", "ultrafast",
+            "-c:a", "aac",
+            "-shortest",
+            output_path
+        ]
+
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"[MockVideoGenerator] FFmpeg 경고: {result.stderr[:200] if result.stderr else 'none'}")
+
+        print(f"[MockVideoGenerator] 테스트 비디오 생성: {output_path}")
 
         return {
             "video_path": output_path,

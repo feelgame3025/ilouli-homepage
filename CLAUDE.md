@@ -14,6 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 |----------|------|------|
 | 기본 규칙 | `../CLAUDE.md` | 개발 착수 전 계획 수립, 오케스트레이션 |
 | 코딩 컨벤션 | `../docs/CONVENTIONS.md` | 명명 규칙, 코드 스타일 |
+| **디자인 시스템** | `.claude/rules/design-system.md` | UI/UX 규칙, 접근성, 토큰 |
 | Claude 기능 | `../docs/CLAUDE_FEATURES.md` | 슬래시 명령어, 스킬 |
 | 레지스트리 | `../.claude/REGISTRY.md` | 전체 명령어/스킬 목록 |
 
@@ -22,6 +23,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 1. **개발 착수 전 계획 수립** → 분석 → 계획 → 승인 → 개발
 2. **병렬 개발 시 오케스트레이션** → 작업 분해 → 검수 → 연동
 3. **코드 스타일** → `../.editorconfig`, `../shared/configs/` 참조
+4. **디자인 시스템** → `.claude/rules/design-system.md` 참조 (Hierarchy & Accessibility 우선)
 
 ---
 
@@ -332,7 +334,30 @@ homepage/
 
 ## Design Guidelines
 
-Follow Apple-inspired minimalism: clean layouts, generous whitespace, smooth animations, and high-quality visuals. Ensure responsive design across devices.
+> **상세 규칙**: `.claude/rules/design-system.md` 참조
+
+### 핵심 원칙
+
+1. **기본기(Hierarchy)와 접근성(Accessibility)** 우선
+2. **가독성 중심의 위계**: 정보가 잘 보이는 것이 가장 중요
+3. **명도 대비 4.5:1 법칙**: 시각 약자 배려
+
+### 디자인 토큰
+
+- **토큰 위치**: `frontend/src/index.css :root`
+- 타이포그래피: `--font-size-title`, `--font-size-body`, `--font-size-caption`
+- 색상: `--color-text-primary`, `--color-text-secondary`, `--color-accent`
+- 간격 (8px 그리드): `--spacing-xs`, `--spacing-sm`, `--spacing-md`, `--spacing-lg`
+- 버튼: `--button-height-md: 44px` (최소 터치 타겟)
+
+### 컴포넌트 개발 시 체크리스트
+
+- [ ] 디자인 토큰(CSS 변수) 사용하는가?
+- [ ] 타이포그래피 3단계 이내인가?
+- [ ] 명도 대비 4.5:1 이상인가?
+- [ ] 버튼 높이 44px 이상인가?
+- [ ] 모든 상태(Hover, Active, Disabled) 정의했는가?
+- [ ] Empty State 디자인이 있는가?
 
 ## Asset Management
 
