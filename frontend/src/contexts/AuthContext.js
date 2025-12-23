@@ -72,9 +72,28 @@ export const AuthProvider = ({ children }) => {
         try {
           const userData = await authAPI.getMe();
           setUser(userData);
+          // 캐시 업데이트
+          localStorage.setItem('ilouli_user_cache', JSON.stringify(userData));
         } catch (err) {
           console.error('Failed to restore session:', err);
-          removeToken();
+          // 401 (토큰 만료/무효)인 경우에만 토큰 삭제
+          // 네트워크 오류 등은 토큰 유지 (다음 시도에서 복원 가능)
+          if (err.status === 401 || err.message?.includes('Invalid token')) {
+            console.log('Token invalid or expired, removing...');
+            removeToken();
+          } else {
+            console.log('Network error, keeping token for retry...');
+            // 네트워크 오류 시에도 저장된 사용자 정보 복원 시도
+            try {
+              const savedUser = localStorage.getItem('ilouli_user_cache');
+              if (savedUser) {
+                setUser(JSON.parse(savedUser));
+                console.log('Restored user from cache');
+              }
+            } catch (e) {
+              console.error('Failed to restore from cache:', e);
+            }
+          }
         }
       }
       setLoading(false);
@@ -90,6 +109,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const userData = await authAPI.login(email, password);
     setUser(userData);
+    // 네트워크 오류 시 복원을 위한 캐시 저장
+    localStorage.setItem('ilouli_user_cache', JSON.stringify(userData));
     return userData;
   };
 
@@ -111,12 +132,16 @@ export const AuthProvider = ({ children }) => {
 
     const userData = await authAPI.socialLogin(provider, socialUser);
     setUser(userData);
+    // 네트워크 오류 시 복원을 위한 캐시 저장
+    localStorage.setItem('ilouli_user_cache', JSON.stringify(userData));
     return userData;
   };
 
   const logout = () => {
     authAPI.logout();
     setUser(null);
+    // 캐시도 함께 삭제
+    localStorage.removeItem('ilouli_user_cache');
   };
 
   // ============================================================================

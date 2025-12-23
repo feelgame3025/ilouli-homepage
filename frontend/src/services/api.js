@@ -8,6 +8,7 @@ const TOKEN_KEY = 'ilouli_token';
 
 // 쿠키 기반 토큰 관리 (모든 서브도메인에서 공유)
 export const getToken = () => {
+  // 먼저 쿠키에서 찾기
   const cookies = document.cookie.split(';');
   for (let cookie of cookies) {
     const [name, value] = cookie.trim().split('=');
@@ -15,20 +16,47 @@ export const getToken = () => {
       return decodeURIComponent(value);
     }
   }
+
+  // 쿠키에 없으면 localStorage 백업에서 복원 시도
+  try {
+    const backupToken = localStorage.getItem(`${TOKEN_KEY}_backup`);
+    if (backupToken) {
+      console.log('Restoring token from localStorage backup');
+      // 쿠키로 다시 설정
+      setToken(backupToken);
+      return backupToken;
+    }
+  } catch (e) {
+    console.warn('Failed to restore token from backup:', e);
+  }
+
   return null;
 };
 
 export const setToken = (token) => {
   // .ilouli.com 도메인으로 설정하여 모든 서브도메인에서 접근 가능
-  const domain = window.location.hostname.includes('ilouli.com') ? '.ilouli.com' : '';
+  const isIlouli = window.location.hostname.includes('ilouli.com');
+  const domainPart = isIlouli ? '; domain=.ilouli.com' : '';
   const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-  document.cookie = `${TOKEN_KEY}=${encodeURIComponent(token)}; path=/; domain=${domain}; max-age=${30 * 24 * 60 * 60}${secure}; SameSite=Lax`;
+  const maxAge = 30 * 24 * 60 * 60; // 30일
+
+  document.cookie = `${TOKEN_KEY}=${encodeURIComponent(token)}; path=/${domainPart}; max-age=${maxAge}${secure}; SameSite=Lax`;
+
+  // 백업으로 localStorage에도 저장 (쿠키 문제 시 복원용)
+  try {
+    localStorage.setItem(`${TOKEN_KEY}_backup`, token);
+  } catch (e) {
+    console.warn('Failed to backup token to localStorage:', e);
+  }
 };
 
 export const removeToken = () => {
-  const domain = window.location.hostname.includes('ilouli.com') ? '.ilouli.com' : '';
-  document.cookie = `${TOKEN_KEY}=; path=/; domain=${domain}; max-age=0`;
-  // localStorage도 정리 (이전 버전 호환)
+  const isIlouli = window.location.hostname.includes('ilouli.com');
+  const domainPart = isIlouli ? '; domain=.ilouli.com' : '';
+  document.cookie = `${TOKEN_KEY}=; path=/${domainPart}; max-age=0`;
+  // localStorage 백업도 정리
+  localStorage.removeItem(`${TOKEN_KEY}_backup`);
+  // 이전 버전 호환
   localStorage.removeItem(TOKEN_KEY);
 };
 
