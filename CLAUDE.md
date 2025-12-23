@@ -248,10 +248,26 @@ frontend/public/assets/hwatu/1-1.png
 - Cross-subdomain authentication (cookie-based)
 
 **In Progress / TODO:**
-| 기능 | 상태 | 현재 위치 | 목표 서브도메인 |
-|------|------|-----------|-----------------|
-| AI Storyboard Pipeline | 개발 중 | ai.ilouli.com | ai.ilouli.com |
-| AI Content Tools | 개발 중 | ai.ilouli.com | ai.ilouli.com |
-| Character Lock | 대기 | - | AI Storyboard 내 |
-| AI Photo Gallery | 대기 | - | family.ilouli.com |
-| AI Usage Statistics | 대기 | - | admin.ilouli.com |
+
+### AI 콘텐츠 도구 (ai.ilouli.com)
+| 기능 | 상태 | 설명 |
+|------|------|------|
+| 콘텐츠 요약 | 대기 | 긴 텍스트를 AI로 요약 |
+| 콘텐츠 변환 | 대기 | 문체/형식 변환 |
+| 블로그 초안 | 대기 | AI 블로그 글 생성 |
+| 일일 보고서 | 대기 | 자동 보고서 생성 |
+
+### AI 스토리보드 (ai.ilouli.com/storyboard)
+| 기능 | 상태 | 설명 |
+|------|------|------|
+| 핵심 설정 (Step 1) | 대기 | 장르, 분위기, 캐릭터 설정 |
+| 장면 입력 (Step 2) | UI 완료 | 스토리 텍스트 입력 |
+| AI 생성 (Step 3) | 대기 | 스토리 → 이미지 프롬프트 변환 |
+| 시각화 (Step 4) | 대기 | 이미지 생성 및 표시 |
+| Character Lock | 대기 | 캐릭터 일관성 유지 기능 |
+
+### 기타 AI 기능
+| 기능 | 상태 | 목표 위치 |
+|------|------|-----------|
+| AI Photo Gallery | 대기 | family.ilouli.com |
+| AI Usage Statistics | 대기 | admin.ilouli.com |
