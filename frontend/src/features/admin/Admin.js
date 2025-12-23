@@ -40,9 +40,48 @@ const Admin = () => {
 
   // API 키 정보 매핑
   const apiKeyInfo = {
-    openai: { label: 'OpenAI', desc: 'GPT-4, TTS, 숏폼 영상 생성에 사용', placeholder: 'sk-...' },
-    kling: { label: 'Kling AI', desc: '이미지→영상 변환에 사용', placeholder: 'API 키 입력...' },
-    replicate: { label: 'Replicate', desc: '이미지 업스케일링 (Real-ESRGAN)에 사용', placeholder: 'r8_...' }
+    openai: {
+      label: 'OpenAI',
+      desc: 'GPT-4, TTS, 숏폼 영상 생성에 사용',
+      placeholder: 'sk-...',
+      guide: {
+        url: 'https://platform.openai.com/api-keys',
+        steps: [
+          '1. OpenAI 계정 로그인 (없으면 가입)',
+          '2. API Keys 페이지에서 "Create new secret key" 클릭',
+          '3. 생성된 키 복사 (sk-로 시작)'
+        ],
+        pricing: '사용량 기반 과금 (GPT-4: $0.03/1K tokens)'
+      }
+    },
+    kling: {
+      label: 'Kling AI',
+      desc: '이미지→영상 변환에 사용',
+      placeholder: 'API 키 입력...',
+      guide: {
+        url: 'https://klingai.com',
+        steps: [
+          '1. Kling AI 웹사이트 가입',
+          '2. 대시보드 → API 섹션 이동',
+          '3. API 키 생성 및 복사'
+        ],
+        pricing: '크레딧 기반 과금 (영상 생성당 크레딧 차감)'
+      }
+    },
+    replicate: {
+      label: 'Replicate',
+      desc: '이미지 업스케일링 (Real-ESRGAN)에 사용',
+      placeholder: 'r8_...',
+      guide: {
+        url: 'https://replicate.com/account/api-tokens',
+        steps: [
+          '1. Replicate 계정 로그인 (GitHub 연동 가능)',
+          '2. Account → API tokens 이동',
+          '3. "Create token" 클릭 후 복사 (r8_로 시작)'
+        ],
+        pricing: '사용량 기반 과금 (업스케일당 약 $0.01~0.05)'
+      }
+    }
   };
 
   // API ID와 필요한 키 매핑
@@ -940,6 +979,32 @@ const Admin = () => {
               {apiKeyStatus[keyModal.keyName] && (
                 <div className="current-key-status">
                   <span className="key-status active">✅ 현재 키가 설정되어 있습니다</span>
+                </div>
+              )}
+
+              {/* API 키 발급 가이드 */}
+              {apiKeyInfo[keyModal.keyName]?.guide && (
+                <div className="key-guide">
+                  <div className="guide-header">
+                    <span className="guide-title">API 키 발급 방법</span>
+                    <a
+                      href={apiKeyInfo[keyModal.keyName].guide.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="guide-link"
+                    >
+                      발급 페이지 바로가기 →
+                    </a>
+                  </div>
+                  <ul className="guide-steps">
+                    {apiKeyInfo[keyModal.keyName].guide.steps.map((step, idx) => (
+                      <li key={idx}>{step}</li>
+                    ))}
+                  </ul>
+                  <div className="guide-pricing">
+                    <span className="pricing-label">요금:</span>
+                    <span className="pricing-info">{apiKeyInfo[keyModal.keyName].guide.pricing}</span>
+                  </div>
                 </div>
               )}
 
