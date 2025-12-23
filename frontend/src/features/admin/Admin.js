@@ -20,7 +20,19 @@ const Admin = () => {
   const [hiddenPosts, setHiddenPosts] = useState([]);
   const [message, setMessage] = useState('');
   const [providerFilter, setProviderFilter] = useState('all'); // all, google, kakao, email
-  const [apiFilter, setApiFilter] = useState('all'); // all, completed, pending, in-progress
+  const [apiFilter, setApiFilter] = useState('all'); // all, completed, pending, needs-key
+  const [apiKeys, setApiKeys] = useState({
+    openai: '',
+    kling: '',
+    replicate: ''
+  });
+  const [apiKeyStatus, setApiKeyStatus] = useState({
+    openai: false,
+    kling: false,
+    replicate: false
+  });
+  const [savingKeys, setSavingKeys] = useState(false);
+  const [keyMessage, setKeyMessage] = useState('');
 
   // API 목록 정의 (상세 설명 포함)
   const apiList = [
@@ -48,13 +60,13 @@ const Admin = () => {
     { id: 10, category: '사용자', method: 'DELETE', endpoint: '/api/users/:id', description: '회원 삭제', status: 'completed', priority: 'high',
       tooltip: 'Admin 전용\n본인 계정 삭제 불가' },
 
-    // AI 기능 API (완료)
-    { id: 11, category: 'AI', method: 'POST', endpoint: '/api/ai/image-to-video', description: '이미지→영상 변환', status: 'completed', priority: 'high',
-      tooltip: 'Request: FormData { image, motionStyle, duration, resolution }\nResponse: { jobId, statusUrl }' },
-    { id: 12, category: 'AI', method: 'POST', endpoint: '/api/ai/upscale', description: '이미지 업스케일링 (2x/4x)', status: 'completed', priority: 'high',
-      tooltip: 'Request: FormData { image, scale, enhanceDetails }\nResponse: { jobId, statusUrl }' },
-    { id: 13, category: 'AI', method: 'POST', endpoint: '/api/ai/shortform/generate', description: '숏폼 영상 생성 요청', status: 'completed', priority: 'high',
-      tooltip: 'Request: { topic, style, duration, resolution }\nResponse: { jobId, estimatedTime }' },
+    // AI 기능 API (API 키 필요)
+    { id: 11, category: 'AI', method: 'POST', endpoint: '/api/ai/image-to-video', description: '이미지→영상 변환', status: 'needs-key', priority: 'high',
+      tooltip: 'Request: FormData { image, motionStyle, duration, resolution }\nResponse: { jobId, statusUrl }', note: 'Kling API 키 필요' },
+    { id: 12, category: 'AI', method: 'POST', endpoint: '/api/ai/upscale', description: '이미지 업스케일링 (2x/4x)', status: 'needs-key', priority: 'high',
+      tooltip: 'Request: FormData { image, scale, enhanceDetails }\nResponse: { jobId, statusUrl }', note: 'Replicate API 키 필요' },
+    { id: 13, category: 'AI', method: 'POST', endpoint: '/api/ai/shortform/generate', description: '숏폼 영상 생성 요청', status: 'needs-key', priority: 'high',
+      tooltip: 'Request: { topic, style, duration, resolution }\nResponse: { jobId, estimatedTime }', note: 'OpenAI API 키 필요' },
     { id: 14, category: 'AI', method: 'GET', endpoint: '/api/ai/job/:jobId', description: 'AI 작업 상태 조회', status: 'completed', priority: 'medium',
       tooltip: 'Response: { job: { status, parameters, outputFile } }\nstatus: pending|completed|failed' },
     { id: 15, category: 'AI', method: 'GET', endpoint: '/api/ai/job/:jobId/download', description: 'AI 결과물 다운로드', status: 'completed', priority: 'medium',
@@ -136,12 +148,79 @@ const Admin = () => {
     }
   };
 
+  // API 키 상태 로드
+  const loadApiKeyStatus = async () => {
+    try {
+      const response = await fetch('https://api.ilouli.com/api/admin/api-keys/status', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setApiKeyStatus(data.status || {});
+      }
+    } catch (err) {
+      console.error('Failed to load API key status');
+    }
+  };
+
+  // API 키 저장
+  const saveApiKey = async (keyName, keyValue) => {
+    if (!keyValue.trim()) {
+      setKeyMessage('API 키를 입력해주세요.');
+      return;
+    }
+
+    setSavingKeys(true);
+    try {
+      const response = await fetch('https://api.ilouli.com/api/admin/api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ keyName, keyValue })
+      });
+
+      if (response.ok) {
+        setKeyMessage(`${keyName.toUpperCase()} API 키가 저장되었습니다.`);
+        setApiKeys(prev => ({ ...prev, [keyName]: '' }));
+        loadApiKeyStatus();
+      } else {
+        const data = await response.json();
+        setKeyMessage(data.error || 'API 키 저장 실패');
+      }
+    } catch (err) {
+      setKeyMessage('API 키 저장 중 오류 발생');
+    }
+    setSavingKeys(false);
+    setTimeout(() => setKeyMessage(''), 3000);
+  };
+
+  // API 키 삭제
+  const deleteApiKey = async (keyName) => {
+    if (!window.confirm(`${keyName.toUpperCase()} API 키를 삭제하시겠습니까?`)) return;
+
+    try {
+      const response = await fetch(`https://api.ilouli.com/api/admin/api-keys/${keyName}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        setKeyMessage(`${keyName.toUpperCase()} API 키가 삭제되었습니다.`);
+        loadApiKeyStatus();
+      }
+    } catch (err) {
+      setKeyMessage('API 키 삭제 중 오류 발생');
+    }
+    setTimeout(() => setKeyMessage(''), 3000);
+  };
+
   useEffect(() => {
     if (user && user.tier === 'admin') {
       loadUsers();
       loadPendingUsers();
       loadReports();
       loadHiddenPosts();
+      loadApiKeyStatus();
     }
   }, [user]);
 
@@ -603,13 +682,117 @@ const Admin = () => {
               <span className="stat-number">{apiList.filter(a => a.status === 'completed').length}</span>
               <span className="stat-label">완료</span>
             </div>
+            <div className="stat-card stat-needs-key">
+              <span className="stat-number">{apiList.filter(a => a.status === 'needs-key').length}</span>
+              <span className="stat-label">API 키 필요</span>
+            </div>
             <div className="stat-card stat-pending">
               <span className="stat-number">{apiList.filter(a => a.status === 'pending').length}</span>
               <span className="stat-label">대기</span>
             </div>
-            <div className="stat-card stat-high">
-              <span className="stat-number">{apiList.filter(a => a.status === 'pending' && a.priority === 'high').length}</span>
-              <span className="stat-label">우선 구현</span>
+          </div>
+
+          {/* API 키 설정 섹션 */}
+          <div className="api-keys-section">
+            <h2>API 키 설정</h2>
+            <p className="section-desc">AI 기능을 사용하려면 각 서비스의 API 키가 필요합니다.</p>
+
+            {keyMessage && (
+              <div className={`key-message ${keyMessage.includes('실패') || keyMessage.includes('오류') ? 'error' : 'success'}`}>
+                {keyMessage}
+              </div>
+            )}
+
+            <div className="api-keys-grid">
+              {/* OpenAI */}
+              <div className="api-key-card">
+                <div className="key-header">
+                  <span className="key-name">OpenAI</span>
+                  <span className={`key-status ${apiKeyStatus.openai ? 'active' : 'inactive'}`}>
+                    {apiKeyStatus.openai ? '✅ 설정됨' : '❌ 미설정'}
+                  </span>
+                </div>
+                <p className="key-desc">GPT-4, TTS, 숏폼 영상 생성에 사용</p>
+                <div className="key-input-group">
+                  <input
+                    type="password"
+                    placeholder="sk-..."
+                    value={apiKeys.openai}
+                    onChange={(e) => setApiKeys(prev => ({ ...prev, openai: e.target.value }))}
+                  />
+                  <button
+                    onClick={() => saveApiKey('openai', apiKeys.openai)}
+                    disabled={savingKeys}
+                  >
+                    저장
+                  </button>
+                  {apiKeyStatus.openai && (
+                    <button className="delete-key-btn" onClick={() => deleteApiKey('openai')}>
+                      삭제
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Kling AI */}
+              <div className="api-key-card">
+                <div className="key-header">
+                  <span className="key-name">Kling AI</span>
+                  <span className={`key-status ${apiKeyStatus.kling ? 'active' : 'inactive'}`}>
+                    {apiKeyStatus.kling ? '✅ 설정됨' : '❌ 미설정'}
+                  </span>
+                </div>
+                <p className="key-desc">이미지→영상 변환에 사용</p>
+                <div className="key-input-group">
+                  <input
+                    type="password"
+                    placeholder="API 키 입력..."
+                    value={apiKeys.kling}
+                    onChange={(e) => setApiKeys(prev => ({ ...prev, kling: e.target.value }))}
+                  />
+                  <button
+                    onClick={() => saveApiKey('kling', apiKeys.kling)}
+                    disabled={savingKeys}
+                  >
+                    저장
+                  </button>
+                  {apiKeyStatus.kling && (
+                    <button className="delete-key-btn" onClick={() => deleteApiKey('kling')}>
+                      삭제
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Replicate */}
+              <div className="api-key-card">
+                <div className="key-header">
+                  <span className="key-name">Replicate</span>
+                  <span className={`key-status ${apiKeyStatus.replicate ? 'active' : 'inactive'}`}>
+                    {apiKeyStatus.replicate ? '✅ 설정됨' : '❌ 미설정'}
+                  </span>
+                </div>
+                <p className="key-desc">이미지 업스케일링 (Real-ESRGAN)에 사용</p>
+                <div className="key-input-group">
+                  <input
+                    type="password"
+                    placeholder="r8_..."
+                    value={apiKeys.replicate}
+                    onChange={(e) => setApiKeys(prev => ({ ...prev, replicate: e.target.value }))}
+                  />
+                  <button
+                    onClick={() => saveApiKey('replicate', apiKeys.replicate)}
+                    disabled={savingKeys}
+                  >
+                    저장
+                  </button>
+                  {apiKeyStatus.replicate && (
+                    <button className="delete-key-btn" onClick={() => deleteApiKey('replicate')}>
+                      삭제
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -630,16 +813,16 @@ const Admin = () => {
                   ✅ 완료 ({apiList.filter(a => a.status === 'completed').length})
                 </button>
                 <button
+                  className={`filter-btn ${apiFilter === 'needs-key' ? 'active' : ''}`}
+                  onClick={() => setApiFilter('needs-key')}
+                >
+                  🔑 API키 필요 ({apiList.filter(a => a.status === 'needs-key').length})
+                </button>
+                <button
                   className={`filter-btn ${apiFilter === 'pending' ? 'active' : ''}`}
                   onClick={() => setApiFilter('pending')}
                 >
                   ⏳ 대기 ({apiList.filter(a => a.status === 'pending').length})
-                </button>
-                <button
-                  className={`filter-btn ${apiFilter === 'high' ? 'active' : ''}`}
-                  onClick={() => setApiFilter('high')}
-                >
-                  🔥 우선순위 높음
                 </button>
               </div>
             </div>
@@ -661,8 +844,8 @@ const Admin = () => {
                     .filter(api => {
                       if (apiFilter === 'all') return true;
                       if (apiFilter === 'completed') return api.status === 'completed';
+                      if (apiFilter === 'needs-key') return api.status === 'needs-key';
                       if (apiFilter === 'pending') return api.status === 'pending';
-                      if (apiFilter === 'high') return api.priority === 'high';
                       return true;
                     })
                     .map((api) => (
@@ -698,7 +881,7 @@ const Admin = () => {
                         </td>
                         <td>
                           <span className={`status-badge api-status-${api.status}`}>
-                            {api.status === 'completed' ? '✅ 완료' : api.status === 'pending' ? '⏳ 대기' : '🔧 진행중'}
+                            {api.status === 'completed' ? '✅ 완료' : api.status === 'needs-key' ? '🔑 API키 필요' : api.status === 'pending' ? '⏳ 대기' : '🔧 진행중'}
                           </span>
                         </td>
                         <td>

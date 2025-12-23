@@ -624,6 +624,146 @@
   border-left: 4px solid #ef4444;
 }
 
+.stat-card.stat-needs-key {
+  border-left: 4px solid #8b5cf6;
+}
+
+/* API Keys Section */
+.api-keys-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #fafafa;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+}
+
+.api-keys-section h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: #1d1d1f;
+}
+
+.section-desc {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem;
+}
+
+.key-message {
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.key-message.success {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.key-message.error {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.api-keys-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.api-key-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.key-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.key-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #1d1d1f;
+}
+
+.key-status {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.key-status.active {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.key-status.inactive {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.key-desc {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0 0 1rem;
+}
+
+.key-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.key-input-group input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+
+.key-input-group input:focus {
+  outline: none;
+  border-color: #333;
+}
+
+.key-input-group button {
+  padding: 0.5rem 1rem;
+  background-color: #1d1d1f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.key-input-group button:hover:not(:disabled) {
+  background-color: #333;
+}
+
+.key-input-group button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.delete-key-btn {
+  background-color: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+.delete-key-btn:hover {
+  background-color: #fecaca !important;
+}
+
 .api-table-container {
   background-color: #ffffff;
   border: 1px solid #e5e5e5;
@@ -669,6 +809,15 @@
 
 .api-row.pending {
   background-color: #fffbeb;
+}
+
+.api-row.needs-key {
+  background-color: #f5f3ff;
+}
+
+.api-status-needs-key {
+  background-color: #ede9fe;
+  color: #7c3aed;
 }
 
 .category-badge {

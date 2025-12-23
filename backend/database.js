@@ -180,6 +180,18 @@ try {
   // 이미 존재하면 무시
 }
 
+// API 키 저장 테이블
+db.exec(`
+  CREATE TABLE IF NOT EXISTS api_keys (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key_name TEXT UNIQUE NOT NULL,
+    key_value TEXT NOT NULL,
+    is_active INTEGER DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
 // 기본 관리자 계정 생성
 const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get('admin@ilouli.com');
 if (!adminExists) {
