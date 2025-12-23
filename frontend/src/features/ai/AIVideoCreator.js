@@ -31,10 +31,26 @@ const AIVideoCreator = () => {
 
   // 탭별 설정
   const tabs = [
-    { id: 'shortform', name: '숏폼 영상', icon: '🎬', description: '짧은 영상 콘텐츠 제작' },
-    { id: 'upscale', name: '이미지 업스케일', icon: '🔍', description: '저해상도 → 고해상도', disabled: true },
-    { id: 'img2video', name: '이미지 → 영상', icon: '🎞️', description: '정적 이미지를 영상으로', disabled: true },
+    { id: 'shortform', name: '숏폼', icon: '🎬', description: 'AI 숏폼 영상 제작' },
+    { id: 'upscale', name: '이미지 업스케일링', icon: '🔍', description: '저해상도 → 고해상도', disabled: true },
+    { id: 'img2video', name: '이미지 영상', icon: '🎞️', description: '정적 이미지를 영상으로', disabled: true },
   ];
+
+  // 탭별 페이지 정보
+  const tabInfo = {
+    shortform: {
+      title: '숏폼 영상 제작',
+      subtitle: 'AI가 전문적인 숏폼 영상을 자동으로 제작합니다.'
+    },
+    upscale: {
+      title: '이미지 업스케일링',
+      subtitle: '저해상도 이미지를 고품질 고해상도로 변환합니다.'
+    },
+    img2video: {
+      title: '이미지 영상 변환',
+      subtitle: '정적인 이미지를 자연스러운 영상으로 변환합니다.'
+    }
+  };
 
   const steps = [
     { id: 1, name: '콘텐츠 생성', icon: '📝', description: 'AI가 스크립트 작성' },
@@ -93,17 +109,12 @@ const AIVideoCreator = () => {
 
   return (
     <div className="ai-video-creator">
-      <header className="page-header">
-        <h1>AI 영상 제작</h1>
-        <p>AI가 전문적인 영상 콘텐츠를 자동으로 제작해 드립니다.</p>
-      </header>
-
-      {/* 탭 메뉴 */}
-      <div className="tabs-container">
+      {/* 탭 네비게이션 */}
+      <div className="tab-navigation">
         {tabs.map((tab) => (
           <button
             key={tab.id}
-            className={`tab-btn ${activeTab === tab.id ? 'active' : ''} ${tab.disabled ? 'disabled' : ''}`}
+            className={`tab-nav-btn ${activeTab === tab.id ? 'active' : ''} ${tab.disabled ? 'disabled' : ''}`}
             onClick={() => handleTabChange(tab.id, tab.disabled)}
             disabled={tab.disabled}
           >
@@ -114,9 +125,15 @@ const AIVideoCreator = () => {
         ))}
       </div>
 
+      {/* 페이지 헤더 */}
+      <header className="page-header">
+        <h1>{tabInfo[activeTab].title}</h1>
+        <p>{tabInfo[activeTab].subtitle}</p>
+      </header>
+
       {/* 숏폼 영상 탭 */}
       {activeTab === 'shortform' && (
-        <>
+        <div className="tab-content">
           {/* 입력 섹션 */}
           <section className="input-section">
             <div className="section-header">
@@ -124,23 +141,21 @@ const AIVideoCreator = () => {
               <p>만들고 싶은 영상의 주제를 입력하세요.</p>
             </div>
 
-            <div className="topic-input-container">
-              <div className="input-with-button">
-                <input
-                  type="text"
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  placeholder="예: 카페 소개, 제품 리뷰, 여행 브이로그..."
-                  disabled={isGenerating}
-                />
-                <button
-                  className="generate-btn"
-                  onClick={handleGenerate}
-                  disabled={isGenerating || !topic.trim()}
-                >
-                  {isGenerating ? '생성 중...' : '영상 생성'}
-                </button>
-              </div>
+            <div className="input-with-button">
+              <input
+                type="text"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                placeholder="예: 카페 소개, 제품 리뷰, 여행 브이로그..."
+                disabled={isGenerating}
+              />
+              <button
+                className="generate-btn"
+                onClick={handleGenerate}
+                disabled={isGenerating || !topic.trim()}
+              >
+                {isGenerating ? '생성 중...' : '영상 생성'}
+              </button>
             </div>
 
             {/* 예시 주제 */}
@@ -235,11 +250,11 @@ const AIVideoCreator = () => {
                     {result.english && (
                       <div className="content-preview">
                         <div className="content-item">
-                          <span className="content-label">🇺🇸 English:</span>
+                          <span className="content-label">English:</span>
                           <span className="content-text">{result.english}</span>
                         </div>
                         <div className="content-item">
-                          <span className="content-label">🇰🇷 한국어:</span>
+                          <span className="content-label">한국어:</span>
                           <span className="content-text">{result.korean}</span>
                         </div>
                       </div>
@@ -263,84 +278,86 @@ const AIVideoCreator = () => {
 
                   <div className="result-actions">
                     <button className="action-btn primary" disabled>
-                      📥 다운로드
+                      다운로드
                     </button>
                     <button className="action-btn youtube" disabled>
-                      ▶️ YouTube 업로드
+                      YouTube 업로드
                     </button>
                   </div>
                 </div>
               </div>
             </section>
           )}
-        </>
+
+          {/* 기능 안내 */}
+          <section className="feature-info">
+            <h3>숏폼 영상 제작 과정</h3>
+            <div className="feature-steps">
+              <div className="feature-step">
+                <span className="step-number">1</span>
+                <div className="step-content">
+                  <h4>주제 입력</h4>
+                  <p>원하는 영상 주제를 입력합니다.</p>
+                </div>
+              </div>
+              <div className="feature-step">
+                <span className="step-number">2</span>
+                <div className="step-content">
+                  <h4>AI 콘텐츠 생성</h4>
+                  <p>AI가 스크립트와 이미지를 자동 생성합니다.</p>
+                </div>
+              </div>
+              <div className="feature-step">
+                <span className="step-number">3</span>
+                <div className="step-content">
+                  <h4>영상 합성</h4>
+                  <p>음성, 자막과 함께 최종 영상이 완성됩니다.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
       )}
 
-      {/* 기능 소개 */}
-      <section className="features-section">
-        <h2>주요 기능</h2>
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">🎬</div>
-            <h3>숏폼 영상</h3>
-            <p>몇 번의 클릭으로 전문적인 짧은 영상을 제작합니다.</p>
-            <ul>
-              <li>AI 스크립트 생성</li>
-              <li>자동 영상 합성</li>
-              <li>자막 및 음성 추가</li>
-            </ul>
-          </div>
-          <div className="feature-card disabled">
-            <div className="feature-icon">🔍</div>
-            <h3>이미지 업스케일</h3>
-            <p>저해상도 이미지를 고품질로 변환합니다.</p>
-            <span className="feature-badge">준비중</span>
-          </div>
-          <div className="feature-card disabled">
-            <div className="feature-icon">🎞️</div>
-            <h3>이미지 → 영상</h3>
-            <p>정적인 이미지를 자연스러운 영상으로 변환합니다.</p>
-            <span className="feature-badge">준비중</span>
-          </div>
+      {/* 이미지 업스케일링 탭 */}
+      {activeTab === 'upscale' && (
+        <div className="tab-content">
+          <section className="coming-soon-section">
+            <div className="coming-soon-icon">🔍</div>
+            <h2>서비스 준비중</h2>
+            <p>이미지 업스케일링 기능을 준비하고 있습니다.</p>
+            <div className="feature-preview">
+              <h3>예정 기능</h3>
+              <ul>
+                <li>저해상도 이미지를 4배까지 확대</li>
+                <li>AI 기반 노이즈 제거</li>
+                <li>선명도 및 디테일 향상</li>
+                <li>다양한 이미지 포맷 지원</li>
+              </ul>
+            </div>
+          </section>
         </div>
-      </section>
+      )}
 
-      {/* 활용 사례 */}
-      <section className="usecases-section">
-        <h2>활용 사례</h2>
-        <div className="usecases-grid">
-          <div className="usecase-card">
-            <span className="usecase-icon">🏥</span>
-            <h4>의료/헬스케어</h4>
-            <p>병원 소개, 의료진 프로필 영상</p>
-          </div>
-          <div className="usecase-card">
-            <span className="usecase-icon">🍽️</span>
-            <h4>식음료</h4>
-            <p>맛집 홍보, 메뉴 소개 영상</p>
-          </div>
-          <div className="usecase-card">
-            <span className="usecase-icon">✈️</span>
-            <h4>여행</h4>
-            <p>여행지 홍보, 브이로그 영상</p>
-          </div>
-          <div className="usecase-card">
-            <span className="usecase-icon">📚</span>
-            <h4>교육</h4>
-            <p>영어 학습, 교육 콘텐츠 영상</p>
-          </div>
-          <div className="usecase-card">
-            <span className="usecase-icon">🛒</span>
-            <h4>이커머스</h4>
-            <p>제품 리뷰, 언박싱 영상</p>
-          </div>
-          <div className="usecase-card">
-            <span className="usecase-icon">🏢</span>
-            <h4>기업</h4>
-            <p>회사 소개, 채용 홍보 영상</p>
-          </div>
+      {/* 이미지 영상 탭 */}
+      {activeTab === 'img2video' && (
+        <div className="tab-content">
+          <section className="coming-soon-section">
+            <div className="coming-soon-icon">🎞️</div>
+            <h2>서비스 준비중</h2>
+            <p>이미지 영상 변환 기능을 준비하고 있습니다.</p>
+            <div className="feature-preview">
+              <h3>예정 기능</h3>
+              <ul>
+                <li>정적 이미지에 자연스러운 움직임 추가</li>
+                <li>카메라 무빙 효과 적용</li>
+                <li>5~10초 고품질 영상 생성</li>
+                <li>다양한 스타일 선택 가능</li>
+              </ul>
+            </div>
+          </section>
         </div>
-      </section>
+      )}
     </div>
   );
 };
