@@ -1,16 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { STORAGE_KEYS } from '../constants/storageKeys';
-import {
-  loadGoogleScripts,
-  signInToGoogle,
-  signOutFromGoogle,
-  restoreGoogleSession,
-  fetchGoogleEvents,
-  addGoogleEvent,
-  deleteGoogleEvent,
-  updateGoogleEvent
-} from '../services/googleCalendar';
+import { useGoogleCalendar } from '../hooks/useGoogleCalendar';
 
 export const EVENT_COLORS = {
   DEFAULT: '#0071e3',
@@ -45,12 +36,22 @@ export const useCalendar = () => {
 export const CalendarProvider = ({ children }) => {
   const { user } = useAuth();
   const [events, setEvents] = useState([]);
-  const [googleEvents, setGoogleEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [googleConnected, setGoogleConnected] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [googleError, setGoogleError] = useState(null);
+
+  // Google Calendar 훅 사용
+  const {
+    isConnected: googleConnected,
+    loading: googleLoading,
+    error: googleError,
+    events: googleEvents,
+    connect: connectGoogle,
+    disconnect: disconnectGoogle,
+    refresh: refreshGoogleEvents,
+    addEvent: addGoogleEventDirect,
+    updateEvent: updateGoogleEventDirect,
+    deleteEvent: deleteGoogleEventDirect
+  } = useGoogleCalendar();
 
   // 로컬 스토리지에서 이벤트 로드
   useEffect(() => {
@@ -64,75 +65,6 @@ export const CalendarProvider = ({ children }) => {
       }
     }
   }, []);
-
-  // Google API 초기화 및 세션 복원
-  useEffect(() => {
-    const initGoogle = async () => {
-      try {
-        await loadGoogleScripts();
-        const restored = await restoreGoogleSession();
-        if (restored) {
-          setGoogleConnected(true);
-        }
-      } catch (err) {
-        console.error('Failed to init Google API:', err);
-      }
-    };
-    initGoogle();
-  }, []);
-
-  // Google 이벤트 새로고침
-  const refreshGoogleEvents = useCallback(async () => {
-    if (!googleConnected) return;
-
-    setGoogleLoading(true);
-    setGoogleError(null);
-    try {
-      const events = await fetchGoogleEvents();
-      setGoogleEvents(events);
-    } catch (err) {
-      console.error('Failed to fetch Google events:', err);
-      setGoogleError('Google 캘린더 동기화 실패');
-      // 토큰 만료 시 연결 해제
-      if (err.status === 401) {
-        setGoogleConnected(false);
-        signOutFromGoogle();
-      }
-    } finally {
-      setGoogleLoading(false);
-    }
-  }, [googleConnected]);
-
-  // Google 연결 상태 변경 시 이벤트 새로고침
-  useEffect(() => {
-    if (googleConnected) {
-      refreshGoogleEvents();
-    } else {
-      setGoogleEvents([]);
-    }
-  }, [googleConnected, refreshGoogleEvents]);
-
-  // Google 계정 연결
-  const connectGoogle = async () => {
-    setGoogleLoading(true);
-    setGoogleError(null);
-    try {
-      await signInToGoogle();
-      setGoogleConnected(true);
-    } catch (err) {
-      console.error('Google sign in failed:', err);
-      setGoogleError('Google 로그인 실패');
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
-
-  // Google 계정 연결 해제
-  const disconnectGoogle = () => {
-    signOutFromGoogle();
-    setGoogleConnected(false);
-    setGoogleEvents([]);
-  };
 
   // 이벤트 저장 (로컬)
   const saveEvents = (newEvents) => {
@@ -158,7 +90,7 @@ export const CalendarProvider = ({ children }) => {
     // Google에도 동기화
     if (syncToGoogle && googleConnected) {
       try {
-        const googleResult = await addGoogleEvent(eventData);
+        const googleResult = await addGoogleEventDirect(eventData);
         newEvent.googleId = googleResult.id;
         newEvent.syncedToGoogle = true;
       } catch (err) {
@@ -178,8 +110,7 @@ export const CalendarProvider = ({ children }) => {
     // Google 이벤트인 경우
     if (event?.isGoogleEvent && event.googleId) {
       try {
-        await updateGoogleEvent(event.googleId, eventData);
-        await refreshGoogleEvents();
+        await updateGoogleEventDirect(event.googleId, eventData);
       } catch (err) {
         console.error('Failed to update Google event:', err);
       }
@@ -197,7 +128,7 @@ export const CalendarProvider = ({ children }) => {
     // Google에 동기화된 이벤트인 경우
     if (event?.syncedToGoogle && event.googleId) {
       try {
-        await updateGoogleEvent(event.googleId, eventData);
+        await updateGoogleEventDirect(event.googleId, eventData);
       } catch (err) {
         console.error('Failed to sync update to Google:', err);
       }
@@ -211,8 +142,7 @@ export const CalendarProvider = ({ children }) => {
     // Google 이벤트인 경우
     if (event?.isGoogleEvent && event.googleId) {
       try {
-        await deleteGoogleEvent(event.googleId);
-        await refreshGoogleEvents();
+        await deleteGoogleEventDirect(event.googleId);
       } catch (err) {
         console.error('Failed to delete Google event:', err);
       }
@@ -226,7 +156,7 @@ export const CalendarProvider = ({ children }) => {
     // Google에 동기화된 이벤트인 경우
     if (event?.syncedToGoogle && event.googleId) {
       try {
-        await deleteGoogleEvent(event.googleId);
+        await deleteGoogleEventDirect(event.googleId);
       } catch (err) {
         console.error('Failed to delete from Google:', err);
       }

@@ -2,6 +2,10 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI, usersAPI, getToken, removeToken } from '../services/api';
 import { signInWithGoogle, signInWithKakao, handleGoogleOAuthCallback } from '../services/socialAuth';
 
+// ============================================================================
+// Constants
+// ============================================================================
+
 export const USER_TIERS = {
   GUEST: 'guest',
   GENERAL: 'general',
@@ -16,6 +20,10 @@ export const USER_STATUS = {
   REJECTED: 'rejected'
 };
 
+// ============================================================================
+// Context & Hook
+// ============================================================================
+
 const AuthContext = createContext(null);
 
 export const useAuth = () => {
@@ -26,15 +34,23 @@ export const useAuth = () => {
   return context;
 };
 
+// ============================================================================
+// Provider
+// ============================================================================
+
 export const AuthProvider = ({ children }) => {
+  // State
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [viewAsTier, setViewAsTier] = useState(null);
 
-  // 토큰으로 세션 복원 및 OAuth 콜백 처리
+  // ============================================================================
+  // Session Management
+  // ============================================================================
+
   useEffect(() => {
     const restoreSession = async () => {
-      // Google OAuth 리다이렉트 콜백 처리
+      // Handle Google OAuth redirect callback
       if (window.location.hash && window.location.hash.includes('access_token')) {
         try {
           console.log('[Auth] Processing Google OAuth callback...');
@@ -50,7 +66,7 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-      // 일반 세션 복원
+      // Restore session from token
       const token = getToken();
       if (token) {
         try {
@@ -67,6 +83,10 @@ export const AuthProvider = ({ children }) => {
     restoreSession();
   }, []);
 
+  // ============================================================================
+  // Authentication Functions
+  // ============================================================================
+
   const login = async (email, password) => {
     const userData = await authAPI.login(email, password);
     setUser(userData);
@@ -74,7 +94,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (name, email, password) => {
-    const result = await authAPI.signup(name, email, password);
+    await authAPI.signup(name, email, password);
     return { pending: true };
   };
 
@@ -99,59 +119,63 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // ============================================================================
+  // Access Control
+  // ============================================================================
+
   const hasAccess = (requiredTiers) => {
     if (!user) return false;
     const effectiveTier = viewAsTier || user.tier;
     return requiredTiers.includes(effectiveTier);
   };
 
-  // 관리자 기능
-  const getAllUsers = async () => {
+  // ============================================================================
+  // Admin Functions - User Management
+  // ============================================================================
+
+  const verifyAdmin = () => {
     if (!user || user.tier !== USER_TIERS.ADMIN) {
       throw new Error('Admin access required');
     }
+  };
+
+  const getAllUsers = async () => {
+    verifyAdmin();
     return await usersAPI.getAll();
   };
 
   const getPendingUsers = async () => {
-    if (!user || user.tier !== USER_TIERS.ADMIN) {
-      throw new Error('Admin access required');
-    }
+    verifyAdmin();
     return await usersAPI.getPending();
   };
 
   const approveUser = async (userId) => {
-    if (!user || user.tier !== USER_TIERS.ADMIN) {
-      throw new Error('Admin access required');
-    }
+    verifyAdmin();
     await usersAPI.approve(userId);
   };
 
   const rejectUser = async (userId) => {
-    if (!user || user.tier !== USER_TIERS.ADMIN) {
-      throw new Error('Admin access required');
-    }
+    verifyAdmin();
     await usersAPI.reject(userId);
   };
 
   const updateUserTier = async (userId, newTier) => {
-    if (!user || user.tier !== USER_TIERS.ADMIN) {
-      throw new Error('Admin access required');
-    }
+    verifyAdmin();
     await usersAPI.updateTier(userId, newTier);
   };
 
   const deleteUser = async (userId) => {
-    if (!user || user.tier !== USER_TIERS.ADMIN) {
-      throw new Error('Admin access required');
-    }
+    verifyAdmin();
     if (userId === user.id) {
       throw new Error('Cannot delete yourself');
     }
     await usersAPI.delete(userId);
   };
 
-  // 등급 시뮬레이션
+  // ============================================================================
+  // Admin Functions - Tier Simulation (for testing access control)
+  // ============================================================================
+
   const setViewAs = (tier) => {
     if (!user || user.tier !== USER_TIERS.ADMIN) return;
     setViewAsTier(tier);
@@ -161,28 +185,45 @@ export const AuthProvider = ({ children }) => {
   const getCurrentViewTier = () => viewAsTier;
   const getActualTier = () => user?.tier;
 
+  // ============================================================================
+  // Context Value
+  // ============================================================================
+
   const value = {
+    // State
     user,
     loading,
+    viewAsTier,
+
+    // Constants
+    USER_TIERS,
+    USER_STATUS,
+
+    // Auth Status
+    isAuthenticated: !!user,
+
+    // Authentication
     login,
     signup,
     socialLogin,
     logout,
+
+    // Access Control
     hasAccess,
-    isAuthenticated: !!user,
-    USER_TIERS,
-    USER_STATUS,
+
+    // Admin - User Management
     getAllUsers,
-    updateUserTier,
-    deleteUser,
     getPendingUsers,
     approveUser,
     rejectUser,
+    updateUserTier,
+    deleteUser,
+
+    // Admin - Tier Simulation
     setViewAs,
     resetViewAs,
     getCurrentViewTier,
-    getActualTier,
-    viewAsTier
+    getActualTier
   };
 
   return (
