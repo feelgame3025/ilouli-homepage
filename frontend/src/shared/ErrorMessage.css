@@ -1,0 +1,143 @@
+/* ErrorMessage Component Styles */
+
+.error-message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid transparent;
+  animation: fadeIn var(--transition-default);
+}
+
+.error-message-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  flex: 1;
+}
+
+.error-message-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.error-message-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex: 1;
+}
+
+.error-message-title {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.error-message-body {
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-body);
+}
+
+.error-message-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.error-message-btn {
+  padding: var(--spacing-xs) var(--spacing-md);
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  background: transparent;
+}
+
+.retry-btn {
+  color: var(--color-accent);
+  background-color: rgba(0, 113, 227, 0.1);
+}
+
+.retry-btn:hover {
+  background-color: rgba(0, 113, 227, 0.15);
+}
+
+.dismiss-btn {
+  color: var(--color-text-secondary);
+  background-color: transparent;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-full);
+}
+
+.dismiss-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Type Variants */
+.error-message-error {
+  border-color: var(--color-error);
+  background-color: rgba(255, 59, 48, 0.08);
+}
+
+.error-message-error .error-message-icon {
+  color: var(--color-error);
+}
+
+.error-message-error .error-message-title {
+  color: var(--color-error);
+}
+
+.error-message-warning {
+  border-color: var(--color-warning);
+  background-color: rgba(255, 149, 0, 0.08);
+}
+
+.error-message-warning .error-message-icon {
+  color: var(--color-warning);
+}
+
+.error-message-warning .error-message-title {
+  color: var(--color-warning);
+}
+
+.error-message-info {
+  border-color: var(--color-accent);
+  background-color: rgba(0, 113, 227, 0.08);
+}
+
+.error-message-info .error-message-icon {
+  color: var(--color-accent);
+}
+
+.error-message-info .error-message-title {
+  color: var(--color-accent);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .error-message {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .error-message-actions {
+    justify-content: flex-end;
+    padding-top: var(--spacing-sm);
+    border-top: 1px solid var(--color-border-light);
+  }
+}

@@ -1,0 +1,158 @@
+/* ProgressBar Component - Apple Minimalist Style */
+
+.progress-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+}
+
+/* Track */
+.progress-track {
+  position: relative;
+  flex: 1;
+  background-color: rgba(0, 0, 0, 0.06);
+  border-radius: var(--border-radius-full);
+  overflow: hidden;
+}
+
+/* Fill */
+.progress-fill {
+  position: relative;
+  height: 100%;
+  border-radius: var(--border-radius-full);
+  transition: width var(--transition-default);
+  overflow: hidden;
+}
+
+/* Sizes */
+.progress-sm .progress-track {
+  height: 4px;
+}
+
+.progress-md .progress-track {
+  height: 6px;
+}
+
+.progress-lg .progress-track {
+  height: 8px;
+}
+
+/* Colors */
+.progress-primary .progress-fill {
+  background-color: var(--color-accent);
+}
+
+.progress-success .progress-fill {
+  background-color: var(--color-success);
+}
+
+.progress-warning .progress-fill {
+  background-color: var(--color-warning);
+}
+
+.progress-error .progress-fill {
+  background-color: var(--color-error);
+}
+
+/* Label */
+.progress-label {
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  min-width: 42px;
+  text-align: right;
+}
+
+.progress-sm .progress-label {
+  font-size: var(--font-size-caption);
+  min-width: 36px;
+}
+
+.progress-lg .progress-label {
+  font-size: var(--font-size-body);
+  min-width: 48px;
+}
+
+/* Animated Shimmer Effect */
+.progress-animated .progress-fill {
+  background: linear-gradient(
+    90deg,
+    var(--color-accent) 0%,
+    var(--color-accent-hover) 50%,
+    var(--color-accent) 100%
+  );
+  background-size: 200% 100%;
+  animation: progress-shimmer 1.5s ease-in-out infinite;
+}
+
+.progress-animated.progress-success .progress-fill {
+  background: linear-gradient(
+    90deg,
+    var(--color-success) 0%,
+    #3dd865 50%,
+    var(--color-success) 100%
+  );
+  background-size: 200% 100%;
+}
+
+.progress-animated.progress-warning .progress-fill {
+  background: linear-gradient(
+    90deg,
+    var(--color-warning) 0%,
+    #ffa726 50%,
+    var(--color-warning) 100%
+  );
+  background-size: 200% 100%;
+}
+
+.progress-animated.progress-error .progress-fill {
+  background: linear-gradient(
+    90deg,
+    var(--color-error) 0%,
+    #ff5247 50%,
+    var(--color-error) 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* Shimmer Animation */
+@keyframes progress-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill {
+    transition: none;
+  }
+
+  .progress-animated .progress-fill {
+    animation: none;
+    background: var(--color-accent);
+  }
+
+  .progress-animated.progress-success .progress-fill {
+    background: var(--color-success);
+  }
+
+  .progress-animated.progress-warning .progress-fill {
+    background: var(--color-warning);
+  }
+
+  .progress-animated.progress-error .progress-fill {
+    background: var(--color-error);
+  }
+}
+
+/* Dark mode support (optional, future enhancement) */
+@media (prefers-color-scheme: dark) {
+  .progress-track {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
