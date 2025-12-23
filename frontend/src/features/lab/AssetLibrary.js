@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAssets } from '../contexts/AssetContext';
+import { useAssets } from '../../contexts/AssetContext';
 import './AssetLibrary.css';
 
 const AssetLibrary = () => {

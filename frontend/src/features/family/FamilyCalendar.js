@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCalendar, EVENT_CATEGORIES } from '../contexts/CalendarContext';
+import { useCalendar, EVENT_CATEGORIES } from '../../contexts/CalendarContext';
 import './FamilyCalendar.css';
 
 const FamilyCalendar = () => {

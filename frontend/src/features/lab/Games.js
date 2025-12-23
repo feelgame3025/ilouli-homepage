@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import api from '../services/api';
-import gameSound from '../utils/gameSound';
+import api from '../../services/api';
+import gameSound from '../../utils/gameSound';
 import {
   HWATU_DECK,
   getHwatuImageUrl,

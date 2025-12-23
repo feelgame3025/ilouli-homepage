@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../contexts/AuthContext';
-import { openInExternalBrowser } from '../services/socialAuth';
+import { useAuth } from '../../contexts/AuthContext';
+import { openInExternalBrowser } from '../../services/socialAuth';
 import './Login.css';
 
 const Login = () => {

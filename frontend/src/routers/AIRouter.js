@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { USER_TIERS } from '../contexts/AuthContext';
-import AIStoryboard from '../components/AIStoryboard';
-import AIContentTools from '../components/AIContentTools';
-import Profile from '../components/Profile';
-import Login from '../components/Login';
-import ProtectedRoute from '../components/ProtectedRoute';
+import AIStoryboard from '../features/ai/AIStoryboard';
+import AIContentTools from '../features/ai/AIContentTools';
+import Profile from '../features/auth/Profile';
+import Login from '../features/auth/Login';
+import ProtectedRoute from '../shared/ProtectedRoute';
 
 const AIRouter = () => {
   return (

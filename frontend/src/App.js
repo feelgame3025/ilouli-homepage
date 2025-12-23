@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import AppProvider from './contexts/AppProvider';
-import NavigationBar from './components/NavigationBar';
+import NavigationBar from './shared/NavigationBar';
 import { getCurrentHost, HOSTS, HOST_INFO } from './utils/hostConfig';
 
 // Routers

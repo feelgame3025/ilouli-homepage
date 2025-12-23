@@ -1,11 +1,10 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Community from '../components/Community';
-import Games from '../components/Games';
-import Profile from '../components/Profile';
-import Login from '../components/Login';
-import Signup from '../components/Signup';
-import ProtectedRoute from '../components/ProtectedRoute';
+import Community from '../features/community/Community';
+import Games from '../features/lab/Games';
+import Profile from '../features/auth/Profile';
+import Login from '../features/auth/Login';
+import ProtectedRoute from '../shared/ProtectedRoute';
 
 const CommunityRouter = () => {
   return (
@@ -23,7 +22,6 @@ const CommunityRouter = () => {
         }
       />
       <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
     </Routes>
   );
 };

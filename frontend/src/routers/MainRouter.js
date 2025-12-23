@@ -1,10 +1,10 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import LandingPage from '../components/LandingPage';
-import About from '../components/About';
-import Login from '../components/Login';
-import Profile from '../components/Profile';
-import ProtectedRoute from '../components/ProtectedRoute';
+import LandingPage from '../features/main/LandingPage';
+import About from '../features/main/About';
+import Login from '../features/auth/Login';
+import Profile from '../features/auth/Profile';
+import ProtectedRoute from '../shared/ProtectedRoute';
 
 const MainRouter = () => {
   return (

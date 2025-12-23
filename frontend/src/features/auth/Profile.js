@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../contexts/AuthContext';
-import { useNotification, NOTIFICATION_TYPES } from '../contexts/NotificationContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNotification, NOTIFICATION_TYPES } from '../../contexts/NotificationContext';
 import './Profile.css';
 
 const Profile = () => {

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { USER_TIERS } from '../contexts/AuthContext';
-import TestZone from '../components/TestZone';
-import FileUpload from '../components/FileUpload';
-import Profile from '../components/Profile';
-import Login from '../components/Login';
-import ProtectedRoute from '../components/ProtectedRoute';
+import TestZone from '../features/lab/TestZone';
+import FileUpload from '../features/lab/FileUpload';
+import Profile from '../features/auth/Profile';
+import Login from '../features/auth/Login';
+import ProtectedRoute from '../shared/ProtectedRoute';
 
 const LabRouter = () => {
   return (

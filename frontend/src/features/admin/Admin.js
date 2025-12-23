@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth, USER_TIERS } from '../contexts/AuthContext';
-import { useCommunity, REPORT_STATUS } from '../contexts/CommunityContext';
-import { useNotification, NOTIFICATION_TYPES } from '../contexts/NotificationContext';
+import { useAuth, USER_TIERS } from '../../contexts/AuthContext';
+import { useCommunity, REPORT_STATUS } from '../../contexts/CommunityContext';
+import { useNotification, NOTIFICATION_TYPES } from '../../contexts/NotificationContext';
 import './Admin.css';
 
 const Admin = () => {

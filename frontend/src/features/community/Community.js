@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuth, USER_TIERS } from '../contexts/AuthContext';
-import { useCommunity, POST_TYPES, CATEGORIES } from '../contexts/CommunityContext';
-import { useNotification, NOTIFICATION_TYPES } from '../contexts/NotificationContext';
+import { useAuth, USER_TIERS } from '../../contexts/AuthContext';
+import { useCommunity, POST_TYPES, CATEGORIES } from '../../contexts/CommunityContext';
+import { useNotification, NOTIFICATION_TYPES } from '../../contexts/NotificationContext';
 import './Community.css';
 
 const Community = ({ defaultTab = 'announcements' }) => {

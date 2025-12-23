@@ -1,10 +1,10 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { USER_TIERS } from '../contexts/AuthContext';
-import FamilySpace from '../components/FamilySpace';
-import Profile from '../components/Profile';
-import Login from '../components/Login';
-import ProtectedRoute from '../components/ProtectedRoute';
+import FamilySpace from '../features/family/FamilySpace';
+import Profile from '../features/auth/Profile';
+import Login from '../features/auth/Login';
+import ProtectedRoute from '../shared/ProtectedRoute';
 
 const FamilyRouter = () => {
   return (
