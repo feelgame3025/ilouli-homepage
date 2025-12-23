@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(npm start:*)",
+      "Bash(npm test:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(pm2:*)",
+      "Bash(gh:*)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(backend/.env)",
+      "Read(frontend/.env)",
+      "Edit(.env)",
+      "Edit(backend/.env)",
+      "Edit(frontend/.env)"
+    ]
+  }
+}
