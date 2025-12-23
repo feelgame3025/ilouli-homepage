@@ -34,7 +34,18 @@ homepage/
 ├── frontend/
 │   ├── src/
 │   │   ├── App.js              # Host-based router selection
-│   │   ├── components/         # Feature components
+│   │   ├── shared/             # 공용 컴포넌트
+│   │   │   ├── NavigationBar.js
+│   │   │   ├── ProtectedRoute.js
+│   │   │   └── LanguageSelector.js
+│   │   ├── features/           # 도메인별 기능
+│   │   │   ├── auth/           # Login, Signup, Profile
+│   │   │   ├── main/           # LandingPage, About
+│   │   │   ├── admin/          # Admin dashboard
+│   │   │   ├── community/      # Community features
+│   │   │   ├── ai/             # AI Storyboard, Content Tools
+│   │   │   ├── family/         # Family space, Calendar
+│   │   │   └── lab/            # TestZone, Games, FileUpload
 │   │   ├── routers/            # Host-specific routers
 │   │   ├── contexts/           # React contexts
 │   │   ├── services/           # API services
@@ -48,6 +59,12 @@ homepage/
 │   └── ilouli.db
 └── .claude/                    # Claude 설정
 ```
+
+## 새 컴포넌트 추가 규칙
+
+- **공용 컴포넌트**: `shared/` 폴더에 추가
+- **기능 컴포넌트**: 해당 feature 폴더에 추가
+- **새 도메인**: `features/` 아래에 새 폴더 생성
 
 ## User Tiers
 
