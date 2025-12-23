@@ -72,8 +72,9 @@ export const signInToGoogle = () => {
         reject(resp);
         return;
       }
-      // 토큰 저장
+      // 토큰 저장 (만료 시간 포함)
       const token = window.gapi.client.getToken();
+      token.expires_at = Date.now() + (token.expires_in * 1000);
       localStorage.setItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN, JSON.stringify(token));
       resolve(token);
     };
@@ -116,19 +117,71 @@ export const isGoogleConnected = () => {
   return !!savedToken;
 };
 
-// 저장된 토큰으로 복원
+// 저장된 토큰으로 복원 (토큰 유효성 검증 포함)
 export const restoreGoogleSession = async () => {
   const savedToken = localStorage.getItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
   if (savedToken && window.gapi?.client) {
     try {
       const token = JSON.parse(savedToken);
+
+      // 토큰 만료 시간 확인 (저장된 경우)
+      if (token.expires_at && Date.now() >= token.expires_at) {
+        console.log('Token expired, attempting silent refresh...');
+        // 만료된 토큰 - 조용히 갱신 시도
+        const refreshed = await silentTokenRefresh();
+        return refreshed;
+      }
+
       window.gapi.client.setToken(token);
-      return true;
+
+      // 토큰 유효성 검증 (간단한 API 호출로 확인)
+      try {
+        await window.gapi.client.calendar.calendarList.list({ maxResults: 1 });
+        return true;
+      } catch (err) {
+        console.log('Token validation failed, attempting silent refresh...');
+        // 토큰이 유효하지 않으면 조용히 갱신 시도
+        const refreshed = await silentTokenRefresh();
+        return refreshed;
+      }
     } catch (e) {
+      console.error('Session restore failed:', e);
       localStorage.removeItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
     }
   }
   return false;
+};
+
+// 토큰 조용히 갱신 (사용자 상호작용 없이)
+export const silentTokenRefresh = () => {
+  return new Promise((resolve) => {
+    if (!tokenClient) {
+      resolve(false);
+      return;
+    }
+
+    tokenClient.callback = async (resp) => {
+      if (resp.error !== undefined) {
+        console.error('Silent refresh failed:', resp.error);
+        localStorage.removeItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
+        resolve(false);
+        return;
+      }
+      // 새 토큰 저장 (만료 시간 포함)
+      const token = window.gapi.client.getToken();
+      token.expires_at = Date.now() + (token.expires_in * 1000);
+      localStorage.setItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN, JSON.stringify(token));
+      resolve(true);
+    };
+
+    // prompt: '' 로 조용히 갱신 시도
+    try {
+      tokenClient.requestAccessToken({ prompt: '' });
+    } catch (e) {
+      console.error('Silent refresh request failed:', e);
+      resolve(false);
+    }
+  });
 };
 
 // Google 캘린더에서 이벤트 가져오기

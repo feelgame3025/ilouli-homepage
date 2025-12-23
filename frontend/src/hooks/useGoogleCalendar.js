@@ -4,6 +4,7 @@ import {
   signInToGoogle,
   signOutFromGoogle,
   restoreGoogleSession,
+  silentTokenRefresh,
   fetchGoogleEvents,
   addGoogleEvent,
   deleteGoogleEvent,
@@ -49,7 +50,7 @@ export const useGoogleCalendar = () => {
   }, []);
 
   // 이벤트 새로고침
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (retryCount = 0) => {
     if (!isConnected) return;
 
     setLoading(true);
@@ -59,11 +60,23 @@ export const useGoogleCalendar = () => {
       setEvents(googleEvents);
     } catch (err) {
       console.error('Failed to fetch Google events:', err);
-      setError('Google 캘린더 동기화 실패');
-      // 토큰 만료 시 연결 해제
-      if (err.status === 401) {
-        setIsConnected(false);
-        signOutFromGoogle();
+
+      // 토큰 만료 시 조용히 갱신 시도 (최대 1회)
+      if ((err.status === 401 || err.result?.error?.code === 401) && retryCount === 0) {
+        console.log('Token expired, attempting silent refresh...');
+        const refreshed = await silentTokenRefresh();
+        if (refreshed) {
+          // 갱신 성공 - 다시 시도
+          setLoading(false);
+          return refresh(1);
+        } else {
+          // 갱신 실패 - 연결 해제
+          setIsConnected(false);
+          signOutFromGoogle();
+          setError('Google 연결이 만료되었습니다. 다시 연결해주세요.');
+        }
+      } else {
+        setError('Google 캘린더 동기화 실패');
       }
     } finally {
       setLoading(false);
