@@ -281,12 +281,13 @@ frontend/public/assets/hwatu/1-1.png
 ### YouTube Shorts 자동 생성 (ai.ilouli.com)
 | 기능 | 상태 | 설명 |
 |------|------|------|
-| 콘텐츠 생성 | 대기 | GPT-4o-mini로 영어 학습 스크립트 생성 |
-| 영상 생성 | 대기 | Kling AI로 AI 영상 생성 |
-| 음성 생성 | 대기 | OpenAI TTS로 나레이션 생성 |
-| 영상 편집 | 대기 | FFmpeg로 자막/로고 합성 |
+| 콘텐츠 생성 | MVP 완료 | GPT-4o-mini로 영어 학습 스크립트 생성 |
+| 영상 생성 | MVP 완료 | Kling AI로 AI 영상 생성 |
+| 음성 생성 | MVP 완료 | OpenAI TTS로 나레이션 생성 |
+| 영상 편집 | MVP 완료 | FFmpeg로 자막/로고 합성 |
 | 자동 업로드 | 대기 | YouTube API로 쇼츠 업로드 |
 
+**코드:** `backend/shorts/` (Python CLI 파이프라인)
 **PRD 문서:** `docs/ai/youtube-shorts-prd.md`
 
 ### 기타 AI 기능
