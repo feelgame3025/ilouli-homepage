@@ -1,7 +1,13 @@
 /**
  * Image Upscaler Service
- * Mock implementation for image upscaling functionality
+ * 이미지 업스케일링 API 서비스
  */
+
+// API 설정
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.ilouli.com';
+
+// Mock 모드 설정 (false = 실제 API 사용)
+const MOCK_MODE = false;
 
 /**
  * Simulates image upload and validation
@@ -59,18 +65,114 @@ export const uploadImage = async (file) => {
 };
 
 /**
- * Simulates image upscaling process
+ * 이미지 업스케일링 처리
  * @param {Object} options - Upscaling options
- * @param {string} options.imageId - Image ID
+ * @param {File} options.file - 원본 이미지 파일
+ * @param {string} options.imageId - Image ID (Mock용)
  * @param {number} options.scale - Scale factor (2 or 4)
  * @param {string} options.format - Output format (png, jpg, webp)
  * @param {string} options.quality - Quality mode (fast or high)
  * @param {Function} options.onProgress - Progress callback
  * @returns {Promise<Object>} Upscaled image data
  */
-export const upscaleImage = async ({ imageId, scale, format, quality, onProgress }) => {
+export const upscaleImage = async ({ file, imageId, scale, format, quality, onProgress }) => {
+  if (MOCK_MODE) {
+    return mockUpscaleImage({ imageId, scale, format, quality, onProgress });
+  }
+
+  // 실제 API 호출
+  try {
+    if (onProgress) onProgress({ progress: 10, step: 1, total: 10 });
+
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('scale', scale);
+    formData.append('enhanceDetails', quality === 'high');
+
+    const response = await fetch(`${API_BASE_URL}/api/ai/upscale`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || '업스케일링 요청에 실패했습니다.');
+    }
+
+    const data = await response.json();
+
+    if (onProgress) onProgress({ progress: 30, step: 3, total: 10 });
+
+    // 작업 상태 폴링
+    const result = await pollUpscaleStatus(data.jobId, onProgress);
+    return result;
+
+  } catch (error) {
+    console.error('Upscale error:', error);
+    throw error;
+  }
+};
+
+/**
+ * 업스케일링 작업 상태 폴링
+ */
+const pollUpscaleStatus = async (jobId, onProgress, maxAttempts = 30) => {
+  let attempts = 0;
+
+  while (attempts < maxAttempts) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/ai/job/${jobId}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('작업 상태 조회 실패');
+      }
+
+      const { job } = await response.json();
+
+      if (job.status === 'completed') {
+        if (onProgress) onProgress({ progress: 100, step: 10, total: 10 });
+        return {
+          id: jobId,
+          originalImageId: job.inputFile,
+          scale: job.parameters?.scale,
+          format: 'png',
+          quality: job.parameters?.enhanceDetails ? 'high' : 'fast',
+          processedAt: job.completedAt,
+          downloadUrl: job.outputFile ? `${API_BASE_URL}/api/ai/job/${jobId}/download` : null,
+          dataUrl: null,
+          message: job.outputFile ? '업스케일링이 완료되었습니다.' : 'AI 모델 연동 대기 중입니다.',
+        };
+      }
+
+      if (job.status === 'failed') {
+        throw new Error(job.error || '업스케일링에 실패했습니다.');
+      }
+
+      // 진행 중
+      const progress = Math.min(30 + (attempts * 3), 90);
+      if (onProgress) onProgress({ progress, step: Math.floor(progress / 10), total: 10 });
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      attempts++;
+
+    } catch (error) {
+      console.error('Poll error:', error);
+      attempts++;
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+
+  throw new Error('작업 시간이 초과되었습니다.');
+};
+
+/**
+ * Mock 업스케일링 (개발/테스트용)
+ */
+const mockUpscaleImage = ({ imageId, scale, format, quality, onProgress }) => {
   return new Promise((resolve, reject) => {
-    // Simulate processing time based on scale and quality
     const baseTime = quality === 'high' ? 3000 : 1500;
     const scaleFactor = scale === 4 ? 1.5 : 1;
     const totalTime = baseTime * scaleFactor;
@@ -94,7 +196,6 @@ export const upscaleImage = async ({ imageId, scale, format, quality, onProgress
       if (currentStep >= steps) {
         clearInterval(progressInterval);
 
-        // Simulate successful upscaling
         setTimeout(() => {
           resolve({
             id: `upscaled_${imageId}_${Date.now()}`,
@@ -103,20 +204,12 @@ export const upscaleImage = async ({ imageId, scale, format, quality, onProgress
             format,
             quality,
             processedAt: new Date().toISOString(),
-            // Mock data - in real implementation, this would be the actual upscaled image
-            dataUrl: null, // Will use canvas to simulate upscaling in component
+            dataUrl: null,
             message: 'Mock 모드: 실제 API 연동 시 업스케일된 이미지가 표시됩니다.',
           });
         }, stepTime);
       }
     }, stepTime);
-
-    // Simulate potential errors
-    const errorRate = 0; // 0% error rate for demo
-    if (Math.random() < errorRate) {
-      clearInterval(progressInterval);
-      reject(new Error('업스케일링 처리 중 오류가 발생했습니다.'));
-    }
   });
 };
 

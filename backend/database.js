@@ -68,6 +68,33 @@ db.exec(`
   )
 `);
 
+// AI 작업 테이블
+db.exec(`
+  CREATE TABLE IF NOT EXISTS ai_jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    job_id TEXT UNIQUE NOT NULL,
+    user_id INTEGER NOT NULL,
+    job_type TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    input_file TEXT,
+    output_file TEXT,
+    parameters TEXT,
+    error_message TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    completed_at DATETIME,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )
+`);
+
+// AI 작업 인덱스
+try {
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_ai_jobs_user ON ai_jobs(user_id)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_ai_jobs_status ON ai_jobs(status)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_ai_jobs_type ON ai_jobs(job_type)`);
+} catch (e) {
+  // 이미 존재하면 무시
+}
+
 // 기본 관리자 계정 생성
 const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get('admin@ilouli.com');
 if (!adminExists) {

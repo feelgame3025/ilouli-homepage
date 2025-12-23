@@ -3,8 +3,11 @@
  * 이미지를 영상으로 변환하는 API 서비스
  */
 
-// Mock 모드 설정 (실제 API 연동 전까지 사용)
-const MOCK_MODE = true;
+// API 설정
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.ilouli.com';
+
+// Mock 모드 설정 (false = 실제 API 사용)
+const MOCK_MODE = false;
 const MOCK_PROCESSING_TIME = 3000; // 3초
 
 /**
@@ -80,31 +83,98 @@ export const convertImageToVideo = async (options) => {
     return await mockConvertImageToVideo(options);
   }
 
-  // 실제 API 호출 (향후 구현)
+  // 실제 API 호출
   const formData = new FormData();
   formData.append('image', imageFile);
-  formData.append('motion_style', motionStyle);
+  formData.append('motionStyle', motionStyle);
   formData.append('duration', duration);
   formData.append('resolution', resolution);
 
   try {
-    const response = await fetch('/api/ai/image-to-video', {
+    // 진행 상태 업데이트
+    if (onProgress) onProgress(10, '서버에 업로드 중...');
+
+    const response = await fetch(`${API_BASE_URL}/api/ai/image-to-video`, {
       method: 'POST',
       body: formData,
       credentials: 'include',
     });
 
     if (!response.ok) {
-      throw new Error('영상 변환에 실패했습니다.');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || '영상 변환에 실패했습니다.');
     }
 
     const data = await response.json();
-    return data;
+
+    if (onProgress) onProgress(30, '작업이 시작되었습니다...');
+
+    // 작업 상태 폴링 (완료될 때까지)
+    const result = await pollJobStatus(data.jobId, onProgress);
+    return result;
+
   } catch (error) {
     console.error('Image to video conversion error:', error);
     throw error;
   }
 };
+
+/**
+ * 작업 상태 폴링
+ */
+const pollJobStatus = async (jobId, onProgress, maxAttempts = 60) => {
+  let attempts = 0;
+
+  while (attempts < maxAttempts) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/ai/job/${jobId}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('작업 상태 조회 실패');
+      }
+
+      const { job } = await response.json();
+
+      if (job.status === 'completed') {
+        if (onProgress) onProgress(100, '완료!');
+        return {
+          success: true,
+          videoId: jobId,
+          videoUrl: job.outputFile ? `${API_BASE_URL}/api/ai/job/${jobId}/download` : null,
+          thumbnailUrl: null,
+          metadata: {
+            originalImage: job.inputFile,
+            motionStyle: job.parameters?.motionStyle,
+            duration: `${job.parameters?.duration}초`,
+            resolution: job.parameters?.resolution,
+            createdAt: job.completedAt,
+          },
+        };
+      }
+
+      if (job.status === 'failed') {
+        throw new Error(job.error || '영상 변환에 실패했습니다.');
+      }
+
+      // 진행 중
+      const progress = Math.min(30 + (attempts * 2), 90);
+      if (onProgress) onProgress(progress, '처리 중...');
+
+      // 2초 대기 후 재시도
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      attempts++;
+
+    } catch (error) {
+      console.error('Poll error:', error);
+      attempts++;
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+  }
+
+  throw new Error('작업 시간이 초과되었습니다.');
+}
 
 /**
  * Mock 영상 변환 (개발/테스트용)
