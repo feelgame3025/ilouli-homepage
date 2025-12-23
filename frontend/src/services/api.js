@@ -1,6 +1,9 @@
 // API 서비스
 import { API_BASE_URL } from '../config/api';
 
+// Re-export for convenience (다른 서비스에서 import 편의를 위해)
+export { API_BASE_URL };
+
 const TOKEN_KEY = 'ilouli_token';
 
 // 쿠키 기반 토큰 관리 (모든 서브도메인에서 공유)
@@ -29,27 +32,51 @@ export const removeToken = () => {
   localStorage.removeItem(TOKEN_KEY);
 };
 
-// API 요청 헬퍼
-const apiRequest = async (endpoint, options = {}) => {
-  const token = getToken();
-
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-      ...options.headers
-    },
-    ...options
-  };
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || 'API request failed');
+// ApiError 클래스
+export class ApiError extends Error {
+  constructor(message, status, data = null) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.data = data;
   }
+}
 
+// Auth 헤더 생성
+export const getAuthHeaders = () => {
+  const token = getToken();
+  return {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` })
+  };
+};
+
+// 응답 처리 헬퍼
+const handleResponse = async (response) => {
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new ApiError(
+      data.error || data.message || 'Request failed',
+      response.status,
+      data
+    );
+  }
   return data;
+};
+
+// API 요청 헬퍼 (통합 버전, export)
+export const apiRequest = async (endpoint, options = {}) => {
+  const { headers: customHeaders, ...restOptions } = options;
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    headers: {
+      ...getAuthHeaders(),
+      ...customHeaders
+    },
+    ...restOptions
+  });
+
+  return handleResponse(response);
 };
 
 // Auth API

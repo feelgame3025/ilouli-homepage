@@ -40,13 +40,13 @@ export const NotificationProvider = ({ children }) => {
 
   // 알림 로드
   const loadNotifications = useCallback(async () => {
-    if (!user || !user.token) {
+    if (!user) {
       setNotifications([]);
       return;
     }
 
     try {
-      const data = await notificationAPI.fetchNotifications(user.token);
+      const data = await notificationAPI.fetchNotifications();
       setNotifications(data.notifications || []);
     } catch (error) {
       console.error('Failed to load notifications:', error);
@@ -97,9 +97,9 @@ export const NotificationProvider = ({ children }) => {
   // 알림 추가 (로컬 전용 - 실시간 알림용)
   const addNotification = async (targetUserId, type, title, message, link = null, metadata = {}) => {
     // 서버에 알림 생성 시도 (Admin만 가능)
-    if (user && user.token && user.tier === 'admin') {
+    if (user && user.tier === 'admin') {
       try {
-        const response = await notificationAPI.createNotification(user.token, {
+        const response = await notificationAPI.createNotification({
           userId: targetUserId,
           type,
           title,
@@ -148,10 +148,10 @@ export const NotificationProvider = ({ children }) => {
 
   // 알림 읽음 처리
   const markAsRead = async (notificationId) => {
-    if (!user || !user.token) return;
+    if (!user) return;
 
     try {
-      await notificationAPI.markNotificationAsRead(user.token, notificationId);
+      await notificationAPI.markNotificationAsRead(notificationId);
 
       // 로컬 상태 업데이트
       const updated = notifications.map(n =>
@@ -165,10 +165,10 @@ export const NotificationProvider = ({ children }) => {
 
   // 모든 알림 읽음 처리
   const markAllAsRead = async () => {
-    if (!user || !user.token) return;
+    if (!user) return;
 
     try {
-      await notificationAPI.markAllNotificationsAsRead(user.token);
+      await notificationAPI.markAllNotificationsAsRead();
 
       // 로컬 상태 업데이트
       const updated = notifications.map(n => ({ ...n, read: true }));
@@ -180,10 +180,10 @@ export const NotificationProvider = ({ children }) => {
 
   // 알림 삭제
   const deleteNotification = async (notificationId) => {
-    if (!user || !user.token) return;
+    if (!user) return;
 
     try {
-      await notificationAPI.deleteNotification(user.token, notificationId);
+      await notificationAPI.deleteNotification(notificationId);
 
       // 로컬 상태 업데이트
       const updated = notifications.filter(n => n.id !== notificationId);
@@ -195,10 +195,10 @@ export const NotificationProvider = ({ children }) => {
 
   // 모든 알림 삭제
   const clearAllNotifications = async () => {
-    if (!user || !user.token) return;
+    if (!user) return;
 
     try {
-      await notificationAPI.deleteAllNotifications(user.token);
+      await notificationAPI.deleteAllNotifications();
 
       // 로컬 상태 업데이트
       setNotifications([]);

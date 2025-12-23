@@ -1,13 +1,18 @@
-import { API_BASE_URL as API_URL } from '../config/api';
+import { getToken, API_BASE_URL } from './api';
 
 // 알림 목록 조회
-export async function fetchNotifications(token, unreadOnly = false, limit = 50) {
+export async function fetchNotifications(unreadOnly = false, limit = 50) {
+  const token = getToken();
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
   const params = new URLSearchParams();
   if (unreadOnly) params.append('unreadOnly', 'true');
   if (limit) params.append('limit', limit);
 
   const response = await fetch(
-    `${API_URL}/api/notifications?${params.toString()}`,
+    `${API_BASE_URL}/api/notifications?${params.toString()}`,
     {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -16,16 +21,22 @@ export async function fetchNotifications(token, unreadOnly = false, limit = 50) 
   );
 
   if (!response.ok) {
-    throw new Error('Failed to fetch notifications');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to fetch notifications');
   }
 
   return response.json();
 }
 
 // 알림 읽음 처리
-export async function markNotificationAsRead(token, notificationId) {
+export async function markNotificationAsRead(notificationId) {
+  const token = getToken();
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
   const response = await fetch(
-    `${API_URL}/api/notifications/${notificationId}/read`,
+    `${API_BASE_URL}/api/notifications/${notificationId}/read`,
     {
       method: 'PUT',
       headers: {
@@ -35,16 +46,22 @@ export async function markNotificationAsRead(token, notificationId) {
   );
 
   if (!response.ok) {
-    throw new Error('Failed to mark notification as read');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to mark notification as read');
   }
 
   return response.json();
 }
 
 // 모든 알림 읽음 처리
-export async function markAllNotificationsAsRead(token) {
+export async function markAllNotificationsAsRead() {
+  const token = getToken();
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
   const response = await fetch(
-    `${API_URL}/api/notifications/read-all`,
+    `${API_BASE_URL}/api/notifications/read-all`,
     {
       method: 'PUT',
       headers: {
@@ -54,16 +71,22 @@ export async function markAllNotificationsAsRead(token) {
   );
 
   if (!response.ok) {
-    throw new Error('Failed to mark all notifications as read');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to mark all notifications as read');
   }
 
   return response.json();
 }
 
 // 알림 삭제
-export async function deleteNotification(token, notificationId) {
+export async function deleteNotification(notificationId) {
+  const token = getToken();
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
   const response = await fetch(
-    `${API_URL}/api/notifications/${notificationId}`,
+    `${API_BASE_URL}/api/notifications/${notificationId}`,
     {
       method: 'DELETE',
       headers: {
@@ -73,16 +96,22 @@ export async function deleteNotification(token, notificationId) {
   );
 
   if (!response.ok) {
-    throw new Error('Failed to delete notification');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to delete notification');
   }
 
   return response.json();
 }
 
 // 모든 알림 삭제
-export async function deleteAllNotifications(token) {
+export async function deleteAllNotifications() {
+  const token = getToken();
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
   const response = await fetch(
-    `${API_URL}/api/notifications`,
+    `${API_BASE_URL}/api/notifications`,
     {
       method: 'DELETE',
       headers: {
@@ -92,16 +121,22 @@ export async function deleteAllNotifications(token) {
   );
 
   if (!response.ok) {
-    throw new Error('Failed to delete all notifications');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to delete all notifications');
   }
 
   return response.json();
 }
 
 // 알림 생성 (Admin용)
-export async function createNotification(token, notificationData) {
+export async function createNotification(notificationData) {
+  const token = getToken();
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
   const response = await fetch(
-    `${API_URL}/api/notifications`,
+    `${API_BASE_URL}/api/notifications`,
     {
       method: 'POST',
       headers: {
@@ -113,7 +148,8 @@ export async function createNotification(token, notificationData) {
   );
 
   if (!response.ok) {
-    throw new Error('Failed to create notification');
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to create notification');
   }
 
   return response.json();
