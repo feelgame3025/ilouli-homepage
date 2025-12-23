@@ -1,0 +1,24 @@
+# YouTube Shorts Auto Generation Pipeline
+# Install: pip install -r requirements.txt
+
+# OpenAI API (GPT + TTS)
+openai>=1.0.0
+
+# HTTP Client (async)
+httpx>=0.25.0
+
+# Video Processing
+moviepy>=1.0.3
+
+# YouTube Upload
+google-api-python-client>=2.100.0
+google-auth-oauthlib>=1.1.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# CLI
+click>=8.1.0
+
+# Utilities
+aiofiles>=23.0.0
