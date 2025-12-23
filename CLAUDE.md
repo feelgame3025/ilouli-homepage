@@ -2,6 +2,132 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+---
+
+## 상위 규칙 참조
+
+> **필수**: 이 프로젝트는 `myproject` 워크스페이스의 하위 프로젝트입니다.
+>
+> 작업 전 **상위 규칙을 확인**하고 해당 절차를 따릅니다.
+
+| 참조 문서 | 경로 | 내용 |
+|----------|------|------|
+| 기본 규칙 | `../CLAUDE.md` | 개발 착수 전 계획 수립, 오케스트레이션 |
+| 코딩 컨벤션 | `../docs/CONVENTIONS.md` | 명명 규칙, 코드 스타일 |
+| Claude 기능 | `../docs/CLAUDE_FEATURES.md` | 슬래시 명령어, 스킬 |
+| 레지스트리 | `../.claude/REGISTRY.md` | 전체 명령어/스킬 목록 |
+
+### 핵심 상위 규칙
+
+1. **개발 착수 전 계획 수립** → 분석 → 계획 → 승인 → 개발
+2. **병렬 개발 시 오케스트레이션** → 작업 분해 → 검수 → 연동
+3. **코드 스타일** → `../.editorconfig`, `../shared/configs/` 참조
+
+---
+
+## 병렬 개발 (Frontend + Backend)
+
+> **기본 모드**: 이 프로젝트는 기능 개발 시 **Frontend/Backend 동시 개발**을 기본으로 한다.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  오케스트레이터 (메인 에이전트)                           │
+│  1. API 인터페이스 정의                                  │
+│  2. 병렬 개발 지시                                       │
+│  3. 결과물 검수 및 연동                                  │
+└─────────────────────────────────────────────────────────┘
+              │                    │
+              ▼                    ▼
+      ┌──────────────┐     ┌──────────────┐
+      │   Agent A    │     │   Agent B    │
+      │   Frontend   │     │   Backend    │
+      │  (React 19)  │     │  (Express)   │
+      └──────────────┘     └──────────────┘
+              │                    │
+              └────────┬───────────┘
+                       ▼
+              ┌──────────────┐
+              │   연동 검증   │
+              └──────────────┘
+```
+
+### 개발 흐름
+
+```
+1. 요청 분석
+   ↓
+2. API 인터페이스 먼저 정의
+   - 엔드포인트: POST /api/...
+   - Request: { ... }
+   - Response: { ... }
+   ↓
+3. 병렬 개발 시작
+   → Agent A: Frontend (컴포넌트, 상태관리, API 호출)
+   → Agent B: Backend (라우트, DB, 비즈니스 로직)
+   ↓
+4. 결과물 검수
+   - 코드 리뷰
+   - API 스펙 일치 확인
+   ↓
+5. 연동 테스트
+   - 실제 API 호출 검증
+   - 에러 케이스 확인
+```
+
+### 인터페이스 정의 템플릿
+
+```
+## API 인터페이스
+
+### [기능명]
+- **Endpoint**: POST /api/...
+- **Auth**: Required (JWT)
+
+**Request:**
+```json
+{
+  "field1": "string",
+  "field2": "number"
+}
+```
+
+**Response (성공):**
+```json
+{
+  "success": true,
+  "data": { ... }
+}
+```
+
+**Response (실패):**
+```json
+{
+  "success": false,
+  "error": "에러 메시지"
+}
+```
+```
+
+### 파일 위치 규칙
+
+| 구분 | 위치 |
+|-----|------|
+| Frontend 컴포넌트 | `frontend/src/features/[도메인]/` |
+| Frontend 서비스 | `frontend/src/services/` |
+| Backend 라우트 | `backend/routes/` |
+| Backend 미들웨어 | `backend/middleware/` |
+
+### 체크리스트
+
+- [ ] API 엔드포인트 정의 완료
+- [ ] Frontend 컴포넌트 구현
+- [ ] Backend 라우트 구현
+- [ ] API 스펙 일치 확인
+- [ ] 에러 처리 일관성
+- [ ] 연동 테스트 완료
+
+---
+
 ## 작업 규칙 (Working Rules)
 
 **자율 진행 원칙**: 사용자의 승인을 일일이 구하지 않고, 할 수 있는 작업은 스스로 판단하여 진행한다.

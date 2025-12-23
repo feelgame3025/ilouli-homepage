@@ -1,6 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import './AIVideoCreator.css';
+import videoCreatorService from '../../services/videoCreator';
+import {
+  convertImageToVideo,
+  downloadVideo,
+  validateImageFile,
+  MOTION_STYLES,
+  DURATION_OPTIONS,
+  RESOLUTION_OPTIONS,
+} from '../../services/imageToVideo';
+import ImageUpscaler from './ImageUpscaler';
 
 const AIVideoCreator = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -9,10 +19,25 @@ const AIVideoCreator = () => {
     return ['shortform', 'upscale', 'img2video'].includes(tabParam) ? tabParam : 'shortform';
   });
   const [topic, setTopic] = useState('');
+  const [videoStyle, setVideoStyle] = useState('educational');
+  const [videoDuration, setVideoDuration] = useState(30);
+  const [videoResolution, setVideoResolution] = useState('1080p');
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [history, setHistory] = useState([]);
+
+  // Image to Video 상태
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [motionStyle, setMotionStyle] = useState('zoom_in');
+  const [img2videoDuration, setImg2videoDuration] = useState(5);
+  const [img2videoResolution, setImg2videoResolution] = useState('1080p');
+  const [convertProgress, setConvertProgress] = useState(0);
+  const [convertMessage, setConvertMessage] = useState('');
+  const [videoResult, setVideoResult] = useState(null);
+  const fileInputRef = useRef(null);
 
   // URL 파라미터 변경 시 탭 업데이트
   useEffect(() => {
@@ -21,6 +46,20 @@ const AIVideoCreator = () => {
       setActiveTab(tabParam);
     }
   }, [searchParams]);
+
+  // 히스토리 로드
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const loadHistory = async () => {
+    try {
+      const data = await videoCreatorService.getShortFormHistory(10);
+      setHistory(data);
+    } catch (err) {
+      console.error('히스토리 로드 실패:', err);
+    }
+  };
 
   // 탭 변경 핸들러
   const handleTabChange = (tabId, disabled) => {
@@ -32,8 +71,8 @@ const AIVideoCreator = () => {
   // 탭별 설정
   const tabs = [
     { id: 'shortform', name: '숏폼', icon: '🎬', description: 'AI 숏폼 영상 제작' },
-    { id: 'upscale', name: '이미지 업스케일링', icon: '🔍', description: '저해상도 → 고해상도', disabled: true },
-    { id: 'img2video', name: '이미지 영상', icon: '🎞️', description: '정적 이미지를 영상으로', disabled: true },
+    { id: 'upscale', name: '이미지 업스케일링', icon: '🔍', description: '저해상도 → 고해상도' },
+    { id: 'img2video', name: '이미지 영상', icon: '🎞️', description: '정적 이미지를 영상으로' },
   ];
 
   // 탭별 페이지 정보
@@ -60,9 +99,50 @@ const AIVideoCreator = () => {
   ];
 
   const exampleTopics = [
-    { label: '영어 학습', topics: ['동물원에서', '아침 식사', '비 오는 날'] },
-    { label: '비즈니스', topics: ['회사 소개', '제품 홍보', '서비스 안내'] },
-    { label: '라이프스타일', topics: ['오늘의 요리', '여행 브이로그', '운동 루틴'] },
+    {
+      label: '교육',
+      icon: '📚',
+      topics: ['동물원에서', '아침 식사', '비 오는 날', '숫자 배우기', '색깔 익히기']
+    },
+    {
+      label: '비즈니스',
+      icon: '💼',
+      topics: ['회사 소개', '제품 홍보', '서비스 안내', '팀 문화', '채용 공고']
+    },
+    {
+      label: '라이프스타일',
+      icon: '🎨',
+      topics: ['오늘의 요리', '여행 브이로그', '운동 루틴', '일상 공유', '취미 소개']
+    },
+    {
+      label: '엔터테인먼트',
+      icon: '🎬',
+      topics: ['영화 리뷰', '음악 추천', '게임 플레이', '책 소개', '이벤트 안내']
+    },
+    {
+      label: '뉴스/정보',
+      icon: '📰',
+      topics: ['시사 이슈', '생활 팁', '건강 정보', '재테크', '기술 트렌드']
+    },
+  ];
+
+  const videoStyles = [
+    { value: 'educational', label: '교육용', icon: '📚', description: '학습 중심의 설명형 영상' },
+    { value: 'promotional', label: '홍보용', icon: '📢', description: '제품/서비스 홍보 영상' },
+    { value: 'vlog', label: '브이로그', icon: '🎥', description: '일상/경험 공유 영상' },
+    { value: 'entertainment', label: '엔터테인먼트', icon: '🎪', description: '재미 중심의 콘텐츠' },
+    { value: 'news', label: '뉴스/정보', icon: '📰', description: '정보 전달 중심 영상' },
+  ];
+
+  const durations = [
+    { value: 10, label: '10초', description: '짧고 임팩트있게' },
+    { value: 30, label: '30초', description: '표준 숏폼 길이' },
+    { value: 60, label: '60초', description: '상세한 내용 전달' },
+  ];
+
+  const resolutions = [
+    { value: '720p', label: '720p', description: 'HD 화질 (빠른 생성)' },
+    { value: '1080p', label: '1080p', description: 'Full HD (권장)' },
   ];
 
   const handleGenerate = async () => {
@@ -84,16 +164,32 @@ const AIVideoCreator = () => {
       }
 
       // Mock 결과
-      setResult({
+      const mockResult = {
         title: `${topic} - AI 생성 영상`,
         description: `${topic}에 대한 AI 생성 숏폼 영상입니다.`,
         english: 'I see a big elephant at the zoo!',
         korean: '나는 동물원에서 큰 코끼리를 봐요!',
         videoUrl: null,
-        duration: 10,
-        resolution: '1080x1920',
+        duration: videoDuration,
+        resolution: `${videoResolution === '1080p' ? '1080x1920' : '720x1280'}`,
         format: 'MP4',
-      });
+        style: videoStyles.find(s => s.value === videoStyle)?.label || '교육용',
+        createdAt: new Date().toISOString(),
+      };
+
+      setResult(mockResult);
+
+      // 히스토리에 추가
+      const historyItem = {
+        id: `video_${Date.now()}`,
+        topic,
+        style: videoStyle,
+        duration: videoDuration,
+        resolution: videoResolution,
+        createdAt: new Date().toISOString(),
+      };
+      videoCreatorService.addToHistory(historyItem);
+      loadHistory();
 
     } catch (err) {
       setError('영상 생성 중 오류가 발생했습니다.');
@@ -103,8 +199,122 @@ const AIVideoCreator = () => {
     }
   };
 
+  const handleDownload = async () => {
+    try {
+      await videoCreatorService.downloadShortForm('mock_job_id', `${topic}.mp4`);
+    } catch (err) {
+      alert('다운로드 실패: ' + err.message);
+    }
+  };
+
+  const handleNewVideo = () => {
+    setResult(null);
+    setError(null);
+    setTopic('');
+    setCurrentStep(0);
+  };
+
+  const handleClearHistory = () => {
+    if (window.confirm('모든 히스토리를 삭제하시겠습니까?')) {
+      videoCreatorService.clearHistory();
+      setHistory([]);
+    }
+  };
+
   const handleTopicClick = (selectedTopic) => {
     setTopic(selectedTopic);
+  };
+
+  // Image to Video 핸들러
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validation = validateImageFile(file);
+    if (!validation.isValid) {
+      setError(validation.errors.join('\n'));
+      return;
+    }
+
+    setImageFile(file);
+    setError(null);
+    setVideoResult(null);
+
+    // 이미지 미리보기 생성
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      const fakeEvent = { target: { files: [file] } };
+      handleImageUpload(fakeEvent);
+    }
+  };
+
+  const handleConvertToVideo = async () => {
+    if (!imageFile) {
+      setError('이미지를 업로드해주세요.');
+      return;
+    }
+
+    setIsGenerating(true);
+    setError(null);
+    setConvertProgress(0);
+    setConvertMessage('');
+
+    try {
+      const result = await convertImageToVideo({
+        imageFile,
+        motionStyle,
+        duration: img2videoDuration,
+        resolution: img2videoResolution,
+        onProgress: (progress, message) => {
+          setConvertProgress(progress);
+          setConvertMessage(message);
+        },
+      });
+
+      setVideoResult(result);
+    } catch (err) {
+      setError(err.message || '영상 변환 중 오류가 발생했습니다.');
+    } finally {
+      setIsGenerating(false);
+      setConvertProgress(0);
+      setConvertMessage('');
+    }
+  };
+
+  const handleDownloadVideo = () => {
+    if (videoResult?.videoUrl) {
+      downloadVideo(videoResult.videoUrl, `${imageFile?.name.replace(/\.[^/.]+$/, '')}_video.mp4`);
+    } else {
+      downloadVideo(null);
+    }
+  };
+
+  const handleResetImg2Video = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setVideoResult(null);
+    setError(null);
+    setConvertProgress(0);
+    setConvertMessage('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -162,7 +372,10 @@ const AIVideoCreator = () => {
             <div className="example-topics">
               {exampleTopics.map((category) => (
                 <div key={category.label} className="topic-category">
-                  <span className="category-label">{category.label}</span>
+                  <span className="category-label">
+                    <span className="category-icon">{category.icon}</span>
+                    {category.label}
+                  </span>
                   <div className="topic-chips">
                     {category.topics.map((t) => (
                       <button
@@ -177,6 +390,70 @@ const AIVideoCreator = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </section>
+
+          {/* 영상 옵션 섹션 */}
+          <section className="options-section">
+            <div className="section-header">
+              <h2>영상 옵션</h2>
+              <p>원하는 영상 스타일과 설정을 선택하세요.</p>
+            </div>
+
+            {/* 영상 스타일 */}
+            <div className="option-group">
+              <label className="option-label">영상 스타일</label>
+              <div className="style-cards">
+                {videoStyles.map((style) => (
+                  <button
+                    key={style.value}
+                    className={`style-card ${videoStyle === style.value ? 'active' : ''}`}
+                    onClick={() => setVideoStyle(style.value)}
+                    disabled={isGenerating}
+                  >
+                    <span className="style-icon">{style.icon}</span>
+                    <span className="style-label">{style.label}</span>
+                    <span className="style-desc">{style.description}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 영상 길이 & 해상도 */}
+            <div className="option-row">
+              <div className="option-group">
+                <label className="option-label">영상 길이</label>
+                <div className="duration-buttons">
+                  {durations.map((d) => (
+                    <button
+                      key={d.value}
+                      className={`duration-btn ${videoDuration === d.value ? 'active' : ''}`}
+                      onClick={() => setVideoDuration(d.value)}
+                      disabled={isGenerating}
+                    >
+                      <span className="duration-value">{d.label}</span>
+                      <span className="duration-desc">{d.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="option-group">
+                <label className="option-label">출력 해상도</label>
+                <div className="resolution-buttons">
+                  {resolutions.map((r) => (
+                    <button
+                      key={r.value}
+                      className={`resolution-btn ${videoResolution === r.value ? 'active' : ''}`}
+                      onClick={() => setVideoResolution(r.value)}
+                      disabled={isGenerating}
+                    >
+                      <span className="resolution-value">{r.label}</span>
+                      <span className="resolution-desc">{r.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
 
@@ -263,6 +540,10 @@ const AIVideoCreator = () => {
 
                   <div className="result-meta">
                     <div className="meta-item">
+                      <span className="meta-label">스타일</span>
+                      <span className="meta-value">{result.style}</span>
+                    </div>
+                    <div className="meta-item">
                       <span className="meta-label">길이</span>
                       <span className="meta-value">{result.duration}초</span>
                     </div>
@@ -277,14 +558,54 @@ const AIVideoCreator = () => {
                   </div>
 
                   <div className="result-actions">
-                    <button className="action-btn primary" disabled>
+                    <button
+                      className="action-btn primary"
+                      onClick={handleDownload}
+                    >
                       다운로드
                     </button>
-                    <button className="action-btn youtube" disabled>
-                      YouTube 업로드
+                    <button
+                      className="action-btn secondary"
+                      onClick={handleNewVideo}
+                    >
+                      새로 생성하기
                     </button>
                   </div>
                 </div>
+              </div>
+            </section>
+          )}
+
+          {/* 히스토리 섹션 */}
+          {!isGenerating && history.length > 0 && (
+            <section className="history-section">
+              <div className="history-header">
+                <h2>생성 히스토리</h2>
+                <button className="clear-history-btn" onClick={handleClearHistory}>
+                  전체 삭제
+                </button>
+              </div>
+              <div className="history-list">
+                {history.map((item) => (
+                  <div key={item.id} className="history-item">
+                    <div className="history-info">
+                      <span className="history-topic">{item.topic}</span>
+                      <div className="history-meta">
+                        <span className="history-badge">{videoStyles.find(s => s.value === item.style)?.label || item.style}</span>
+                        <span className="history-detail">{item.duration}초</span>
+                        <span className="history-detail">{item.resolution}</span>
+                      </div>
+                    </div>
+                    <div className="history-date">
+                      {new Date(item.createdAt).toLocaleDateString('ko-KR', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </section>
           )}
@@ -322,40 +643,255 @@ const AIVideoCreator = () => {
       {/* 이미지 업스케일링 탭 */}
       {activeTab === 'upscale' && (
         <div className="tab-content">
-          <section className="coming-soon-section">
-            <div className="coming-soon-icon">🔍</div>
-            <h2>서비스 준비중</h2>
-            <p>이미지 업스케일링 기능을 준비하고 있습니다.</p>
-            <div className="feature-preview">
-              <h3>예정 기능</h3>
-              <ul>
-                <li>저해상도 이미지를 4배까지 확대</li>
-                <li>AI 기반 노이즈 제거</li>
-                <li>선명도 및 디테일 향상</li>
-                <li>다양한 이미지 포맷 지원</li>
-              </ul>
-            </div>
-          </section>
+          <ImageUpscaler />
         </div>
       )}
 
       {/* 이미지 영상 탭 */}
       {activeTab === 'img2video' && (
         <div className="tab-content">
-          <section className="coming-soon-section">
-            <div className="coming-soon-icon">🎞️</div>
-            <h2>서비스 준비중</h2>
-            <p>이미지 영상 변환 기능을 준비하고 있습니다.</p>
-            <div className="feature-preview">
-              <h3>예정 기능</h3>
-              <ul>
-                <li>정적 이미지에 자연스러운 움직임 추가</li>
-                <li>카메라 무빙 효과 적용</li>
-                <li>5~10초 고품질 영상 생성</li>
-                <li>다양한 스타일 선택 가능</li>
-              </ul>
+          {/* 이미지 업로드 섹션 */}
+          {!videoResult && (
+            <section className="input-section">
+              <div className="section-header">
+                <h2>이미지 업로드</h2>
+                <p>정적 이미지를 영상으로 변환합니다. (JPG, PNG, WEBP / 최대 10MB)</p>
+              </div>
+
+              <div
+                className="image-upload-area"
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {imagePreview ? (
+                  <div className="image-preview">
+                    <img src={imagePreview} alt="업로드된 이미지" />
+                    <div className="image-overlay">
+                      <button
+                        className="change-image-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleResetImg2Video();
+                        }}
+                      >
+                        다른 이미지 선택
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="upload-placeholder">
+                    <span className="upload-icon">📷</span>
+                    <p className="upload-text">이미지를 드래그하거나 클릭하여 업로드</p>
+                    <p className="upload-hint">JPG, PNG, WEBP 지원 (최대 10MB)</p>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg,image/webp"
+                  onChange={handleImageUpload}
+                  style={{ display: 'none' }}
+                />
+              </div>
+            </section>
+          )}
+
+          {/* 설정 섹션 */}
+          {imageFile && !videoResult && (
+            <section className="settings-section">
+              {/* 모션 스타일 선택 */}
+              <div className="setting-group">
+                <h3>모션 스타일</h3>
+                <div className="motion-styles-grid">
+                  {Object.values(MOTION_STYLES).map((style) => (
+                    <button
+                      key={style.id}
+                      className={`motion-style-btn ${motionStyle === style.id ? 'active' : ''}`}
+                      onClick={() => setMotionStyle(style.id)}
+                      disabled={isGenerating}
+                    >
+                      <span className="motion-name">{style.name}</span>
+                      <span className="motion-desc">{style.description}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 영상 길이 선택 */}
+              <div className="setting-group">
+                <h3>영상 길이</h3>
+                <div className="duration-options">
+                  {DURATION_OPTIONS.map((duration) => (
+                    <button
+                      key={duration}
+                      className={`duration-btn ${img2videoDuration === duration ? 'active' : ''}`}
+                      onClick={() => setImg2videoDuration(duration)}
+                      disabled={isGenerating}
+                    >
+                      {duration}초
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 해상도 선택 */}
+              <div className="setting-group">
+                <h3>출력 해상도</h3>
+                <div className="resolution-options">
+                  {Object.values(RESOLUTION_OPTIONS).map((res) => (
+                    <button
+                      key={res.id}
+                      className={`resolution-btn ${img2videoResolution === res.id ? 'active' : ''}`}
+                      onClick={() => setImg2videoResolution(res.id)}
+                      disabled={isGenerating}
+                    >
+                      <span className="res-name">{res.name}</span>
+                      <span className="res-size">{res.width} x {res.height}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 변환 버튼 */}
+              <button
+                className="generate-btn convert-btn"
+                onClick={handleConvertToVideo}
+                disabled={isGenerating}
+              >
+                {isGenerating ? '변환 중...' : '영상 변환 시작'}
+              </button>
+            </section>
+          )}
+
+          {/* 변환 진행 상태 */}
+          {isGenerating && activeTab === 'img2video' && (
+            <section className="progress-section convert-progress">
+              <h2>영상 변환 중...</h2>
+              <div className="progress-bar-container">
+                <div className="progress-bar">
+                  <div
+                    className="progress-fill"
+                    style={{ width: `${convertProgress}%` }}
+                  ></div>
+                </div>
+                <div className="progress-info">
+                  <span className="progress-percent">{convertProgress}%</span>
+                  <span className="progress-message">{convertMessage}</span>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* 에러 메시지 */}
+          {error && activeTab === 'img2video' && (
+            <div className="error-message">
+              <span className="error-icon">⚠️</span>
+              {error}
             </div>
-          </section>
+          )}
+
+          {/* 결과 섹션 */}
+          {videoResult && (
+            <section className="result-section">
+              <h2>영상 변환 완료!</h2>
+              <div className="result-card img2video-result">
+                <div className="result-preview">
+                  {videoResult.videoUrl ? (
+                    <video
+                      src={videoResult.videoUrl}
+                      controls
+                      className="result-video"
+                      poster={videoResult.thumbnailUrl}
+                    />
+                  ) : (
+                    <div className="preview-placeholder">
+                      <img
+                        src={videoResult.thumbnailUrl}
+                        alt="영상 썸네일"
+                        className="thumbnail-image"
+                      />
+                      <div className="video-placeholder-overlay">
+                        <span className="placeholder-icon">🎬</span>
+                        <p>미리보기</p>
+                        <p className="placeholder-note">
+                          (API 연동 후 실제 영상이 재생됩니다)
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="result-info">
+                  <div className="result-content">
+                    <h3>변환 완료</h3>
+                    <p className="result-description">
+                      {videoResult.metadata.originalImage}을(를) 영상으로 변환했습니다.
+                    </p>
+                  </div>
+
+                  <div className="result-meta">
+                    <div className="meta-item">
+                      <span className="meta-label">모션</span>
+                      <span className="meta-value">{videoResult.metadata.motionStyle}</span>
+                    </div>
+                    <div className="meta-item">
+                      <span className="meta-label">길이</span>
+                      <span className="meta-value">{videoResult.metadata.duration}</span>
+                    </div>
+                    <div className="meta-item">
+                      <span className="meta-label">해상도</span>
+                      <span className="meta-value">{videoResult.metadata.resolution}</span>
+                    </div>
+                  </div>
+
+                  <div className="result-actions">
+                    <button
+                      className="action-btn primary"
+                      onClick={handleDownloadVideo}
+                    >
+                      다운로드
+                    </button>
+                    <button
+                      className="action-btn secondary"
+                      onClick={handleResetImg2Video}
+                    >
+                      새 영상 만들기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* 기능 안내 */}
+          {!imageFile && !videoResult && (
+            <section className="feature-info">
+              <h3>이미지 영상 변환 과정</h3>
+              <div className="feature-steps">
+                <div className="feature-step">
+                  <span className="step-number">1</span>
+                  <div className="step-content">
+                    <h4>이미지 업로드</h4>
+                    <p>정적인 이미지를 업로드합니다.</p>
+                  </div>
+                </div>
+                <div className="feature-step">
+                  <span className="step-number">2</span>
+                  <div className="step-content">
+                    <h4>모션 설정</h4>
+                    <p>원하는 카메라 움직임과 영상 설정을 선택합니다.</p>
+                  </div>
+                </div>
+                <div className="feature-step">
+                  <span className="step-number">3</span>
+                  <div className="step-content">
+                    <h4>영상 생성</h4>
+                    <p>AI가 자연스러운 움직임의 영상을 생성합니다.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
         </div>
       )}
     </div>
