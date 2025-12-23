@@ -128,24 +128,35 @@ homepage/
 ├── frontend/
 │   ├── src/
 │   │   ├── App.js              # Host-based router selection
-│   │   ├── components/         # Feature components
+│   │   ├── shared/             # 공통 컴포넌트 (NavigationBar, ProtectedRoute)
+│   │   ├── features/           # 기능별 컴포넌트
+│   │   │   ├── auth/           # Login, Signup, Profile
+│   │   │   ├── main/           # LandingPage, About
+│   │   │   ├── admin/          # Admin Dashboard
+│   │   │   ├── community/      # Community
+│   │   │   ├── ai/             # AIStoryboard, AIContentTools
+│   │   │   ├── family/         # FamilySpace, FamilyCalendar
+│   │   │   └── lab/            # TestZone, Games, FileUpload
 │   │   ├── routers/            # Host-specific routers
 │   │   ├── contexts/           # React contexts (Auth, Community, Notification)
 │   │   ├── services/           # API services
-│   │   │   ├── api.js          # Backend API client
-│   │   │   └── socialAuth.js   # Google/Kakao OAuth
 │   │   └── locales/            # i18n translations
 │   └── .env                    # Frontend environment variables
 ├── backend/
 │   ├── server.js               # Express server entry
 │   ├── database.js             # SQLite database setup
-│   ├── routes/
-│   │   ├── auth.js             # Authentication routes
-│   │   └── users.js            # User management routes
-│   ├── middleware/
-│   │   └── auth.js             # JWT middleware
+│   ├── routes/                 # API routes
+│   ├── middleware/             # JWT middleware
 │   ├── ilouli.db               # SQLite database file
 │   └── .env                    # Backend environment variables
+├── docs/                       # 기획 및 개발 문서
+│   └── ai/                     # AI 기능 문서
+│       └── youtube-shorts-prd.md
+├── .claude/                    # Claude Code 설정
+│   ├── settings.json
+│   ├── rules/                  # 프로젝트 규칙
+│   ├── commands/               # 커스텀 명령어
+│   └── agents/                 # 에이전트 설정
 └── CLAUDE.md
 ```
 
@@ -191,6 +202,7 @@ homepage/
 
 - `PRD.md` - Product Requirements Document with detailed feature specifications, user tiers, and business model
 - `GEMINI.md` - Previous AI assistant documentation for this project
+- `docs/ai/youtube-shorts-prd.md` - YouTube Shorts 자동 생성 PRD (AI 영어 학습 쇼츠)
 
 ## Design Guidelines
 
@@ -265,6 +277,17 @@ frontend/public/assets/hwatu/1-1.png
 | AI 생성 (Step 3) | 대기 | 스토리 → 이미지 프롬프트 변환 |
 | 시각화 (Step 4) | 대기 | 이미지 생성 및 표시 |
 | Character Lock | 대기 | 캐릭터 일관성 유지 기능 |
+
+### YouTube Shorts 자동 생성 (ai.ilouli.com)
+| 기능 | 상태 | 설명 |
+|------|------|------|
+| 콘텐츠 생성 | 대기 | GPT-4o-mini로 영어 학습 스크립트 생성 |
+| 영상 생성 | 대기 | Kling AI로 AI 영상 생성 |
+| 음성 생성 | 대기 | OpenAI TTS로 나레이션 생성 |
+| 영상 편집 | 대기 | FFmpeg로 자막/로고 합성 |
+| 자동 업로드 | 대기 | YouTube API로 쇼츠 업로드 |
+
+**PRD 문서:** `docs/ai/youtube-shorts-prd.md`
 
 ### 기타 AI 기능
 | 기능 | 상태 | 목표 위치 |
