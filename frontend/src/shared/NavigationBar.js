@@ -504,11 +504,11 @@ const NavigationBar = () => {
                   <div className="flyout-section">
                     <h3 className="flyout-section-title">AI 콘텐츠 도구</h3>
                     <div className="flyout-links">
-                      <a href={getHostUrl(HOSTS.AI, '/youtube-shorts')} className="flyout-link">
+                      <a href={getHostUrl(HOSTS.AI, '/video-creator')} className="flyout-link">
                         <span className="flyout-link-icon">🎬</span>
                         <div className="flyout-link-text">
-                          <span className="flyout-link-title">YouTube Shorts</span>
-                          <span className="flyout-link-desc">AI 영어 학습 쇼츠 생성</span>
+                          <span className="flyout-link-title">AI 영상 제작</span>
+                          <span className="flyout-link-desc">AI 기반 숏폼 영상 제작</span>
                         </div>
                       </a>
                       <a href={getHostUrl(HOSTS.AI, '/storyboard')} className="flyout-link">
@@ -610,8 +610,8 @@ const NavigationBar = () => {
                     {t('nav.aiContentTools')}
                   </button>
                   <div className="mobile-submenu">
-                    <a href={getHostUrl(HOSTS.AI, '/youtube-shorts')} className="mobile-submenu-link">
-                      YouTube Shorts
+                    <a href={getHostUrl(HOSTS.AI, '/video-creator')} className="mobile-submenu-link">
+                      AI 영상 제작
                     </a>
                     <a href={getHostUrl(HOSTS.AI, '/storyboard')} className="mobile-submenu-link">
                       {t('nav.aiStoryboard')}

@@ -15,15 +15,15 @@ const AIContentTools = () => {
       </header>
 
       <div className="tools-grid">
-        {/* YouTube Shorts - 사용 가능 */}
+        {/* AI 영상 제작 - 사용 가능 */}
         <div
           className="tool-card available"
-          onClick={() => navigate('/youtube-shorts')}
+          onClick={() => navigate('/video-creator')}
           style={{ cursor: 'pointer' }}
         >
           <div className="tool-icon">🎬</div>
-          <h3>YouTube Shorts</h3>
-          <p>AI가 아동용 영어 학습 쇼츠를 자동으로 생성합니다.</p>
+          <h3>AI 영상 제작</h3>
+          <p>AI가 전문적인 숏폼 영상을 자동으로 제작합니다.</p>
           <span className="tool-status available">사용 가능</span>
         </div>
 

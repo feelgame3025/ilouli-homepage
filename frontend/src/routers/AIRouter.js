@@ -3,7 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { USER_TIERS } from '../contexts/AuthContext';
 import AIStoryboard from '../features/ai/AIStoryboard';
 import AIContentTools from '../features/ai/AIContentTools';
-import AIYoutubeShorts from '../features/ai/AIYoutubeShorts';
+import AIVideoCreator from '../features/ai/AIVideoCreator';
 import Profile from '../features/auth/Profile';
 import Login from '../features/auth/Login';
 import ProtectedRoute from '../shared/ProtectedRoute';
@@ -29,10 +29,10 @@ const AIRouter = () => {
         }
       />
       <Route
-        path="/youtube-shorts"
+        path="/video-creator"
         element={
           <ProtectedRoute requiredTiers={[USER_TIERS.SUBSCRIBER, USER_TIERS.FAMILY, USER_TIERS.ADMIN]}>
-            <AIYoutubeShorts />
+            <AIVideoCreator />
           </ProtectedRoute>
         }
       />
