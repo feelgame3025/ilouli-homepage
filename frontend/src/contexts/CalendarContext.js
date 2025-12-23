@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
+import { STORAGE_KEYS } from '../constants/storageKeys';
 import {
   loadGoogleScripts,
   signInToGoogle,
@@ -10,8 +11,6 @@ import {
   deleteGoogleEvent,
   updateGoogleEvent
 } from '../services/googleCalendar';
-
-const CALENDAR_STORAGE_KEY = 'ilouli_family_calendar';
 
 export const EVENT_COLORS = {
   DEFAULT: '#0071e3',
@@ -55,7 +54,7 @@ export const CalendarProvider = ({ children }) => {
 
   // 로컬 스토리지에서 이벤트 로드
   useEffect(() => {
-    const stored = localStorage.getItem(CALENDAR_STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEYS.CALENDAR);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -139,7 +138,7 @@ export const CalendarProvider = ({ children }) => {
   const saveEvents = (newEvents) => {
     const localEvents = newEvents.filter(e => !e.isGoogleEvent);
     setEvents(localEvents);
-    localStorage.setItem(CALENDAR_STORAGE_KEY, JSON.stringify(localEvents));
+    localStorage.setItem(STORAGE_KEYS.CALENDAR, JSON.stringify(localEvents));
   };
 
   // 모든 이벤트 (로컬 + Google)

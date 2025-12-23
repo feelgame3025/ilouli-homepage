@@ -3,11 +3,8 @@
  * 이미지 업스케일링 API 서비스
  */
 
-// API 설정
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.ilouli.com';
-
-// Mock 모드 설정 (false = 실제 API 사용)
-const MOCK_MODE = false;
+import { API_BASE_URL, USE_MOCK_MODE as MOCK_MODE } from '../config/api';
+import { formatFileSize, validateImageFile, estimateUpscaledSize, downloadFile } from '../utils/file';
 
 /**
  * Simulates image upload and validation
@@ -16,17 +13,10 @@ const MOCK_MODE = false;
  */
 export const uploadImage = async (file) => {
   return new Promise((resolve, reject) => {
-    // Validate file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-      reject(new Error('지원하지 않는 파일 형식입니다. JPG, PNG, WebP 파일만 가능합니다.'));
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      reject(new Error('파일 크기는 10MB 이하여야 합니다.'));
+    // Validate file using utility
+    const validation = validateImageFile(file);
+    if (!validation.isValid) {
+      reject(new Error(validation.errors.join('\n')));
       return;
     }
 
@@ -219,12 +209,7 @@ const mockUpscaleImage = ({ imageId, scale, format, quality, onProgress }) => {
  * @param {string} filename - Download filename
  */
 export const downloadImage = (dataUrl, filename) => {
-  const link = document.createElement('a');
-  link.href = dataUrl;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  downloadFile(dataUrl, filename);
 };
 
 /**
@@ -269,28 +254,6 @@ export const createMockUpscaledImage = (originalDataUrl, scale, format) => {
   });
 };
 
-/**
- * Formats file size to human-readable string
- * @param {number} bytes - File size in bytes
- * @returns {string} Formatted size string
- */
-export const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
-
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-};
-
-/**
- * Calculates estimated upscaled file size
- * @param {number} originalSize - Original file size in bytes
- * @param {number} scale - Scale factor
- * @returns {number} Estimated new size in bytes
- */
-export const estimateUpscaledSize = (originalSize, scale) => {
-  // Rough estimation: size increases proportionally to pixel count
-  return originalSize * (scale * scale);
-};
+// formatFileSize and estimateUpscaledSize are now imported from utils/file.js
+// Re-export for backward compatibility
+export { formatFileSize, estimateUpscaledSize };

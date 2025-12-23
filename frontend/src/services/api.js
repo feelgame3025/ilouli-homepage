@@ -1,5 +1,5 @@
 // API 서비스
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.ilouli.com';
+import { API_BASE_URL } from '../config/api';
 
 const TOKEN_KEY = 'ilouli_token';
 

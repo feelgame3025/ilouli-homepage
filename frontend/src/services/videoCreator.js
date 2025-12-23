@@ -1,10 +1,8 @@
 // Video Creator API Service
 import api from './api';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.ilouli.com';
-
-// Mock 모드 설정 (실제 API 준비 전까지 true)
-const USE_MOCK_MODE = true;
+import { API_BASE_URL, USE_MOCK_MODE } from '../config/api';
+import { downloadFile } from '../utils/file';
+import { STORAGE_KEYS } from '../constants/storageKeys';
 
 // 숏폼 생성 요청
 export const createShortForm = async (params) => {
@@ -113,7 +111,7 @@ export const downloadShortForm = async (jobId, filename = 'shortform.mp4') => {
   }
 
   try {
-    const token = localStorage.getItem('ilouli_token');
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
     const response = await fetch(`${API_BASE_URL}/api/ai/shortform/download/${jobId}`, {
       method: 'GET',
       headers: {
@@ -127,13 +125,8 @@ export const downloadShortForm = async (jobId, filename = 'shortform.mp4') => {
 
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
+    downloadFile(url, filename);
     window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
   } catch (error) {
     throw new Error(error.message || '다운로드에 실패했습니다.');
   }
@@ -143,7 +136,7 @@ export const downloadShortForm = async (jobId, filename = 'shortform.mp4') => {
 export const getShortFormHistory = async (limit = 10) => {
   if (USE_MOCK_MODE) {
     // 로컬 스토리지에서 히스토리 조회
-    const history = JSON.parse(localStorage.getItem('shortform_history') || '[]');
+    const history = JSON.parse(localStorage.getItem(STORAGE_KEYS.VIDEO_HISTORY) || '[]');
     return history.slice(0, limit);
   }
 
@@ -157,14 +150,14 @@ export const getShortFormHistory = async (limit = 10) => {
 
 // 히스토리에 항목 추가 (로컬)
 export const addToHistory = (item) => {
-  const history = JSON.parse(localStorage.getItem('shortform_history') || '[]');
+  const history = JSON.parse(localStorage.getItem(STORAGE_KEYS.VIDEO_HISTORY) || '[]');
   const newHistory = [item, ...history].slice(0, 20); // 최대 20개 유지
-  localStorage.setItem('shortform_history', JSON.stringify(newHistory));
+  localStorage.setItem(STORAGE_KEYS.VIDEO_HISTORY, JSON.stringify(newHistory));
 };
 
 // 히스토리 초기화
 export const clearHistory = () => {
-  localStorage.removeItem('shortform_history');
+  localStorage.removeItem(STORAGE_KEYS.VIDEO_HISTORY);
 };
 
 export default {

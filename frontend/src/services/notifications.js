@@ -1,4 +1,4 @@
-const API_URL = process.env.REACT_APP_API_URL || 'https://api.ilouli.com';
+import { API_BASE_URL as API_URL } from '../config/api';
 
 // 알림 목록 조회
 export async function fetchNotifications(token, unreadOnly = false, limit = 50) {

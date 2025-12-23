@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-const ASSETS_STORAGE_KEY = 'ilouli_assets';
+import { STORAGE_KEYS } from '../constants/storageKeys';
 
 const AssetContext = createContext(null);
 
@@ -18,7 +17,7 @@ export const AssetProvider = ({ children }) => {
 
   useEffect(() => {
     try {
-      const storedAssets = localStorage.getItem(ASSETS_STORAGE_KEY);
+      const storedAssets = localStorage.getItem(STORAGE_KEYS.ASSETS);
       if (storedAssets) {
         setAssets(JSON.parse(storedAssets));
       }
@@ -32,7 +31,7 @@ export const AssetProvider = ({ children }) => {
   const saveAssets = (newAssets) => {
     try {
       const assetsJson = JSON.stringify(newAssets);
-      localStorage.setItem(ASSETS_STORAGE_KEY, assetsJson);
+      localStorage.setItem(STORAGE_KEYS.ASSETS, assetsJson);
       setAssets(newAssets);
     } catch (error) {
       console.error("Failed to save assets to localStorage", error);

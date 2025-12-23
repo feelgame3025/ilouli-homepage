@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import * as notificationAPI from '../services/notifications';
+import { STORAGE_KEYS } from '../constants/storageKeys';
 
 export const NOTIFICATION_TYPES = {
   COMMENT: 'comment',           // 내 글에 댓글
@@ -10,9 +11,6 @@ export const NOTIFICATION_TYPES = {
   MENTION: 'mention',           // 멘션
   SYSTEM: 'system'              // 시스템 공지
 };
-
-const NOTIFICATIONS_STORAGE_KEY = 'ilouli_notifications';
-const NOTIFICATION_SETTINGS_KEY = 'ilouli_notification_settings';
 
 const NotificationContext = createContext(null);
 
@@ -53,7 +51,7 @@ export const NotificationProvider = ({ children }) => {
     } catch (error) {
       console.error('Failed to load notifications:', error);
       // Fallback to localStorage on error
-      const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+      const stored = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
       if (stored) {
         const allNotifications = JSON.parse(stored);
         const userNotifications = allNotifications.filter(n => n.userId === user.id);
@@ -65,7 +63,7 @@ export const NotificationProvider = ({ children }) => {
   // 설정 로드
   const loadSettings = useCallback(() => {
     if (!user) return;
-    const stored = localStorage.getItem(`${NOTIFICATION_SETTINGS_KEY}_${user.id}`);
+    const stored = localStorage.getItem(`${STORAGE_KEYS.NOTIFICATION_SETTINGS}_${user.id}`);
     if (stored) {
       setSettings(JSON.parse(stored));
     }
@@ -78,21 +76,21 @@ export const NotificationProvider = ({ children }) => {
 
   // 모든 알림 저장
   const saveNotifications = (userNotifications) => {
-    const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
     const allNotifications = stored ? JSON.parse(stored) : [];
 
     // 다른 사용자의 알림 유지
     const otherNotifications = allNotifications.filter(n => n.userId !== user?.id);
     const combined = [...otherNotifications, ...userNotifications];
 
-    localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(combined));
+    localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(combined));
     setNotifications(userNotifications);
   };
 
   // 설정 저장
   const saveSettings = (newSettings) => {
     if (!user) return;
-    localStorage.setItem(`${NOTIFICATION_SETTINGS_KEY}_${user.id}`, JSON.stringify(newSettings));
+    localStorage.setItem(`${STORAGE_KEYS.NOTIFICATION_SETTINGS}_${user.id}`, JSON.stringify(newSettings));
     setSettings(newSettings);
   };
 
@@ -122,7 +120,7 @@ export const NotificationProvider = ({ children }) => {
     }
 
     // Fallback: localStorage에 저장 (서버 실패 시 또는 non-admin)
-    const stored = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
     const allNotifications = stored ? JSON.parse(stored) : [];
 
     const newNotification = {
@@ -138,7 +136,7 @@ export const NotificationProvider = ({ children }) => {
     };
 
     const updated = [newNotification, ...allNotifications];
-    localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(updated));
 
     // 현재 로그인한 사용자에게 온 알림이면 상태 업데이트
     if (user && targetUserId === user.id) {

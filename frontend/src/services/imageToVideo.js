@@ -3,11 +3,8 @@
  * 이미지를 영상으로 변환하는 API 서비스
  */
 
-// API 설정
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.ilouli.com';
-
-// Mock 모드 설정 (false = 실제 API 사용)
-const MOCK_MODE = false;
+import { API_BASE_URL, USE_MOCK_MODE as MOCK_MODE } from '../config/api';
+import { readFileAsDataURL } from '../utils/file';
 const MOCK_PROCESSING_TIME = 3000; // 3초
 
 /**
@@ -219,17 +216,7 @@ const mockConvertImageToVideo = async (options) => {
   };
 };
 
-/**
- * 파일을 Data URL로 읽기
- */
-const readFileAsDataURL = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => resolve(e.target.result);
-    reader.onerror = (e) => reject(e);
-    reader.readAsDataURL(file);
-  });
-};
+// readFileAsDataURL is now imported from utils/file.js
 
 /**
  * 영상 다운로드

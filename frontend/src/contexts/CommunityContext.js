@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { STORAGE_KEYS } from '../constants/storageKeys';
 
 export const POST_TYPES = {
   ANNOUNCEMENT: 'announcement',
@@ -19,9 +20,6 @@ export const REPORT_STATUS = {
   DISMISSED: 'dismissed',
   ACTIONED: 'actioned'
 };
-
-const POSTS_STORAGE_KEY = 'ilouli_posts';
-const REPORTS_STORAGE_KEY = 'ilouli_reports';
 
 const CommunityContext = createContext(null);
 
@@ -56,15 +54,15 @@ export const CommunityProvider = ({ children }) => {
   const [reports, setReports] = useState([]);
 
   useEffect(() => {
-    const storedPosts = localStorage.getItem(POSTS_STORAGE_KEY);
+    const storedPosts = localStorage.getItem(STORAGE_KEYS.POSTS);
     if (storedPosts) {
       setPosts(JSON.parse(storedPosts));
     } else {
       setPosts(DEFAULT_POSTS);
-      localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(DEFAULT_POSTS));
+      localStorage.setItem(STORAGE_KEYS.POSTS, JSON.stringify(DEFAULT_POSTS));
     }
 
-    const storedReports = localStorage.getItem(REPORTS_STORAGE_KEY);
+    const storedReports = localStorage.getItem(STORAGE_KEYS.REPORTS);
     if (storedReports) {
       setReports(JSON.parse(storedReports));
     }
@@ -72,12 +70,12 @@ export const CommunityProvider = ({ children }) => {
 
   const savePosts = (newPosts) => {
     setPosts(newPosts);
-    localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(newPosts));
+    localStorage.setItem(STORAGE_KEYS.POSTS, JSON.stringify(newPosts));
   };
 
   const saveReports = (newReports) => {
     setReports(newReports);
-    localStorage.setItem(REPORTS_STORAGE_KEY, JSON.stringify(newReports));
+    localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(newReports));
   };
 
   // 공지사항 목록 조회

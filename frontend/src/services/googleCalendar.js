@@ -1,5 +1,7 @@
 // Google Calendar API 서비스
 // 환경변수에서 클라이언트 ID를 가져옵니다
+import { STORAGE_KEYS } from '../constants/storageKeys';
+
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 const API_KEY = process.env.REACT_APP_GOOGLE_API_KEY;
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
@@ -72,12 +74,12 @@ export const signInToGoogle = () => {
       }
       // 토큰 저장
       const token = window.gapi.client.getToken();
-      localStorage.setItem('google_calendar_token', JSON.stringify(token));
+      localStorage.setItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN, JSON.stringify(token));
       resolve(token);
     };
 
     // 기존 토큰 확인
-    const savedToken = localStorage.getItem('google_calendar_token');
+    const savedToken = localStorage.getItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
     if (savedToken) {
       try {
         const token = JSON.parse(savedToken);
@@ -85,7 +87,7 @@ export const signInToGoogle = () => {
         resolve(token);
         return;
       } catch (e) {
-        localStorage.removeItem('google_calendar_token');
+        localStorage.removeItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
       }
     }
 
@@ -104,26 +106,26 @@ export const signOutFromGoogle = () => {
   if (token !== null) {
     window.google.accounts.oauth2.revoke(token.access_token);
     window.gapi.client.setToken('');
-    localStorage.removeItem('google_calendar_token');
+    localStorage.removeItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
   }
 };
 
 // Google 연결 상태 확인
 export const isGoogleConnected = () => {
-  const savedToken = localStorage.getItem('google_calendar_token');
+  const savedToken = localStorage.getItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
   return !!savedToken;
 };
 
 // 저장된 토큰으로 복원
 export const restoreGoogleSession = async () => {
-  const savedToken = localStorage.getItem('google_calendar_token');
+  const savedToken = localStorage.getItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
   if (savedToken && window.gapi?.client) {
     try {
       const token = JSON.parse(savedToken);
       window.gapi.client.setToken(token);
       return true;
     } catch (e) {
-      localStorage.removeItem('google_calendar_token');
+      localStorage.removeItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
     }
   }
   return false;
