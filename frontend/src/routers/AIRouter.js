@@ -10,7 +10,7 @@ import ProtectedRoute from '../shared/ProtectedRoute';
 const AIRouter = () => {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/storyboard" replace />} />
+      <Route path="/" element={<Navigate to="/content-tools" replace />} />
       <Route
         path="/storyboard"
         element={
