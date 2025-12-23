@@ -20,6 +20,52 @@ const Admin = () => {
   const [hiddenPosts, setHiddenPosts] = useState([]);
   const [message, setMessage] = useState('');
   const [providerFilter, setProviderFilter] = useState('all'); // all, google, kakao, email
+  const [apiFilter, setApiFilter] = useState('all'); // all, completed, pending, in-progress
+
+  // API 목록 정의
+  const apiList = [
+    // 인증 API (완료)
+    { id: 1, category: '인증', method: 'POST', endpoint: '/api/auth/login', description: '로그인', status: 'completed', priority: 'high' },
+    { id: 2, category: '인증', method: 'POST', endpoint: '/api/auth/signup', description: '회원가입', status: 'completed', priority: 'high' },
+    { id: 3, category: '인증', method: 'POST', endpoint: '/api/auth/social-login', description: '소셜 로그인 (Google/Kakao)', status: 'completed', priority: 'high' },
+    { id: 4, category: '인증', method: 'GET', endpoint: '/api/auth/me', description: '현재 사용자 정보 조회', status: 'completed', priority: 'high' },
+
+    // 사용자 관리 API (완료)
+    { id: 5, category: '사용자', method: 'GET', endpoint: '/api/users', description: '전체 회원 목록 (Admin)', status: 'completed', priority: 'high' },
+    { id: 6, category: '사용자', method: 'GET', endpoint: '/api/users/pending', description: '승인 대기 회원 목록', status: 'completed', priority: 'high' },
+    { id: 7, category: '사용자', method: 'POST', endpoint: '/api/users/:id/approve', description: '회원 승인', status: 'completed', priority: 'high' },
+    { id: 8, category: '사용자', method: 'POST', endpoint: '/api/users/:id/reject', description: '회원 거절', status: 'completed', priority: 'high' },
+    { id: 9, category: '사용자', method: 'PUT', endpoint: '/api/users/:id/tier', description: '회원 등급 변경', status: 'completed', priority: 'high' },
+    { id: 10, category: '사용자', method: 'DELETE', endpoint: '/api/users/:id', description: '회원 삭제', status: 'completed', priority: 'high' },
+
+    // AI 기능 API (대기)
+    { id: 11, category: 'AI', method: 'POST', endpoint: '/api/ai/image-to-video', description: '이미지→영상 변환', status: 'pending', priority: 'high', note: 'Frontend Mock 완료, Backend 구현 필요' },
+    { id: 12, category: 'AI', method: 'POST', endpoint: '/api/ai/upscale', description: '이미지 업스케일링 (2x/4x)', status: 'pending', priority: 'high', note: 'Frontend Mock 완료, Backend 구현 필요' },
+    { id: 13, category: 'AI', method: 'POST', endpoint: '/api/ai/shortform/generate', description: '숏폼 영상 생성 요청', status: 'pending', priority: 'high', note: 'CLI 파이프라인 완료, API 래핑 필요' },
+    { id: 14, category: 'AI', method: 'GET', endpoint: '/api/ai/shortform/status/:jobId', description: '숏폼 생성 진행 상태 조회', status: 'pending', priority: 'medium' },
+    { id: 15, category: 'AI', method: 'GET', endpoint: '/api/ai/shortform/download/:jobId', description: '숏폼 영상 다운로드', status: 'pending', priority: 'medium' },
+    { id: 16, category: 'AI', method: 'GET', endpoint: '/api/ai/usage', description: 'AI 사용량 통계', status: 'pending', priority: 'low' },
+
+    // 커뮤니티 API (대기)
+    { id: 17, category: '커뮤니티', method: 'GET', endpoint: '/api/community/posts', description: '게시글 목록 조회', status: 'pending', priority: 'medium', note: '현재 localStorage 사용' },
+    { id: 18, category: '커뮤니티', method: 'POST', endpoint: '/api/community/posts', description: '게시글 작성', status: 'pending', priority: 'medium' },
+    { id: 19, category: '커뮤니티', method: 'GET', endpoint: '/api/community/posts/:id', description: '게시글 상세 조회', status: 'pending', priority: 'medium' },
+    { id: 20, category: '커뮤니티', method: 'PUT', endpoint: '/api/community/posts/:id', description: '게시글 수정', status: 'pending', priority: 'medium' },
+    { id: 21, category: '커뮤니티', method: 'DELETE', endpoint: '/api/community/posts/:id', description: '게시글 삭제', status: 'pending', priority: 'medium' },
+    { id: 22, category: '커뮤니티', method: 'POST', endpoint: '/api/community/posts/:id/comments', description: '댓글 작성', status: 'pending', priority: 'medium' },
+    { id: 23, category: '커뮤니티', method: 'POST', endpoint: '/api/community/posts/:id/report', description: '게시글/댓글 신고', status: 'pending', priority: 'low' },
+
+    // 파일 관리 API (부분 완료)
+    { id: 24, category: '파일', method: 'POST', endpoint: '/api/files/upload', description: '파일 업로드', status: 'completed', priority: 'high' },
+    { id: 25, category: '파일', method: 'GET', endpoint: '/api/files/view/:filename', description: '파일 조회/다운로드', status: 'completed', priority: 'high' },
+    { id: 26, category: '파일', method: 'DELETE', endpoint: '/api/files/:filename', description: '파일 삭제', status: 'pending', priority: 'low' },
+    { id: 27, category: '파일', method: 'GET', endpoint: '/api/files/list', description: '업로드 파일 목록', status: 'pending', priority: 'low' },
+
+    // 알림 API (대기)
+    { id: 28, category: '알림', method: 'GET', endpoint: '/api/notifications', description: '알림 목록 조회', status: 'pending', priority: 'medium', note: '현재 localStorage 사용' },
+    { id: 29, category: '알림', method: 'PUT', endpoint: '/api/notifications/:id/read', description: '알림 읽음 처리', status: 'pending', priority: 'medium' },
+    { id: 30, category: '알림', method: 'DELETE', endpoint: '/api/notifications/:id', description: '알림 삭제', status: 'pending', priority: 'low' },
+  ];
 
   const loadUsers = async () => {
     try {
@@ -255,6 +301,13 @@ const Admin = () => {
         >
           {t('admin.tabs.moderation')}
           {pendingReports.length > 0 && <span className="tab-badge">{pendingReports.length}</span>}
+        </button>
+        <button
+          className={`admin-tab ${activeTab === 'api' ? 'active' : ''}`}
+          onClick={() => setActiveTab('api')}
+        >
+          API 관리
+          <span className="tab-badge api-badge">{apiList.filter(a => a.status === 'pending').length}</span>
         </button>
       </div>
 
@@ -502,6 +555,149 @@ const Admin = () => {
               </div>
             </div>
           )}
+        </>
+      )}
+
+      {/* API 관리 탭 */}
+      {activeTab === 'api' && (
+        <>
+          <div className="admin-stats">
+            <div className="stat-card">
+              <span className="stat-number">{apiList.length}</span>
+              <span className="stat-label">전체 API</span>
+            </div>
+            <div className="stat-card stat-completed">
+              <span className="stat-number">{apiList.filter(a => a.status === 'completed').length}</span>
+              <span className="stat-label">완료</span>
+            </div>
+            <div className="stat-card stat-pending">
+              <span className="stat-number">{apiList.filter(a => a.status === 'pending').length}</span>
+              <span className="stat-label">대기</span>
+            </div>
+            <div className="stat-card stat-high">
+              <span className="stat-number">{apiList.filter(a => a.status === 'pending' && a.priority === 'high').length}</span>
+              <span className="stat-label">우선 구현</span>
+            </div>
+          </div>
+
+          <div className="api-section">
+            <div className="api-header">
+              <h2>API 엔드포인트 목록</h2>
+              <div className="api-filter">
+                <button
+                  className={`filter-btn ${apiFilter === 'all' ? 'active' : ''}`}
+                  onClick={() => setApiFilter('all')}
+                >
+                  전체 ({apiList.length})
+                </button>
+                <button
+                  className={`filter-btn ${apiFilter === 'completed' ? 'active' : ''}`}
+                  onClick={() => setApiFilter('completed')}
+                >
+                  ✅ 완료 ({apiList.filter(a => a.status === 'completed').length})
+                </button>
+                <button
+                  className={`filter-btn ${apiFilter === 'pending' ? 'active' : ''}`}
+                  onClick={() => setApiFilter('pending')}
+                >
+                  ⏳ 대기 ({apiList.filter(a => a.status === 'pending').length})
+                </button>
+                <button
+                  className={`filter-btn ${apiFilter === 'high' ? 'active' : ''}`}
+                  onClick={() => setApiFilter('high')}
+                >
+                  🔥 우선순위 높음
+                </button>
+              </div>
+            </div>
+
+            <div className="api-table-container">
+              <table className="api-table">
+                <thead>
+                  <tr>
+                    <th>카테고리</th>
+                    <th>메소드</th>
+                    <th>엔드포인트</th>
+                    <th>설명</th>
+                    <th>상태</th>
+                    <th>우선순위</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {apiList
+                    .filter(api => {
+                      if (apiFilter === 'all') return true;
+                      if (apiFilter === 'completed') return api.status === 'completed';
+                      if (apiFilter === 'pending') return api.status === 'pending';
+                      if (apiFilter === 'high') return api.priority === 'high';
+                      return true;
+                    })
+                    .map((api) => (
+                      <tr key={api.id} className={`api-row ${api.status}`}>
+                        <td>
+                          <span className={`category-badge category-${api.category}`}>
+                            {api.category}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`method-badge method-${api.method.toLowerCase()}`}>
+                            {api.method}
+                          </span>
+                        </td>
+                        <td className="endpoint-cell">
+                          <code>{api.endpoint}</code>
+                        </td>
+                        <td>
+                          <div className="api-description">
+                            {api.description}
+                            {api.note && <span className="api-note">{api.note}</span>}
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`status-badge api-status-${api.status}`}>
+                            {api.status === 'completed' ? '✅ 완료' : api.status === 'pending' ? '⏳ 대기' : '🔧 진행중'}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`priority-badge priority-${api.priority}`}>
+                            {api.priority === 'high' ? '🔥 높음' : api.priority === 'medium' ? '➖ 중간' : '⬇️ 낮음'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 카테고리별 요약 */}
+            <div className="api-summary">
+              <h3>카테고리별 현황</h3>
+              <div className="summary-cards">
+                {['인증', '사용자', 'AI', '커뮤니티', '파일', '알림'].map(category => {
+                  const categoryApis = apiList.filter(a => a.category === category);
+                  const completed = categoryApis.filter(a => a.status === 'completed').length;
+                  const total = categoryApis.length;
+                  const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+                  return (
+                    <div key={category} className="summary-card">
+                      <div className="summary-header">
+                        <span className="summary-category">{category}</span>
+                        <span className="summary-count">{completed}/{total}</span>
+                      </div>
+                      <div className="progress-bar-mini">
+                        <div
+                          className="progress-fill-mini"
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                      <span className="summary-percentage">{percentage}%</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </>
       )}
     </div>

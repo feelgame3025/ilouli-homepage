@@ -583,6 +583,291 @@
   background-color: #bfdbfe;
 }
 
+/* API Management Section */
+.api-section {
+  margin-top: 2rem;
+}
+
+.api-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.api-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: #1d1d1f;
+}
+
+.api-filter {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tab-badge.api-badge {
+  background-color: #f59e0b;
+}
+
+.stat-card.stat-completed {
+  border-left: 4px solid #10b981;
+}
+
+.stat-card.stat-pending {
+  border-left: 4px solid #f59e0b;
+}
+
+.stat-card.stat-high {
+  border-left: 4px solid #ef4444;
+}
+
+.api-table-container {
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow-x: auto;
+}
+
+.api-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.api-table th,
+.api-table td {
+  padding: 0.875rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.api-table th {
+  background-color: #f9f9f9;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.api-table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.api-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.api-row.completed {
+  background-color: #f0fdf4;
+}
+
+.api-row.pending {
+  background-color: #fffbeb;
+}
+
+.category-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.category-badge.category-인증 {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.category-badge.category-사용자 {
+  background-color: #ede9fe;
+  color: #7c3aed;
+}
+
+.category-badge.category-AI {
+  background-color: #fce7f3;
+  color: #db2777;
+}
+
+.category-badge.category-커뮤니티 {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.category-badge.category-파일 {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.category-badge.category-알림 {
+  background-color: #e0e7ff;
+  color: #4f46e5;
+}
+
+.method-badge {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.method-badge.method-get {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.method-badge.method-post {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.method-badge.method-put {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.method-badge.method-delete {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.endpoint-cell code {
+  background-color: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: 'SF Mono', Monaco, monospace;
+  color: #1d1d1f;
+}
+
+.api-description {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.api-note {
+  font-size: 0.75rem;
+  color: #999;
+  font-style: italic;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.api-status-completed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.api-status-pending {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.api-status-in-progress {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.priority-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.priority-high {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.priority-medium {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.priority-low {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+/* API Summary */
+.api-summary {
+  margin-top: 2rem;
+}
+
+.api-summary h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1d1d1f;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.summary-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.summary-category {
+  font-weight: 600;
+  color: #1d1d1f;
+}
+
+.summary-count {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.progress-bar-mini {
+  height: 6px;
+  background-color: #e5e5e5;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill-mini {
+  height: 100%;
+  background-color: #10b981;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.summary-percentage {
+  font-size: 0.8rem;
+  color: #666;
+}
+
 @media (max-width: 768px) {
   .users-table-container {
     overflow-x: auto;
@@ -609,5 +894,13 @@
     flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
+  }
+
+  .api-table {
+    min-width: 800px;
+  }
+
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
