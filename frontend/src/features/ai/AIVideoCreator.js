@@ -21,6 +21,9 @@ const AIVideoCreator = () => {
   });
   const [promptText, setPromptText] = useState(DEFAULT_PROMPT);
   const [showGuide, setShowGuide] = useState(false);
+  const [referenceImage, setReferenceImage] = useState(null);
+  const [referencePreview, setReferencePreview] = useState(null);
+  const referenceInputRef = useRef(null);
   const [videoStyle, setVideoStyle] = useState('educational');
   const [videoDuration, setVideoDuration] = useState(30);
   const [videoResolution, setVideoResolution] = useState('1080p');
@@ -203,6 +206,41 @@ const AIVideoCreator = () => {
     setPromptText(example.prompt);
   };
 
+  // 레퍼런스 이미지 핸들러
+  const handleReferenceUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 이미지 파일 검증
+    if (!file.type.startsWith('image/')) {
+      setError('이미지 파일만 업로드할 수 있습니다.');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) { // 10MB 제한
+      setError('이미지 크기는 10MB 이하여야 합니다.');
+      return;
+    }
+
+    setReferenceImage(file);
+    setError(null);
+
+    // 미리보기 생성
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setReferencePreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveReference = () => {
+    setReferenceImage(null);
+    setReferencePreview(null);
+    if (referenceInputRef.current) {
+      referenceInputRef.current.value = '';
+    }
+  };
+
   // Image to Video 핸들러
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0];
@@ -329,38 +367,50 @@ const AIVideoCreator = () => {
               <p>만들고 싶은 영상을 자유롭게 설명해주세요</p>
             </div>
 
-            {/* 프롬프트 Textarea */}
-            <div className="prompt-input-wrapper">
-              <textarea
-                className="prompt-textarea"
-                value={promptText}
-                onChange={(e) => setPromptText(e.target.value)}
-                onFocus={(e) => {
-                  // 기본 예시 프롬프트일 때 전체 선택
-                  if (promptText === DEFAULT_PROMPT) {
-                    e.target.select();
-                  }
-                }}
-                placeholder="영상 아이디어를 입력하세요..."
-                rows={4}
-                maxLength={500}
-                disabled={isGenerating}
-              />
-              <div className="prompt-counter">
-                <span className={promptText.length > 400 ? 'warning' : ''}>
-                  {promptText.length}/500자
-                </span>
+            {/* 프롬프트 Textarea + 생성 버튼 */}
+            <div className="prompt-input-row">
+              <div className="prompt-input-wrapper">
+                <textarea
+                  className="prompt-textarea"
+                  value={promptText}
+                  onChange={(e) => setPromptText(e.target.value)}
+                  onFocus={(e) => {
+                    // 기본 예시 프롬프트일 때 전체 선택 (setTimeout으로 비동기 처리)
+                    if (promptText === DEFAULT_PROMPT) {
+                      setTimeout(() => e.target.select(), 0);
+                    }
+                  }}
+                  placeholder="영상 아이디어를 입력하세요..."
+                  rows={4}
+                  maxLength={500}
+                  disabled={isGenerating}
+                />
+                <div className="prompt-counter">
+                  <span className={promptText.length > 400 ? 'warning' : ''}>
+                    {promptText.length}/500자
+                  </span>
+                </div>
               </div>
-            </div>
 
-            {/* 생성 버튼 */}
-            <button
-              className="generate-btn"
-              onClick={handleGenerate}
-              disabled={isGenerating || !promptText.trim()}
-            >
-              {isGenerating ? '생성 중...' : '영상 생성'}
-            </button>
+              {/* 생성 버튼 - 오른쪽 배치 */}
+              <button
+                className="generate-btn-side"
+                onClick={handleGenerate}
+                disabled={isGenerating || !promptText.trim()}
+              >
+                {isGenerating ? (
+                  <>
+                    <span className="btn-spinner"></span>
+                    <span>생성 중...</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="btn-icon-main">🎬</span>
+                    <span>영상 생성</span>
+                  </>
+                )}
+              </button>
+            </div>
 
             {/* 영감 버튼들 */}
             <div className="inspiration-section">
@@ -400,6 +450,64 @@ const AIVideoCreator = () => {
                     ))}
                   </ul>
                 </div>
+              )}
+            </div>
+
+            {/* 레퍼런스 이미지 섹션 */}
+            <div className="reference-section">
+              <div className="reference-header">
+                <span className="reference-icon">🖼️</span>
+                <span>캐릭터/스타일 고정</span>
+                <span className="reference-optional">(선택사항)</span>
+              </div>
+              <p className="reference-desc">
+                특정 캐릭터나 스타일을 유지하고 싶다면 참고 이미지를 업로드하세요.
+              </p>
+
+              <input
+                type="file"
+                ref={referenceInputRef}
+                accept="image/*"
+                onChange={handleReferenceUpload}
+                style={{ display: 'none' }}
+                disabled={isGenerating}
+              />
+
+              {referencePreview ? (
+                <div className="reference-preview-wrapper">
+                  <img
+                    src={referencePreview}
+                    alt="레퍼런스 이미지"
+                    className="reference-preview-img"
+                  />
+                  <div className="reference-preview-overlay">
+                    <button
+                      className="reference-change-btn"
+                      onClick={() => referenceInputRef.current?.click()}
+                      disabled={isGenerating}
+                    >
+                      변경
+                    </button>
+                    <button
+                      className="reference-remove-btn"
+                      onClick={handleRemoveReference}
+                      disabled={isGenerating}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                  <span className="reference-filename">{referenceImage?.name}</span>
+                </div>
+              ) : (
+                <button
+                  className="reference-upload-btn"
+                  onClick={() => referenceInputRef.current?.click()}
+                  disabled={isGenerating}
+                >
+                  <span className="upload-icon">+</span>
+                  <span className="upload-text">이미지 업로드</span>
+                  <span className="upload-hint">PNG, JPG (최대 10MB)</span>
+                </button>
               )}
             </div>
           </section>

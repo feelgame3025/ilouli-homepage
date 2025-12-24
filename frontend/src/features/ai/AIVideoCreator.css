@@ -266,12 +266,13 @@
   text-align: center;
 }
 
-.style-card:hover:not(:disabled) {
+.style-card:hover:not(:disabled):not(.active) {
   background: #e8e8ea;
   border-color: #007aff;
 }
 
-.style-card.active {
+.style-card.active,
+.style-card.active:hover {
   background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
   border-color: transparent;
   color: #fff;
@@ -325,14 +326,16 @@
   text-align: left;
 }
 
-.duration-btn:hover:not(:disabled),
-.resolution-btn:hover:not(:disabled) {
+.duration-btn:hover:not(:disabled):not(.active),
+.resolution-btn:hover:not(:disabled):not(.active) {
   background: #e8e8ea;
   border-color: #007aff;
 }
 
 .duration-btn.active,
-.resolution-btn.active {
+.resolution-btn.active,
+.duration-btn.active:hover,
+.resolution-btn.active:hover {
   background: #e3f2fd;
   border-color: #007aff;
 }
@@ -1499,4 +1502,236 @@
   .inspiration-btn {
     max-width: none;
   }
+}
+
+/* ==================== 프롬프트 입력 Row (Textarea + 버튼) ==================== */
+
+.prompt-input-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.prompt-input-row .prompt-input-wrapper {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* 오른쪽 생성 버튼 */
+.generate-btn-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 100px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.generate-btn-side:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.generate-btn-side:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.generate-btn-side:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.generate-btn-side .btn-icon-main {
+  font-size: 28px;
+}
+
+.generate-btn-side .btn-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* 반응형 - 태블릿 이하 */
+@media (max-width: 768px) {
+  .prompt-input-row {
+    flex-direction: column;
+  }
+
+  .generate-btn-side {
+    flex-direction: row;
+    min-width: auto;
+    padding: 14px 24px;
+  }
+
+  .generate-btn-side .btn-icon-main {
+    font-size: 20px;
+  }
+}
+
+/* ==================== 레퍼런스 이미지 섹션 ==================== */
+
+.reference-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.reference-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.reference-icon {
+  font-size: 18px;
+}
+
+.reference-header > span:nth-child(2) {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.reference-optional {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.reference-desc {
+  font-size: 13px;
+  color: #666666;
+  margin-bottom: 12px;
+}
+
+/* 업로드 버튼 */
+.reference-upload-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 140px;
+  height: 140px;
+  background: #f8fafc;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reference-upload-btn:hover:not(:disabled) {
+  background: #f0f7ff;
+  border-color: #3B82F6;
+}
+
+.reference-upload-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reference-upload-btn .upload-icon {
+  font-size: 32px;
+  color: #9ca3af;
+}
+
+.reference-upload-btn .upload-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.reference-upload-btn .upload-hint {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* 이미지 미리보기 */
+.reference-preview-wrapper {
+  position: relative;
+  width: 140px;
+}
+
+.reference-preview-img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+}
+
+.reference-preview-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.reference-preview-wrapper:hover .reference-preview-overlay {
+  opacity: 1;
+}
+
+.reference-change-btn,
+.reference-remove-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reference-change-btn {
+  background: #fff;
+  color: #1a1a1a;
+}
+
+.reference-change-btn:hover {
+  background: #f0f0f0;
+}
+
+.reference-remove-btn {
+  background: #EF4444;
+  color: #fff;
+}
+
+.reference-remove-btn:hover {
+  background: #DC2626;
+}
+
+.reference-filename {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  color: #666666;
+  text-align: center;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
