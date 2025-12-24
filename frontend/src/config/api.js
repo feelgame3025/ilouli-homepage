@@ -16,6 +16,7 @@ export const API_ENDPOINTS = {
   FILES: '/api/files',
   ADMIN: '/api/admin',
   GAMES: '/api/games',
+  CALENDAR: '/api/calendar',
 };
 
 export const API_TIMEOUT = 30000; // 30초

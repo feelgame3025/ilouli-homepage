@@ -1,287 +1,205 @@
-// Google Calendar API 서비스
-// 환경변수에서 클라이언트 ID를 가져옵니다
-import { STORAGE_KEYS } from '../constants/storageKeys';
+// Google Calendar API 서비스 (백엔드 OAuth 연동)
+// 백엔드에서 토큰을 관리하여 영구적인 연결 유지
 
-const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-const API_KEY = process.env.REACT_APP_GOOGLE_API_KEY;
-const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
-const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly https://www.googleapis.com/auth/calendar.events';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import { getAuthHeaders } from './api';
 
-let tokenClient;
-let gapiInited = false;
-let gisInited = false;
+const CALENDAR_API = `${API_BASE_URL}${API_ENDPOINTS.CALENDAR}`;
 
-// Google API 스크립트 로드
-export const loadGoogleScripts = () => {
-  return new Promise((resolve, reject) => {
-    // GAPI 스크립트 로드
-    if (!document.getElementById('google-api-script')) {
-      const gapiScript = document.createElement('script');
-      gapiScript.id = 'google-api-script';
-      gapiScript.src = 'https://apis.google.com/js/api.js';
-      gapiScript.async = true;
-      gapiScript.defer = true;
-      gapiScript.onload = () => {
-        window.gapi.load('client', async () => {
-          try {
-            await window.gapi.client.init({
-              apiKey: API_KEY,
-              discoveryDocs: [DISCOVERY_DOC],
-            });
-            gapiInited = true;
-            if (gisInited) resolve();
-          } catch (err) {
-            reject(err);
-          }
-        });
-      };
-      document.body.appendChild(gapiScript);
+/**
+ * Google 연결 상태 확인
+ * @returns {Promise<{connected: boolean, reason?: string}>}
+ */
+export const checkGoogleConnectionStatus = async () => {
+  try {
+    const response = await fetch(`${CALENDAR_API}/auth/status`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to check status');
     }
 
-    // GIS 스크립트 로드 (Google Identity Services)
-    if (!document.getElementById('google-gis-script')) {
-      const gisScript = document.createElement('script');
-      gisScript.id = 'google-gis-script';
-      gisScript.src = 'https://accounts.google.com/gsi/client';
-      gisScript.async = true;
-      gisScript.defer = true;
-      gisScript.onload = () => {
-        tokenClient = window.google.accounts.oauth2.initTokenClient({
-          client_id: CLIENT_ID,
-          scope: SCOPES,
-          callback: '', // 나중에 설정
-        });
-        gisInited = true;
-        if (gapiInited) resolve();
-      };
-      document.body.appendChild(gisScript);
-    }
-  });
-};
-
-// Google 로그인
-export const signInToGoogle = () => {
-  return new Promise((resolve, reject) => {
-    if (!tokenClient) {
-      reject(new Error('Google API not initialized'));
-      return;
-    }
-
-    tokenClient.callback = async (resp) => {
-      if (resp.error !== undefined) {
-        reject(resp);
-        return;
-      }
-      // 토큰 저장 (만료 시간 포함)
-      const token = window.gapi.client.getToken();
-      token.expires_at = Date.now() + (token.expires_in * 1000);
-      localStorage.setItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN, JSON.stringify(token));
-      resolve(token);
-    };
-
-    // 기존 토큰 확인
-    const savedToken = localStorage.getItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
-    if (savedToken) {
-      try {
-        const token = JSON.parse(savedToken);
-        window.gapi.client.setToken(token);
-        resolve(token);
-        return;
-      } catch (e) {
-        localStorage.removeItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
-      }
-    }
-
-    // 새 토큰 요청
-    if (window.gapi.client.getToken() === null) {
-      tokenClient.requestAccessToken({ prompt: 'consent' });
-    } else {
-      tokenClient.requestAccessToken({ prompt: '' });
-    }
-  });
-};
-
-// Google 로그아웃
-export const signOutFromGoogle = () => {
-  const token = window.gapi.client.getToken();
-  if (token !== null) {
-    window.google.accounts.oauth2.revoke(token.access_token);
-    window.gapi.client.setToken('');
-    localStorage.removeItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
+    return await response.json();
+  } catch (err) {
+    console.error('Error checking Google connection status:', err);
+    return { connected: false };
   }
 };
 
-// Google 연결 상태 확인
+/**
+ * Google 로그인 (OAuth URL 가져와서 리다이렉트)
+ * 백엔드에서 Authorization Code flow를 사용하여 refresh_token을 저장
+ */
+export const signInToGoogle = async () => {
+  try {
+    const response = await fetch(`${CALENDAR_API}/auth/url`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to get auth URL');
+    }
+
+    const { url } = await response.json();
+
+    // OAuth 페이지로 리다이렉트
+    window.location.href = url;
+  } catch (err) {
+    console.error('Error getting Google auth URL:', err);
+    throw err;
+  }
+};
+
+/**
+ * Google 로그아웃 (백엔드에서 토큰 삭제)
+ */
+export const signOutFromGoogle = async () => {
+  try {
+    const response = await fetch(`${CALENDAR_API}/auth/disconnect`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to disconnect');
+    }
+
+    return await response.json();
+  } catch (err) {
+    console.error('Error disconnecting from Google:', err);
+    throw err;
+  }
+};
+
+/**
+ * Google 연결 상태 확인 (동기식, localStorage 기반 - 레거시 호환)
+ * 실제 상태는 백엔드에서 확인해야 함
+ */
 export const isGoogleConnected = () => {
-  const savedToken = localStorage.getItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
-  return !!savedToken;
-};
-
-// 저장된 토큰으로 복원 (토큰 유효성 검증 포함)
-export const restoreGoogleSession = async () => {
-  const savedToken = localStorage.getItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
-  if (savedToken && window.gapi?.client) {
-    try {
-      const token = JSON.parse(savedToken);
-
-      // 토큰 만료 시간 확인 (저장된 경우)
-      if (token.expires_at && Date.now() >= token.expires_at) {
-        console.log('Token expired, attempting silent refresh...');
-        // 만료된 토큰 - 조용히 갱신 시도
-        const refreshed = await silentTokenRefresh();
-        return refreshed;
-      }
-
-      window.gapi.client.setToken(token);
-
-      // 토큰 유효성 검증 (간단한 API 호출로 확인)
-      try {
-        await window.gapi.client.calendar.calendarList.list({ maxResults: 1 });
-        return true;
-      } catch (err) {
-        console.log('Token validation failed, attempting silent refresh...');
-        // 토큰이 유효하지 않으면 조용히 갱신 시도
-        const refreshed = await silentTokenRefresh();
-        return refreshed;
-      }
-    } catch (e) {
-      console.error('Session restore failed:', e);
-      localStorage.removeItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
-    }
-  }
+  // 레거시 호환용 - 실제로는 checkGoogleConnectionStatus() 사용 권장
   return false;
 };
 
-// 토큰 조용히 갱신 (사용자 상호작용 없이)
-export const silentTokenRefresh = () => {
-  return new Promise((resolve) => {
-    if (!tokenClient) {
-      resolve(false);
-      return;
-    }
-
-    tokenClient.callback = async (resp) => {
-      if (resp.error !== undefined) {
-        console.error('Silent refresh failed:', resp.error);
-        localStorage.removeItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN);
-        resolve(false);
-        return;
-      }
-      // 새 토큰 저장 (만료 시간 포함)
-      const token = window.gapi.client.getToken();
-      token.expires_at = Date.now() + (token.expires_in * 1000);
-      localStorage.setItem(STORAGE_KEYS.GOOGLE_CALENDAR_TOKEN, JSON.stringify(token));
-      resolve(true);
-    };
-
-    // prompt: '' 로 조용히 갱신 시도
-    try {
-      tokenClient.requestAccessToken({ prompt: '' });
-    } catch (e) {
-      console.error('Silent refresh request failed:', e);
-      resolve(false);
-    }
-  });
-};
-
-// Google 캘린더에서 이벤트 가져오기
+/**
+ * Google 캘린더에서 이벤트 가져오기
+ */
 export const fetchGoogleEvents = async (timeMin, timeMax) => {
   try {
-    const response = await window.gapi.client.calendar.events.list({
-      calendarId: 'primary',
-      timeMin: timeMin || new Date().toISOString(),
-      timeMax: timeMax || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(), // 90일
-      showDeleted: false,
-      singleEvents: true,
-      maxResults: 100,
-      orderBy: 'startTime',
+    const params = new URLSearchParams();
+    if (timeMin) params.append('timeMin', timeMin);
+    if (timeMax) params.append('timeMax', timeMax);
+
+    const response = await fetch(`${CALENDAR_API}/events?${params}`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      credentials: 'include',
     });
 
-    const events = response.result.items || [];
+    if (!response.ok) {
+      const errorData = await response.json();
+      if (response.status === 401) {
+        const authError = new Error(errorData.error || 'Unauthorized');
+        authError.status = 401;
+        authError.needsReconnect = errorData.needsReconnect;
+        throw authError;
+      }
+      throw new Error(errorData.error || 'Failed to fetch events');
+    }
 
-    // Google 이벤트를 우리 형식으로 변환
-    return events.map(event => ({
-      id: `google_${event.id}`,
-      googleId: event.id,
-      title: event.summary || '(제목 없음)',
-      description: event.description || '',
-      date: event.start.date || event.start.dateTime?.split('T')[0],
-      time: event.start.dateTime ? event.start.dateTime.split('T')[1]?.substring(0, 5) : null,
-      allDay: !event.start.dateTime,
-      category: 'other',
-      isGoogleEvent: true,
-      googleLink: event.htmlLink,
-      createdAt: event.created,
-    }));
+    const data = await response.json();
+    return data.events;
   } catch (err) {
     console.error('Error fetching Google events:', err);
     throw err;
   }
 };
 
-// Google 캘린더에 이벤트 추가
+/**
+ * Google 캘린더에 이벤트 추가
+ */
 export const addGoogleEvent = async (eventData) => {
   try {
-    const event = {
-      summary: eventData.title,
-      description: eventData.description || '',
-      start: eventData.allDay
-        ? { date: eventData.date }
-        : { dateTime: `${eventData.date}T${eventData.time || '09:00'}:00`, timeZone: 'Asia/Seoul' },
-      end: eventData.allDay
-        ? { date: eventData.date }
-        : { dateTime: `${eventData.date}T${eventData.time || '10:00'}:00`, timeZone: 'Asia/Seoul' },
-    };
-
-    const response = await window.gapi.client.calendar.events.insert({
-      calendarId: 'primary',
-      resource: event,
+    const response = await fetch(`${CALENDAR_API}/events`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(eventData),
     });
 
-    return response.result;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to add event');
+    }
+
+    const data = await response.json();
+    return data.event;
   } catch (err) {
     console.error('Error adding Google event:', err);
     throw err;
   }
 };
 
-// Google 캘린더에서 이벤트 삭제
+/**
+ * Google 캘린더에서 이벤트 삭제
+ */
 export const deleteGoogleEvent = async (eventId) => {
   try {
-    await window.gapi.client.calendar.events.delete({
-      calendarId: 'primary',
-      eventId: eventId,
+    const response = await fetch(`${CALENDAR_API}/events/${eventId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+      credentials: 'include',
     });
-    return true;
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to delete event');
+    }
+
+    return await response.json();
   } catch (err) {
     console.error('Error deleting Google event:', err);
     throw err;
   }
 };
 
-// Google 캘린더에서 이벤트 수정
+/**
+ * Google 캘린더에서 이벤트 수정
+ */
 export const updateGoogleEvent = async (eventId, eventData) => {
   try {
-    const event = {
-      summary: eventData.title,
-      description: eventData.description || '',
-      start: eventData.allDay
-        ? { date: eventData.date }
-        : { dateTime: `${eventData.date}T${eventData.time || '09:00'}:00`, timeZone: 'Asia/Seoul' },
-      end: eventData.allDay
-        ? { date: eventData.date }
-        : { dateTime: `${eventData.date}T${eventData.time || '10:00'}:00`, timeZone: 'Asia/Seoul' },
-    };
-
-    const response = await window.gapi.client.calendar.events.update({
-      calendarId: 'primary',
-      eventId: eventId,
-      resource: event,
+    const response = await fetch(`${CALENDAR_API}/events/${eventId}`, {
+      method: 'PUT',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(eventData),
     });
 
-    return response.result;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update event');
+    }
+
+    const data = await response.json();
+    return data.event;
   } catch (err) {
     console.error('Error updating Google event:', err);
     throw err;
   }
 };
+
+// 레거시 호환용 빈 함수들 (프론트엔드 OAuth 관련)
+export const loadGoogleScripts = () => Promise.resolve();
+export const restoreGoogleSession = () => Promise.resolve(false);
+export const silentTokenRefresh = () => Promise.resolve(false);

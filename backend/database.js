@@ -192,6 +192,29 @@ db.exec(`
   )
 `);
 
+// Google OAuth 토큰 테이블 (영구 캘린더 연결용)
+db.exec(`
+  CREATE TABLE IF NOT EXISTS google_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER UNIQUE NOT NULL,
+    access_token TEXT NOT NULL,
+    refresh_token TEXT NOT NULL,
+    token_type TEXT DEFAULT 'Bearer',
+    scope TEXT,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )
+`);
+
+// Google 토큰 인덱스
+try {
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_google_tokens_user ON google_tokens(user_id)`);
+} catch (e) {
+  // 이미 존재하면 무시
+}
+
 // 기본 관리자 계정 생성
 const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get('admin@ilouli.com');
 if (!adminExists) {

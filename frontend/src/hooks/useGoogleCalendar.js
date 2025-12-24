@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  loadGoogleScripts,
+  checkGoogleConnectionStatus,
   signInToGoogle,
   signOutFromGoogle,
-  restoreGoogleSession,
-  silentTokenRefresh,
   fetchGoogleEvents,
   addGoogleEvent,
   deleteGoogleEvent,
@@ -12,7 +11,7 @@ import {
 } from '../services/googleCalendar';
 
 /**
- * Google Calendar 연동을 위한 커스텀 훅
+ * Google Calendar 연동을 위한 커스텀 훅 (백엔드 OAuth)
  *
  * @returns {Object} Google Calendar 상태 및 메서드
  * @property {boolean} isConnected - Google 계정 연결 상태
@@ -28,29 +27,69 @@ import {
  */
 export const useGoogleCalendar = () => {
   const [isConnected, setIsConnected] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [events, setEvents] = useState([]);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  // Google API 초기화 및 세션 복원
+  // OAuth 콜백 처리 및 연결 상태 확인
   useEffect(() => {
-    const initGoogle = async () => {
+    const checkConnection = async () => {
+      setLoading(true);
       try {
-        await loadGoogleScripts();
-        const restored = await restoreGoogleSession();
-        if (restored) {
+        // URL 파라미터 확인 (OAuth 콜백)
+        const searchParams = new URLSearchParams(location.search);
+        const connected = searchParams.get('connected');
+        const oauthError = searchParams.get('error');
+
+        if (connected === 'true') {
+          // OAuth 성공
           setIsConnected(true);
+          setError(null);
+          // URL에서 파라미터 제거
+          navigate(location.pathname, { replace: true });
+        } else if (oauthError) {
+          // OAuth 에러
+          let errorMessage = 'Google 연결 실패';
+          switch (oauthError) {
+            case 'access_denied':
+              errorMessage = 'Google 연결이 취소되었습니다.';
+              break;
+            case 'no_refresh_token':
+              errorMessage = '권한을 다시 확인해주세요.';
+              break;
+            case 'token_exchange_failed':
+              errorMessage = '인증 처리 중 오류가 발생했습니다.';
+              break;
+            default:
+              errorMessage = `오류: ${oauthError}`;
+          }
+          setError(errorMessage);
+          setIsConnected(false);
+          // URL에서 파라미터 제거
+          navigate(location.pathname, { replace: true });
+        } else {
+          // 일반적인 연결 상태 확인
+          const status = await checkGoogleConnectionStatus();
+          setIsConnected(status.connected);
+          if (status.reason === 'token_expired') {
+            setError('Google 연결이 만료되었습니다. 다시 연결해주세요.');
+          }
         }
       } catch (err) {
-        console.error('Failed to init Google API:', err);
-        setError('Google API 초기화 실패');
+        console.error('Failed to check Google connection:', err);
+        setIsConnected(false);
+      } finally {
+        setLoading(false);
       }
     };
-    initGoogle();
-  }, []);
+
+    checkConnection();
+  }, [location.search, location.pathname, navigate]);
 
   // 이벤트 새로고침
-  const refresh = useCallback(async (retryCount = 0) => {
+  const refresh = useCallback(async () => {
     if (!isConnected) return;
 
     setLoading(true);
@@ -61,20 +100,9 @@ export const useGoogleCalendar = () => {
     } catch (err) {
       console.error('Failed to fetch Google events:', err);
 
-      // 토큰 만료 시 조용히 갱신 시도 (최대 1회)
-      if ((err.status === 401 || err.result?.error?.code === 401) && retryCount === 0) {
-        console.log('Token expired, attempting silent refresh...');
-        const refreshed = await silentTokenRefresh();
-        if (refreshed) {
-          // 갱신 성공 - 다시 시도
-          setLoading(false);
-          return refresh(1);
-        } else {
-          // 갱신 실패 - 연결 해제
-          setIsConnected(false);
-          signOutFromGoogle();
-          setError('Google 연결이 만료되었습니다. 다시 연결해주세요.');
-        }
+      if (err.status === 401 || err.needsReconnect) {
+        setIsConnected(false);
+        setError('Google 연결이 만료되었습니다. 다시 연결해주세요.');
       } else {
         setError('Google 캘린더 동기화 실패');
       }
@@ -92,27 +120,33 @@ export const useGoogleCalendar = () => {
     }
   }, [isConnected, refresh]);
 
-  // Google 계정 연결
+  // Google 계정 연결 (OAuth 페이지로 리다이렉트)
   const connect = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      await signInToGoogle();
-      setIsConnected(true);
+      await signInToGoogle(); // 이 함수가 페이지를 리다이렉트함
     } catch (err) {
       console.error('Google sign in failed:', err);
       setError('Google 로그인 실패');
-    } finally {
       setLoading(false);
     }
   }, []);
 
   // Google 계정 연결 해제
-  const disconnect = useCallback(() => {
-    signOutFromGoogle();
-    setIsConnected(false);
-    setEvents([]);
-    setError(null);
+  const disconnect = useCallback(async () => {
+    setLoading(true);
+    try {
+      await signOutFromGoogle();
+      setIsConnected(false);
+      setEvents([]);
+      setError(null);
+    } catch (err) {
+      console.error('Google disconnect failed:', err);
+      setError('연결 해제 실패');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   // 이벤트 추가
