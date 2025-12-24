@@ -5,6 +5,11 @@ import './i18n';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// React Grab - 개발 모드에서만 활성화 (AI 코딩 어시스턴트용)
+if (process.env.NODE_ENV === 'development') {
+  import('react-grab').catch(() => {});
+}
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
