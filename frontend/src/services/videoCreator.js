@@ -1,118 +1,115 @@
 // Video Creator API Service
 import api from './api';
-import { API_BASE_URL, USE_MOCK_MODE } from '../config/api';
+import { API_BASE_URL } from '../config/api';
 import { downloadFile } from '../utils/file';
 import { STORAGE_KEYS } from '../constants/storageKeys';
 
 // 숏폼 생성 요청
 export const createShortForm = async (params) => {
   const {
-    topic,
+    prompt,
     style = 'educational',
-    duration = 30,
+    duration = 10,
     resolution = '1080p',
-    language = 'ko'
+    referenceImage = null,
+    useMock = false  // Mock 모드 (API 비용 절약)
   } = params;
 
-  if (USE_MOCK_MODE) {
-    // Mock 시뮬레이션
-    return {
-      jobId: `job_${Date.now()}`,
-      status: 'processing',
-      message: '영상 생성이 시작되었습니다.'
-    };
-  }
-
   try {
-    const response = await api.post('/api/ai/shortform/create', {
-      topic,
-      style,
-      duration,
-      resolution,
-      language
+    // FormData 생성 (레퍼런스 이미지 포함 가능)
+    const formData = new FormData();
+    formData.append('prompt', prompt);
+    formData.append('style', style);
+    formData.append('duration', duration.toString());
+    formData.append('resolution', resolution);
+    formData.append('useMock', useMock.toString());
+
+    if (referenceImage) {
+      formData.append('referenceImage', referenceImage);
+    }
+
+    const response = await api.post('/api/ai/shortform/generate', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
     });
 
     return response.data;
   } catch (error) {
-    throw new Error(error.message || '영상 생성 요청에 실패했습니다.');
+    console.error('createShortForm error:', error);
+    throw new Error(error.response?.data?.error || error.message || '영상 생성 요청에 실패했습니다.');
   }
 };
 
-// 생성 진행률 조회
-export const getShortFormProgress = async (jobId) => {
-  if (USE_MOCK_MODE) {
-    // Mock 진행률 시뮬레이션
-    const mockSteps = [
-      { step: 1, status: 'completed', message: '콘텐츠 생성 완료' },
-      { step: 2, status: 'completed', message: '영상 생성 완료' },
-      { step: 3, status: 'processing', message: '음성 생성 중...' },
-      { step: 4, status: 'pending', message: '대기 중' }
-    ];
-
-    return {
-      jobId,
-      status: 'processing',
-      currentStep: 3,
-      totalSteps: 4,
-      steps: mockSteps,
-      progress: 75
-    };
-  }
-
+// 작업 상태 조회 (폴링용)
+export const getJobStatus = async (jobId) => {
   try {
-    const response = await api.get(`/api/ai/shortform/progress/${jobId}`);
+    const response = await api.get(`/api/ai/job/${jobId}`);
     return response.data;
   } catch (error) {
-    throw new Error(error.message || '진행률 조회에 실패했습니다.');
+    console.error('getJobStatus error:', error);
+    throw new Error(error.response?.data?.error || error.message || '상태 조회에 실패했습니다.');
   }
 };
 
-// 생성 결과 조회
-export const getShortFormResult = async (jobId) => {
-  if (USE_MOCK_MODE) {
-    // Mock 결과 반환
-    return {
-      jobId,
-      status: 'completed',
-      result: {
-        title: 'AI 생성 숏폼 영상',
-        description: '자동 생성된 숏폼 영상입니다.',
-        videoUrl: null, // 실제 API 연동 후 제공
-        thumbnailUrl: null,
-        script: {
-          english: 'This is an amazing AI-generated short video!',
-          korean: '놀라운 AI 생성 숏폼 영상입니다!'
-        },
-        metadata: {
-          duration: 30,
-          resolution: '1080p',
-          format: 'MP4',
-          fileSize: '12.5 MB',
-          createdAt: new Date().toISOString()
-        }
+// 작업 상태 폴링 (완료까지 대기)
+export const pollJobStatus = async (jobId, {
+  onProgress = () => {},
+  onComplete = () => {},
+  onError = () => {},
+  interval = 2000,
+  maxAttempts = 120  // 최대 4분 (2초 × 120)
+}) => {
+  let attempts = 0;
+
+  const poll = async () => {
+    try {
+      const result = await getJobStatus(jobId);
+      const { job } = result;
+
+      // 진행 상태 콜백
+      onProgress({
+        status: job.status,
+        currentStep: job.currentStep || 0,
+        jobId: job.jobId
+      });
+
+      if (job.status === 'completed') {
+        onComplete(job);
+        return job;
       }
-    };
-  }
 
-  try {
-    const response = await api.get(`/api/ai/shortform/result/${jobId}`);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.message || '결과 조회에 실패했습니다.');
-  }
+      if (job.status === 'failed') {
+        const error = new Error(job.error || '생성 실패');
+        onError(error);
+        throw error;
+      }
+
+      // 아직 진행 중이면 계속 폴링
+      attempts++;
+      if (attempts >= maxAttempts) {
+        const error = new Error('작업 시간 초과');
+        onError(error);
+        throw error;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, interval));
+      return poll();
+
+    } catch (error) {
+      onError(error);
+      throw error;
+    }
+  };
+
+  return poll();
 };
 
 // 영상 다운로드
 export const downloadShortForm = async (jobId, filename = 'shortform.mp4') => {
-  if (USE_MOCK_MODE) {
-    console.log('Mock 모드: 다운로드 시뮬레이션', jobId);
-    alert('Mock 모드: 실제 API 연동 후 다운로드가 가능합니다.');
-    return;
-  }
-
   try {
     const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
-    const response = await fetch(`${API_BASE_URL}/api/ai/shortform/download/${jobId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/ai/shortform/${jobId}/download`, {
       method: 'GET',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` })
@@ -120,7 +117,8 @@ export const downloadShortForm = async (jobId, filename = 'shortform.mp4') => {
     });
 
     if (!response.ok) {
-      throw new Error('다운로드에 실패했습니다.');
+      const error = await response.json();
+      throw new Error(error.error || '다운로드에 실패했습니다.');
     }
 
     const blob = await response.blob();
@@ -132,19 +130,24 @@ export const downloadShortForm = async (jobId, filename = 'shortform.mp4') => {
   }
 };
 
+// 영상 URL 생성
+export const getVideoUrl = (jobId) => {
+  const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  return `${API_BASE_URL}/api/ai/shortform/${jobId}/video?token=${token}`;
+};
+
 // 생성 히스토리 조회
 export const getShortFormHistory = async (limit = 10) => {
-  if (USE_MOCK_MODE) {
-    // 로컬 스토리지에서 히스토리 조회
+  try {
+    const response = await api.get(`/api/ai/history?limit=${limit}`);
+    // shortform 타입만 필터링
+    const shortformJobs = (response.data.jobs || []).filter(job => job.type === 'shortform');
+    return shortformJobs;
+  } catch (error) {
+    // API 실패 시 로컬 스토리지에서 조회
+    console.warn('히스토리 API 실패, 로컬 스토리지 사용:', error.message);
     const history = JSON.parse(localStorage.getItem(STORAGE_KEYS.VIDEO_HISTORY) || '[]');
     return history.slice(0, limit);
-  }
-
-  try {
-    const response = await api.get(`/api/ai/shortform/history?limit=${limit}`);
-    return response.data.history;
-  } catch (error) {
-    throw new Error(error.message || '히스토리 조회에 실패했습니다.');
   }
 };
 
@@ -160,12 +163,15 @@ export const clearHistory = () => {
   localStorage.removeItem(STORAGE_KEYS.VIDEO_HISTORY);
 };
 
-export default {
+const videoCreatorService = {
   createShortForm,
-  getShortFormProgress,
-  getShortFormResult,
+  getJobStatus,
+  pollJobStatus,
   downloadShortForm,
+  getVideoUrl,
   getShortFormHistory,
   addToHistory,
   clearHistory
 };
+
+export default videoCreatorService;

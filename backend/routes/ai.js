@@ -157,13 +157,22 @@ router.post('/upscale', authenticateToken, imageUpload.single('image'), async (r
 // ============================================
 // 숏폼 영상 생성 API
 // ============================================
-router.post('/shortform/generate', authenticateToken, async (req, res) => {
+router.post('/shortform/generate', authenticateToken, imageUpload.single('referenceImage'), async (req, res) => {
   try {
-    const { topic, style = 'educational', duration = 30, resolution = '1080p' } = req.body;
-    const userId = req.user.id;
+    const {
+      prompt,  // 프롬프트 텍스트 (새 UI)
+      topic,   // 레거시 호환
+      style = 'educational',
+      duration = 10,
+      resolution = '1080p',
+      useMock = 'false'  // Mock 모드 (API 비용 절약)
+    } = req.body;
 
-    if (!topic) {
-      return res.status(400).json({ success: false, error: '영상 주제가 필요합니다.' });
+    const userId = req.user.id;
+    const promptText = prompt || topic;
+
+    if (!promptText) {
+      return res.status(400).json({ success: false, error: '영상 아이디어를 입력해주세요.' });
     }
 
     // 작업 ID 생성
@@ -171,55 +180,83 @@ router.post('/shortform/generate', authenticateToken, async (req, res) => {
 
     // DB에 작업 기록
     const stmt = db.prepare(`
-      INSERT INTO ai_jobs (job_id, user_id, job_type, status, parameters, created_at)
-      VALUES (?, ?, ?, ?, ?, datetime('now'))
+      INSERT INTO ai_jobs (job_id, user_id, job_type, status, input_file, parameters, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
     `);
 
     stmt.run(
       jobId,
       userId,
       'shortform',
-      'pending',
-      JSON.stringify({ topic, style, duration, resolution })
+      'processing',
+      req.file ? req.file.filename : null,
+      JSON.stringify({ prompt: promptText, style, duration, resolution, useMock: useMock === 'true' })
     );
 
     // Python 파이프라인 실행 (백그라운드)
     const shortsDir = path.join(__dirname, '..', 'shorts');
     const pythonPath = path.join(shortsDir, 'venv', 'bin', 'python');
     const scriptPath = path.join(shortsDir, 'main.py');
+    const outputName = jobId;
 
-    // 환경변수 설정
-    const env = {
-      ...process.env,
-      JOB_ID: jobId,
-      TOPIC: topic,
-      STYLE: style,
-      DURATION: duration.toString(),
-      RESOLUTION: resolution
-    };
+    // Python CLI 인자 구성
+    const args = ['generate', promptText, '-o', outputName];
+    if (useMock === 'true') {
+      args.push('--mock');
+    }
+
+    console.log(`[Shortform ${jobId}] Starting: python ${args.join(' ')}`);
 
     // Python 스크립트 비동기 실행
-    const python = spawn(pythonPath, [scriptPath, '--topic', topic, '--duration', duration.toString()], {
+    const python = spawn(pythonPath, [scriptPath, ...args], {
       cwd: shortsDir,
-      env,
+      env: { ...process.env },
       detached: true,
       stdio: ['ignore', 'pipe', 'pipe']
     });
 
+    let stdoutData = '';
+    let stderrData = '';
+
     python.stdout.on('data', (data) => {
+      stdoutData += data.toString();
       console.log(`[Shortform ${jobId}] ${data}`);
+
+      // 진행 단계 파싱 및 DB 업데이트
+      const stepMatch = data.toString().match(/\[(\d)\/4\]/);
+      if (stepMatch) {
+        db.prepare(`
+          UPDATE ai_jobs SET parameters = json_set(parameters, '$.currentStep', ?)
+          WHERE job_id = ?
+        `).run(parseInt(stepMatch[1]), jobId);
+      }
     });
 
     python.stderr.on('data', (data) => {
+      stderrData += data.toString();
       console.error(`[Shortform ${jobId}] Error: ${data}`);
     });
 
     python.on('close', (code) => {
-      const status = code === 0 ? 'completed' : 'failed';
-      db.prepare(`
-        UPDATE ai_jobs SET status = ?, completed_at = datetime('now')
-        WHERE job_id = ?
-      `).run(status, jobId);
+      console.log(`[Shortform ${jobId}] Process exited with code ${code}`);
+
+      if (code === 0) {
+        // 출력 파일 경로 파싱
+        const outputMatch = stdoutData.match(/출력: (.+\.mp4)/);
+        const outputFile = outputMatch ? path.basename(outputMatch[1]) : null;
+
+        db.prepare(`
+          UPDATE ai_jobs
+          SET status = 'completed', output_file = ?, completed_at = datetime('now')
+          WHERE job_id = ?
+        `).run(outputFile, jobId);
+      } else {
+        db.prepare(`
+          UPDATE ai_jobs
+          SET status = 'failed', error_message = ?, completed_at = datetime('now')
+          WHERE job_id = ?
+        `).run(stderrData.slice(0, 500), jobId);
+      }
     });
 
     python.unref();
@@ -228,13 +265,13 @@ router.post('/shortform/generate', authenticateToken, async (req, res) => {
       success: true,
       jobId,
       message: '숏폼 영상 생성 작업이 시작되었습니다.',
-      estimatedTime: duration * 5, // 예상 소요 시간
+      estimatedTime: useMock === 'true' ? 10 : 120, // Mock: 10초, 실제: 2분
       statusUrl: `/api/ai/job/${jobId}`
     });
 
   } catch (error) {
     console.error('Shortform generate error:', error);
-    res.status(500).json({ success: false, error: '숏폼 생성 요청 실패' });
+    res.status(500).json({ success: false, error: '숏폼 생성 요청 실패: ' + error.message });
   }
 });
 
@@ -254,15 +291,33 @@ router.get('/job/:jobId', authenticateToken, (req, res) => {
       return res.status(404).json({ success: false, error: '작업을 찾을 수 없습니다.' });
     }
 
+    const params = JSON.parse(job.parameters || '{}');
+
+    // 숏폼 결과물 URL 생성
+    let downloadUrl = null;
+    let videoUrl = null;
+    if (job.status === 'completed' && job.output_file) {
+      if (job.job_type === 'shortform') {
+        // shorts/output 폴더에서 제공
+        downloadUrl = `/api/ai/shortform/${job.job_id}/download`;
+        videoUrl = `/api/ai/shortform/${job.job_id}/video`;
+      } else {
+        downloadUrl = `/api/ai/job/${job.job_id}/download`;
+      }
+    }
+
     res.json({
       success: true,
       job: {
         jobId: job.job_id,
         type: job.job_type,
         status: job.status,
-        parameters: JSON.parse(job.parameters || '{}'),
+        currentStep: params.currentStep || 0,
+        parameters: params,
         inputFile: job.input_file,
         outputFile: job.output_file,
+        downloadUrl,
+        videoUrl,
         createdAt: job.created_at,
         completedAt: job.completed_at,
         error: job.error_message
@@ -272,6 +327,92 @@ router.get('/job/:jobId', authenticateToken, (req, res) => {
   } catch (error) {
     console.error('Job status error:', error);
     res.status(500).json({ success: false, error: '작업 상태 조회 실패' });
+  }
+});
+
+// ============================================
+// 숏폼 영상 스트리밍/다운로드
+// ============================================
+router.get('/shortform/:jobId/video', authenticateToken, (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const userId = req.user.id;
+
+    const job = db.prepare(`
+      SELECT * FROM ai_jobs WHERE job_id = ? AND user_id = ? AND job_type = 'shortform'
+    `).get(jobId, userId);
+
+    if (!job || job.status !== 'completed') {
+      return res.status(404).json({ success: false, error: '영상을 찾을 수 없습니다.' });
+    }
+
+    const shortsOutputDir = path.join(__dirname, '..', 'shorts', 'output');
+    const videoPath = path.join(shortsOutputDir, `${jobId}.mp4`);
+
+    if (!fs.existsSync(videoPath)) {
+      return res.status(404).json({ success: false, error: '영상 파일이 존재하지 않습니다.' });
+    }
+
+    // 비디오 스트리밍
+    const stat = fs.statSync(videoPath);
+    const range = req.headers.range;
+
+    if (range) {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : stat.size - 1;
+      const chunksize = end - start + 1;
+
+      const file = fs.createReadStream(videoPath, { start, end });
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${stat.size}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunksize,
+        'Content-Type': 'video/mp4',
+      });
+      file.pipe(res);
+    } else {
+      res.writeHead(200, {
+        'Content-Length': stat.size,
+        'Content-Type': 'video/mp4',
+      });
+      fs.createReadStream(videoPath).pipe(res);
+    }
+
+  } catch (error) {
+    console.error('Shortform video error:', error);
+    res.status(500).json({ success: false, error: '영상 로드 실패' });
+  }
+});
+
+router.get('/shortform/:jobId/download', authenticateToken, (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const userId = req.user.id;
+
+    const job = db.prepare(`
+      SELECT * FROM ai_jobs WHERE job_id = ? AND user_id = ? AND job_type = 'shortform'
+    `).get(jobId, userId);
+
+    if (!job || job.status !== 'completed') {
+      return res.status(404).json({ success: false, error: '영상을 찾을 수 없습니다.' });
+    }
+
+    const shortsOutputDir = path.join(__dirname, '..', 'shorts', 'output');
+    const videoPath = path.join(shortsOutputDir, `${jobId}.mp4`);
+
+    if (!fs.existsSync(videoPath)) {
+      return res.status(404).json({ success: false, error: '영상 파일이 존재하지 않습니다.' });
+    }
+
+    const params = JSON.parse(job.parameters || '{}');
+    const filename = `shorts_${(params.prompt || 'video').substring(0, 20).replace(/[^a-zA-Z0-9가-힣]/g, '_')}.mp4`;
+
+    res.download(videoPath, filename);
+
+  } catch (error) {
+    console.error('Shortform download error:', error);
+    res.status(500).json({ success: false, error: '다운로드 실패' });
   }
 });
 

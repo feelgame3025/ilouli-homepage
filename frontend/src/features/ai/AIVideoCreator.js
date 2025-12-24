@@ -123,6 +123,8 @@ const AIVideoCreator = () => {
     { value: '1080p', label: '1080p', description: 'Full HD (권장)' },
   ];
 
+  const [currentJobId, setCurrentJobId] = useState(null);
+
   const handleGenerate = async () => {
     if (!promptText.trim()) {
       setError('영상 아이디어를 입력해주세요.');
@@ -133,44 +135,68 @@ const AIVideoCreator = () => {
     setCurrentStep(1);
     setError(null);
     setResult(null);
+    setCurrentJobId(null);
 
     try {
-      // Mock 시뮬레이션
-      for (let step = 1; step <= 4; step++) {
-        setCurrentStep(step);
-        await new Promise(resolve => setTimeout(resolve, 1500));
-      }
-
-      // Mock 결과
-      const mockResult = {
-        title: `AI 생성 영상`,
-        description: `${promptText.substring(0, 100)}${promptText.length > 100 ? '...' : ''}`,
-        english: 'I see a big elephant at the zoo!',
-        korean: '나는 동물원에서 큰 코끼리를 봐요!',
-        videoUrl: null,
-        duration: videoDuration,
-        resolution: `${videoResolution === '1080p' ? '1080x1920' : '720x1280'}`,
-        format: 'MP4',
-        style: videoStyles.find(s => s.value === videoStyle)?.label || '교육용',
-        createdAt: new Date().toISOString(),
-      };
-
-      setResult(mockResult);
-
-      // 히스토리에 추가
-      const historyItem = {
-        id: `video_${Date.now()}`,
-        topic: promptText.substring(0, 50) + (promptText.length > 50 ? '...' : ''),
+      // 1단계: 생성 요청
+      const createResponse = await videoCreatorService.createShortForm({
+        prompt: promptText,
         style: videoStyle,
         duration: videoDuration,
         resolution: videoResolution,
-        createdAt: new Date().toISOString(),
+        referenceImage: referenceImage,
+        useMock: true  // Mock 모드 (API 비용 절약, 실제 연동 시 false로 변경)
+      });
+
+      if (!createResponse.success) {
+        throw new Error(createResponse.error || '생성 요청 실패');
+      }
+
+      const { jobId } = createResponse;
+      setCurrentJobId(jobId);
+
+      // 2단계: 상태 폴링
+      const completedJob = await videoCreatorService.pollJobStatus(jobId, {
+        onProgress: ({ currentStep: step }) => {
+          if (step > 0) {
+            setCurrentStep(step);
+          }
+        },
+        onComplete: (job) => {
+          console.log('생성 완료:', job);
+        },
+        onError: (err) => {
+          console.error('생성 오류:', err);
+        },
+        interval: 2000,
+        maxAttempts: 60  // 2분 (Mock 모드에서는 빠르게 완료)
+      });
+
+      // 결과 설정
+      const params = completedJob.parameters || {};
+      const videoResult = {
+        jobId: completedJob.jobId,
+        title: `AI 생성 영상`,
+        description: params.prompt?.substring(0, 100) || '',
+        english: params.english || 'Generated content',
+        korean: params.korean || '생성된 콘텐츠',
+        videoUrl: completedJob.videoUrl,
+        downloadUrl: completedJob.downloadUrl,
+        duration: params.duration || videoDuration,
+        resolution: `${videoResolution === '1080p' ? '1080x1920' : '720x1280'}`,
+        format: 'MP4',
+        style: videoStyles.find(s => s.value === videoStyle)?.label || '교육용',
+        createdAt: completedJob.completedAt || new Date().toISOString(),
       };
-      videoCreatorService.addToHistory(historyItem);
+
+      setResult(videoResult);
+
+      // 히스토리 새로고침
       loadHistory();
 
     } catch (err) {
-      setError('영상 생성 중 오류가 발생했습니다.');
+      console.error('handleGenerate error:', err);
+      setError(err.message || '영상 생성 중 오류가 발생했습니다.');
     } finally {
       setIsGenerating(false);
       setCurrentStep(0);
@@ -178,8 +204,14 @@ const AIVideoCreator = () => {
   };
 
   const handleDownload = async () => {
+    if (!result?.jobId) {
+      alert('다운로드할 영상이 없습니다.');
+      return;
+    }
+
     try {
-      await videoCreatorService.downloadShortForm('mock_job_id', `video.mp4`);
+      const filename = `shorts_${promptText.substring(0, 20).replace(/[^a-zA-Z0-9가-힣]/g, '_')}.mp4`;
+      await videoCreatorService.downloadShortForm(result.jobId, filename);
     } catch (err) {
       alert('다운로드 실패: ' + err.message);
     }
