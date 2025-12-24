@@ -1258,3 +1258,245 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==================== Prompt Section Styles ==================== */
+
+/* 프롬프트 입력 섹션 */
+.prompt-section {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.prompt-section .section-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.prompt-section .section-header p {
+  font-size: 14px;
+  color: #666666;
+  margin-bottom: 16px;
+}
+
+/* 프롬프트 입력 영역 */
+.prompt-input-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.prompt-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1a1a1a;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  resize: vertical;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.prompt-textarea:focus {
+  outline: none;
+  border-color: #3B82F6;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.prompt-textarea:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+}
+
+.prompt-textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* 글자 수 카운터 */
+.prompt-counter {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.prompt-counter .warning {
+  color: #F59E0B;
+}
+
+/* 영감 섹션 */
+.inspiration-section {
+  margin-bottom: 16px;
+}
+
+.inspiration-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666666;
+  margin-bottom: 12px;
+}
+
+.inspiration-icon {
+  font-size: 16px;
+}
+
+.inspiration-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.inspiration-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  height: 72px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.inspiration-btn:hover {
+  background: #f0f7ff;
+  border-color: #3B82F6;
+  transform: translateY(-2px);
+}
+
+.inspiration-btn:active {
+  transform: translateY(0);
+}
+
+.inspiration-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.inspiration-btn .btn-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.inspiration-btn .btn-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+/* 프롬프트 가이드 */
+.prompt-guide-section {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.guide-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #666666;
+  cursor: pointer;
+  padding: 8px 0;
+  transition: color 0.2s ease;
+}
+
+.guide-toggle:hover {
+  color: #3B82F6;
+}
+
+.guide-toggle span:first-child {
+  font-size: 10px;
+  width: 16px;
+}
+
+.guide-content {
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+.guide-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.guide-content li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.guide-content li:last-child {
+  margin-bottom: 0;
+}
+
+.guide-content li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #3B82F6;
+  font-weight: bold;
+}
+
+/* 반응형 - 태블릿 */
+@media (max-width: 768px) {
+  .prompt-section {
+    padding: 16px;
+  }
+
+  .prompt-textarea {
+    min-height: 100px;
+  }
+
+  .inspiration-buttons {
+    justify-content: space-between;
+  }
+
+  .inspiration-btn {
+    flex: 1;
+    min-width: 60px;
+    max-width: 80px;
+    height: 64px;
+  }
+
+  .inspiration-btn .btn-icon {
+    font-size: 20px;
+  }
+}
+
+/* 반응형 - 모바일 */
+@media (max-width: 480px) {
+  .inspiration-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .inspiration-btn {
+    max-width: none;
+  }
+}

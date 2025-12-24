@@ -11,6 +11,7 @@ import {
   RESOLUTION_OPTIONS,
 } from '../../services/imageToVideo';
 import ImageUpscaler from './ImageUpscaler';
+import { PROMPT_CATEGORIES, DEFAULT_PROMPT, PROMPT_GUIDE } from './promptExamples';
 
 const AIVideoCreator = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -18,7 +19,8 @@ const AIVideoCreator = () => {
     const tabParam = searchParams.get('tab');
     return ['shortform', 'upscale', 'img2video'].includes(tabParam) ? tabParam : 'shortform';
   });
-  const [topic, setTopic] = useState('');
+  const [promptText, setPromptText] = useState(DEFAULT_PROMPT);
+  const [showGuide, setShowGuide] = useState(false);
   const [videoStyle, setVideoStyle] = useState('educational');
   const [videoDuration, setVideoDuration] = useState(30);
   const [videoResolution, setVideoResolution] = useState('1080p');
@@ -98,33 +100,6 @@ const AIVideoCreator = () => {
     { id: 4, name: '최종 편집', icon: '✂️', description: '자막 및 오디오 합성' },
   ];
 
-  const exampleTopics = [
-    {
-      label: '교육',
-      icon: '📚',
-      topics: ['동물원에서', '아침 식사', '비 오는 날', '숫자 배우기', '색깔 익히기']
-    },
-    {
-      label: '비즈니스',
-      icon: '💼',
-      topics: ['회사 소개', '제품 홍보', '서비스 안내', '팀 문화', '채용 공고']
-    },
-    {
-      label: '라이프스타일',
-      icon: '🎨',
-      topics: ['오늘의 요리', '여행 브이로그', '운동 루틴', '일상 공유', '취미 소개']
-    },
-    {
-      label: '엔터테인먼트',
-      icon: '🎬',
-      topics: ['영화 리뷰', '음악 추천', '게임 플레이', '책 소개', '이벤트 안내']
-    },
-    {
-      label: '뉴스/정보',
-      icon: '📰',
-      topics: ['시사 이슈', '생활 팁', '건강 정보', '재테크', '기술 트렌드']
-    },
-  ];
 
   const videoStyles = [
     { value: 'educational', label: '교육용', icon: '📚', description: '학습 중심의 설명형 영상' },
@@ -146,8 +121,8 @@ const AIVideoCreator = () => {
   ];
 
   const handleGenerate = async () => {
-    if (!topic.trim()) {
-      setError('주제를 입력해주세요.');
+    if (!promptText.trim()) {
+      setError('영상 아이디어를 입력해주세요.');
       return;
     }
 
@@ -165,8 +140,8 @@ const AIVideoCreator = () => {
 
       // Mock 결과
       const mockResult = {
-        title: `${topic} - AI 생성 영상`,
-        description: `${topic}에 대한 AI 생성 숏폼 영상입니다.`,
+        title: `AI 생성 영상`,
+        description: `${promptText.substring(0, 100)}${promptText.length > 100 ? '...' : ''}`,
         english: 'I see a big elephant at the zoo!',
         korean: '나는 동물원에서 큰 코끼리를 봐요!',
         videoUrl: null,
@@ -182,7 +157,7 @@ const AIVideoCreator = () => {
       // 히스토리에 추가
       const historyItem = {
         id: `video_${Date.now()}`,
-        topic,
+        topic: promptText.substring(0, 50) + (promptText.length > 50 ? '...' : ''),
         style: videoStyle,
         duration: videoDuration,
         resolution: videoResolution,
@@ -201,7 +176,7 @@ const AIVideoCreator = () => {
 
   const handleDownload = async () => {
     try {
-      await videoCreatorService.downloadShortForm('mock_job_id', `${topic}.mp4`);
+      await videoCreatorService.downloadShortForm('mock_job_id', `video.mp4`);
     } catch (err) {
       alert('다운로드 실패: ' + err.message);
     }
@@ -210,7 +185,7 @@ const AIVideoCreator = () => {
   const handleNewVideo = () => {
     setResult(null);
     setError(null);
-    setTopic('');
+    setPromptText(DEFAULT_PROMPT);
     setCurrentStep(0);
   };
 
@@ -221,8 +196,11 @@ const AIVideoCreator = () => {
     }
   };
 
-  const handleTopicClick = (selectedTopic) => {
-    setTopic(selectedTopic);
+  const handleInspirationClick = (category) => {
+    // 해당 카테고리에서 랜덤 예시 선택
+    const randomIndex = Math.floor(Math.random() * category.examples.length);
+    const example = category.examples[randomIndex];
+    setPromptText(example.prompt);
   };
 
   // Image to Video 핸들러
@@ -344,52 +322,85 @@ const AIVideoCreator = () => {
       {/* 숏폼 영상 탭 */}
       {activeTab === 'shortform' && (
         <div className="tab-content">
-          {/* 입력 섹션 */}
-          <section className="input-section">
+          {/* 프롬프트 입력 섹션 */}
+          <section className="prompt-section">
             <div className="section-header">
-              <h2>영상 주제</h2>
-              <p>만들고 싶은 영상의 주제를 입력하세요.</p>
+              <h2>✨ 영상 아이디어</h2>
+              <p>만들고 싶은 영상을 자유롭게 설명해주세요</p>
             </div>
 
-            <div className="input-with-button">
-              <input
-                type="text"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder="예: 카페 소개, 제품 리뷰, 여행 브이로그..."
+            {/* 프롬프트 Textarea */}
+            <div className="prompt-input-wrapper">
+              <textarea
+                className="prompt-textarea"
+                value={promptText}
+                onChange={(e) => setPromptText(e.target.value)}
+                onFocus={(e) => {
+                  // 기본 예시 프롬프트일 때 전체 선택
+                  if (promptText === DEFAULT_PROMPT) {
+                    e.target.select();
+                  }
+                }}
+                placeholder="영상 아이디어를 입력하세요..."
+                rows={4}
+                maxLength={500}
                 disabled={isGenerating}
               />
-              <button
-                className="generate-btn"
-                onClick={handleGenerate}
-                disabled={isGenerating || !topic.trim()}
-              >
-                {isGenerating ? '생성 중...' : '영상 생성'}
-              </button>
+              <div className="prompt-counter">
+                <span className={promptText.length > 400 ? 'warning' : ''}>
+                  {promptText.length}/500자
+                </span>
+              </div>
             </div>
 
-            {/* 예시 주제 */}
-            <div className="example-topics">
-              {exampleTopics.map((category) => (
-                <div key={category.label} className="topic-category">
-                  <span className="category-label">
-                    <span className="category-icon">{category.icon}</span>
-                    {category.label}
-                  </span>
-                  <div className="topic-chips">
-                    {category.topics.map((t) => (
-                      <button
-                        key={t}
-                        className={`topic-chip ${topic === t ? 'active' : ''}`}
-                        onClick={() => handleTopicClick(t)}
-                        disabled={isGenerating}
-                      >
-                        {t}
-                      </button>
+            {/* 생성 버튼 */}
+            <button
+              className="generate-btn"
+              onClick={handleGenerate}
+              disabled={isGenerating || !promptText.trim()}
+            >
+              {isGenerating ? '생성 중...' : '영상 생성'}
+            </button>
+
+            {/* 영감 버튼들 */}
+            <div className="inspiration-section">
+              <div className="inspiration-header">
+                <span className="inspiration-icon">💡</span>
+                <span>영감 얻기</span>
+              </div>
+              <div className="inspiration-buttons">
+                {Object.values(PROMPT_CATEGORIES).map((category) => (
+                  <button
+                    key={category.id}
+                    className="inspiration-btn"
+                    onClick={() => handleInspirationClick(category)}
+                    disabled={isGenerating}
+                  >
+                    <span className="btn-icon">{category.icon}</span>
+                    <span className="btn-name">{category.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 프롬프트 작성 가이드 (접이식) */}
+            <div className="prompt-guide-section">
+              <button
+                className="guide-toggle"
+                onClick={() => setShowGuide(!showGuide)}
+              >
+                <span>{showGuide ? '▼' : '▶'}</span>
+                <span>좋은 프롬프트 작성 팁</span>
+              </button>
+              {showGuide && (
+                <div className="guide-content">
+                  <ul>
+                    {PROMPT_GUIDE.tips.map((tip, index) => (
+                      <li key={index}>{tip}</li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
-              ))}
+              )}
             </div>
           </section>
 
