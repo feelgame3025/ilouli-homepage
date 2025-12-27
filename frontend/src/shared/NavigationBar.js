@@ -99,11 +99,11 @@ const NavigationBar = () => {
   const showAdminLab = hasAccess([USER_TIERS.ADMIN, USER_TIERS.FAMILY]);
 
   const tierLabels = {
-    [USER_TIERS.GUEST]: '방문객',
-    [USER_TIERS.GENERAL]: '일반 회원',
-    [USER_TIERS.SUBSCRIBER]: '구독자',
-    [USER_TIERS.FAMILY]: '가족 구성원',
-    [USER_TIERS.ADMIN]: '관리자'
+    [USER_TIERS.GUEST]: t('auth.tiers.guest'),
+    [USER_TIERS.GENERAL]: t('auth.tiers.general'),
+    [USER_TIERS.SUBSCRIBER]: t('auth.tiers.subscriber'),
+    [USER_TIERS.FAMILY]: t('auth.tiers.family'),
+    [USER_TIERS.ADMIN]: t('auth.tiers.admin')
   };
 
   const handleViewAsTier = (tier) => {
@@ -378,7 +378,7 @@ const NavigationBar = () => {
                     {/* 프로필 링크 */}
                     <Link to="/profile" className="user-dropdown-item" onClick={handleMenuItemClick}>
                       <span className="dropdown-icon">👤</span>
-                      <span>내 프로필</span>
+                      <span>{t('nav.myProfile')}</span>
                     </Link>
 
                     {/* 관리자 전용 메뉴 */}
@@ -386,50 +386,50 @@ const NavigationBar = () => {
                       <>
                         <a href={getHostUrl(HOSTS.ADMIN, '/')} className="user-dropdown-item" onClick={handleMenuItemClick}>
                           <span className="dropdown-icon">⚙️</span>
-                          <span>관리자 대시보드</span>
+                          <span>{t('nav.adminDashboard')}</span>
                         </a>
 
                         <div className="dropdown-divider"></div>
 
                         {/* 등급 시뮬레이션 섹션 */}
                         <div className="tier-simulation-section">
-                          <span className="tier-simulation-label">다른 등급으로 보기</span>
+                          <span className="tier-simulation-label">{t('nav.viewAsOtherTier')}</span>
                           <div className="tier-buttons">
                             <button
                               className={`tier-btn ${viewAsTier === null ? 'active' : ''}`}
                               onClick={() => handleViewAsTier(null)}
                             >
-                              관리자 (기본)
+                              {t('nav.adminDefault')}
                             </button>
                             <button
                               className={`tier-btn ${viewAsTier === USER_TIERS.FAMILY ? 'active' : ''}`}
                               onClick={() => handleViewAsTier(USER_TIERS.FAMILY)}
                             >
-                              가족 구성원
+                              {t('auth.tiers.family')}
                             </button>
                             <button
                               className={`tier-btn ${viewAsTier === USER_TIERS.SUBSCRIBER ? 'active' : ''}`}
                               onClick={() => handleViewAsTier(USER_TIERS.SUBSCRIBER)}
                             >
-                              구독자
+                              {t('auth.tiers.subscriber')}
                             </button>
                             <button
                               className={`tier-btn ${viewAsTier === USER_TIERS.GENERAL ? 'active' : ''}`}
                               onClick={() => handleViewAsTier(USER_TIERS.GENERAL)}
                             >
-                              일반 회원
+                              {t('auth.tiers.general')}
                             </button>
                             <button
                               className={`tier-btn ${viewAsTier === USER_TIERS.GUEST ? 'active' : ''}`}
                               onClick={() => handleViewAsTier(USER_TIERS.GUEST)}
                             >
-                              방문객
+                              {t('auth.tiers.guest')}
                             </button>
                           </div>
                           {viewAsTier && (
-                            <div className="viewing-as-notice">
-                              현재 <strong>{tierLabels[viewAsTier]}</strong> 등급으로 보는 중
-                            </div>
+                            <div className="viewing-as-notice" dangerouslySetInnerHTML={{
+                              __html: t('nav.viewingAs', { tierLabel: tierLabels[viewAsTier] })
+                            }} />
                           )}
                         </div>
                       </>
@@ -455,7 +455,7 @@ const NavigationBar = () => {
             <button
               className={`mobile-menu-btn ${isMobileMenuOpen ? 'active' : ''}`}
               onClick={toggleMobileMenu}
-              aria-label="메뉴 열기"
+              aria-label={t('nav.mobileMenuOpen')}
             >
               <span></span>
               <span></span>
@@ -471,27 +471,27 @@ const NavigationBar = () => {
             <div className={`flyout-panel ${activeDropdown === 'community' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('community')}>
               <div className="flyout-content">
                 <div className="flyout-section">
-                  <h3 className="flyout-section-title">커뮤니티</h3>
+                  <h3 className="flyout-section-title">{t('nav.communitySection')}</h3>
                   <div className="flyout-links">
                     <a href={getHostUrl(HOSTS.COMMUNITY, '/announcements')} className="flyout-link">
                       <span className="flyout-link-icon">📢</span>
                       <div className="flyout-link-text">
                         <span className="flyout-link-title">{t('nav.announcements')}</span>
-                        <span className="flyout-link-desc">중요한 소식과 업데이트</span>
+                        <span className="flyout-link-desc">{t('nav.announcementsDesc')}</span>
                       </div>
                     </a>
                     <a href={getHostUrl(HOSTS.COMMUNITY, '/free-board')} className="flyout-link">
                       <span className="flyout-link-icon">💬</span>
                       <div className="flyout-link-text">
                         <span className="flyout-link-title">{t('nav.freeBoard')}</span>
-                        <span className="flyout-link-desc">자유롭게 소통하기</span>
+                        <span className="flyout-link-desc">{t('nav.freeBoardDesc')}</span>
                       </div>
                     </a>
                     <a href={getHostUrl(HOSTS.COMMUNITY, '/games')} className="flyout-link">
                       <span className="flyout-link-icon">🎮</span>
                       <div className="flyout-link-text">
                         <span className="flyout-link-title">{t('nav.games')}</span>
-                        <span className="flyout-link-desc">미니게임 즐기기</span>
+                        <span className="flyout-link-desc">{t('nav.gamesDesc')}</span>
                       </div>
                     </a>
                   </div>
@@ -504,34 +504,34 @@ const NavigationBar = () => {
               <div className={`flyout-panel ${activeDropdown === 'ai' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('ai')}>
                 <div className="flyout-content">
                   <div className="flyout-section">
-                    <h3 className="flyout-section-title">AI 콘텐츠 도구</h3>
+                    <h3 className="flyout-section-title">{t('nav.aiToolsSection')}</h3>
                     <div className="flyout-links">
                       <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=shortform')} className="flyout-link">
                         <span className="flyout-link-icon">🎬</span>
                         <div className="flyout-link-text">
-                          <span className="flyout-link-title">숏폼</span>
-                          <span className="flyout-link-desc">AI 숏폼 영상 제작</span>
+                          <span className="flyout-link-title">{t('nav.shortform')}</span>
+                          <span className="flyout-link-desc">{t('nav.shortformDesc')}</span>
                         </div>
                       </a>
                       <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=upscale')} className="flyout-link">
                         <span className="flyout-link-icon">🔍</span>
                         <div className="flyout-link-text">
-                          <span className="flyout-link-title">이미지 업스케일링</span>
-                          <span className="flyout-link-desc">저해상도 → 고해상도</span>
+                          <span className="flyout-link-title">{t('nav.imageUpscale')}</span>
+                          <span className="flyout-link-desc">{t('nav.imageUpscaleDesc')}</span>
                         </div>
                       </a>
                       <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=img2video')} className="flyout-link">
                         <span className="flyout-link-icon">🎞️</span>
                         <div className="flyout-link-text">
-                          <span className="flyout-link-title">이미지 영상</span>
-                          <span className="flyout-link-desc">정적 이미지를 영상으로</span>
+                          <span className="flyout-link-title">{t('nav.imageToVideo')}</span>
+                          <span className="flyout-link-desc">{t('nav.imageToVideoDesc')}</span>
                         </div>
                       </a>
                       <a href={getHostUrl(HOSTS.AI, '/storyboard')} className="flyout-link">
                         <span className="flyout-link-icon">📖</span>
                         <div className="flyout-link-text">
                           <span className="flyout-link-title">{t('nav.aiStoryboard')}</span>
-                          <span className="flyout-link-desc">AI 기반 스토리 생성</span>
+                          <span className="flyout-link-desc">{t('nav.aiStoryboardDesc')}</span>
                         </div>
                       </a>
                     </div>
@@ -545,20 +545,20 @@ const NavigationBar = () => {
               <div className={`flyout-panel ${activeDropdown === 'family' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('family')}>
                 <div className="flyout-content">
                   <div className="flyout-section">
-                    <h3 className="flyout-section-title">가족 공간</h3>
+                    <h3 className="flyout-section-title">{t('nav.familySection')}</h3>
                     <div className="flyout-links">
                       <a href={getHostUrl(HOSTS.FAMILY, '/')} className="flyout-link">
                         <span className="flyout-link-icon">🏠</span>
                         <div className="flyout-link-text">
-                          <span className="flyout-link-title">가족 홈</span>
-                          <span className="flyout-link-desc">가족 공간 메인</span>
+                          <span className="flyout-link-title">{t('nav.familyHome')}</span>
+                          <span className="flyout-link-desc">{t('nav.familyHomeDesc')}</span>
                         </div>
                       </a>
                       <a href={getHostUrl(HOSTS.FAMILY, '/calendar')} className="flyout-link">
                         <span className="flyout-link-icon">📅</span>
                         <div className="flyout-link-text">
-                          <span className="flyout-link-title">캘린더</span>
-                          <span className="flyout-link-desc">가족 일정 관리</span>
+                          <span className="flyout-link-title">{t('nav.calendar')}</span>
+                          <span className="flyout-link-desc">{t('nav.calendarDesc')}</span>
                         </div>
                       </a>
                     </div>
@@ -572,20 +572,20 @@ const NavigationBar = () => {
               <div className={`flyout-panel ${activeDropdown === 'lab' ? 'active' : ''}`} onMouseEnter={() => handleDropdownEnter('lab')}>
                 <div className="flyout-content">
                   <div className="flyout-section">
-                    <h3 className="flyout-section-title">관리자 랩</h3>
+                    <h3 className="flyout-section-title">{t('nav.labSection')}</h3>
                     <div className="flyout-links">
                       <a href={getHostUrl(HOSTS.LAB, '/test-zone')} className="flyout-link">
                         <span className="flyout-link-icon">🧪</span>
                         <div className="flyout-link-text">
                           <span className="flyout-link-title">{t('nav.testZone')}</span>
-                          <span className="flyout-link-desc">새로운 기능 테스트</span>
+                          <span className="flyout-link-desc">{t('nav.testZoneDesc')}</span>
                         </div>
                       </a>
                       <a href={getHostUrl(HOSTS.LAB, '/file-upload')} className="flyout-link">
                         <span className="flyout-link-icon">📁</span>
                         <div className="flyout-link-text">
                           <span className="flyout-link-title">{t('nav.fileUpload')}</span>
-                          <span className="flyout-link-desc">AI 파일 분석</span>
+                          <span className="flyout-link-desc">{t('nav.fileUploadDesc')}</span>
                         </div>
                       </a>
                     </div>
@@ -654,13 +654,13 @@ const NavigationBar = () => {
                   </button>
                   <div className="mobile-submenu">
                     <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=shortform')} className="mobile-submenu-link">
-                      숏폼
+                      {t('nav.shortform')}
                     </a>
                     <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=upscale')} className="mobile-submenu-link">
-                      이미지 업스케일링
+                      {t('nav.imageUpscale')}
                     </a>
                     <a href={getHostUrl(HOSTS.AI, '/video-creator?tab=img2video')} className="mobile-submenu-link">
-                      이미지 영상
+                      {t('nav.imageToVideo')}
                     </a>
                     <a href={getHostUrl(HOSTS.AI, '/storyboard')} className="mobile-submenu-link">
                       {t('nav.aiStoryboard')}
@@ -682,10 +682,10 @@ const NavigationBar = () => {
                   </button>
                   <div className="mobile-submenu">
                     <a href={getHostUrl(HOSTS.FAMILY, '/')} className="mobile-submenu-link">
-                      가족 홈
+                      {t('nav.familyHome')}
                     </a>
                     <a href={getHostUrl(HOSTS.FAMILY, '/calendar')} className="mobile-submenu-link">
-                      캘린더
+                      {t('nav.calendar')}
                     </a>
                   </div>
                 </li>

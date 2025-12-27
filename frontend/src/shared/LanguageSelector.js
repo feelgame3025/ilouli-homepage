@@ -14,8 +14,8 @@ const LanguageSelector = () => {
 
   const currentLang = languages.find(lang => lang.code === i18n.language) || languages[0];
 
-  const changeLanguage = (langCode) => {
-    i18n.changeLanguage(langCode);
+  const changeLanguage = async (langCode) => {
+    await i18n.changeLanguage(langCode);
     setIsOpen(false);
   };
 

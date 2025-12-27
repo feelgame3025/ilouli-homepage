@@ -15,13 +15,18 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'en',
+    fallbackLng: 'ko',  // 한국어를 기본으로
+    lng: localStorage.getItem('i18nextLng') || 'ko',  // 명시적 초기값
     interpolation: {
       escapeValue: false,
     },
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
+      lookupLocalStorage: 'i18nextLng',
+    },
+    react: {
+      useSuspense: false,  // SSR 없으므로 false
     },
   });
 
