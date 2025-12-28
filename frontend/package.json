@@ -43,6 +43,7 @@
     ]
   },
   "devDependencies": {
-    "babel-preset-react-app": "^10.1.0"
+    "babel-preset-react-app": "^10.1.0",
+    "puppeteer": "^24.34.0"
   }
 }

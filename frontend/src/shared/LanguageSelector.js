@@ -5,18 +5,29 @@ import './LanguageSelector.css';
 const LanguageSelector = () => {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [isChanging, setIsChanging] = useState(false);
   const dropdownRef = useRef(null);
 
   const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'ko', name: '한국어', flag: '🇰🇷' },
+    { code: 'en', name: 'English', flag: '🇺🇸', short: 'EN' },
+    { code: 'ko', name: '한국어', flag: '🇰🇷', short: 'KO' },
   ];
 
-  const currentLang = languages.find(lang => lang.code === i18n.language) || languages[0];
+  const currentLang = languages.find(lang => lang.code === i18n.language) || languages[1];
 
   const changeLanguage = async (langCode) => {
-    await i18n.changeLanguage(langCode);
-    setIsOpen(false);
+    if (langCode === i18n.language) {
+      setIsOpen(false);
+      return;
+    }
+    setIsChanging(true);
+    try {
+      await i18n.changeLanguage(langCode);
+      localStorage.setItem('i18nextLng', langCode);
+    } finally {
+      setIsChanging(false);
+      setIsOpen(false);
+    }
   };
 
   // 외부 클릭 시 닫기
@@ -38,11 +49,12 @@ const LanguageSelector = () => {
   return (
     <div className="language-selector" ref={dropdownRef}>
       <button
-        className="lang-trigger"
-        onClick={() => setIsOpen(!isOpen)}
+        className={`lang-trigger ${isChanging ? 'changing' : ''}`}
+        onClick={() => !isChanging && setIsOpen(!isOpen)}
         aria-label="언어 선택"
+        disabled={isChanging}
       >
-        <span className="lang-flag">{currentLang.flag}</span>
+        <span className="lang-code">{currentLang.short}</span>
         <svg className={`lang-arrow ${isOpen ? 'open' : ''}`} width="10" height="6" viewBox="0 0 10 6">
           <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" />
         </svg>
@@ -55,8 +67,9 @@ const LanguageSelector = () => {
               key={lang.code}
               onClick={() => changeLanguage(lang.code)}
               className={`lang-option ${i18n.language === lang.code ? 'active' : ''}`}
+              disabled={isChanging}
             >
-              <span className="lang-flag">{lang.flag}</span>
+              <span className="lang-code-option">{lang.short}</span>
               <span className="lang-name">{lang.name}</span>
               {i18n.language === lang.code && <span className="lang-check">✓</span>}
             </button>
