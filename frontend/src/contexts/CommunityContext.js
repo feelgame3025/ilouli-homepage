@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { STORAGE_KEYS } from '../constants/storageKeys';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useCommunityAPI } from '../hooks/useCommunityAPI';
+import * as communityService from '../services/community';
 
 export const POST_TYPES = {
   ANNOUNCEMENT: 'announcement',
@@ -32,61 +32,82 @@ export const useCommunity = () => {
   return context;
 };
 
-// 기본 공지사항 데이터
-const DEFAULT_POSTS = [
-  {
-    id: 'post-001',
-    type: POST_TYPES.ANNOUNCEMENT,
-    category: null,
-    title: 'Welcome to ilouli.com!',
-    content: 'Welcome to our platform. We are excited to have you here. Explore our AI Storyboard features and connect with your family in our Family Space.',
-    author: { id: 'admin-001', name: 'Administrator' },
-    createdAt: '2025-01-01T00:00:00.000Z',
-    updatedAt: '2025-01-01T00:00:00.000Z',
-    comments: [],
-    attachments: [],
-    reportCount: 0,
-    isHidden: false
-  }
-];
-
 export const CommunityProvider = ({ children }) => {
   const [posts, setPosts] = useState([]);
   const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // localStorage 초기화
+  // Backend API에서 데이터 로드
   useEffect(() => {
-    const storedPosts = localStorage.getItem(STORAGE_KEYS.POSTS);
-    if (storedPosts) {
-      setPosts(JSON.parse(storedPosts));
-    } else {
-      setPosts(DEFAULT_POSTS);
-      localStorage.setItem(STORAGE_KEYS.POSTS, JSON.stringify(DEFAULT_POSTS));
-    }
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-    const storedReports = localStorage.getItem(STORAGE_KEYS.REPORTS);
-    if (storedReports) {
-      setReports(JSON.parse(storedReports));
-    }
-  }, []);
+        // 공지사항과 커뮤니티 게시글을 병렬로 로드
+        const [announcementsRes, communityRes] = await Promise.all([
+          communityService.getPosts('announcement', 1, 100),
+          communityService.getPosts('free', 1, 100)
+        ]);
 
-  // localStorage 저장 헬퍼 함수
-  const savePosts = useCallback((newPosts) => {
-    setPosts(newPosts);
-    localStorage.setItem(STORAGE_KEYS.POSTS, JSON.stringify(newPosts));
-  }, []);
+        // Backend response format: { success: true, data: { posts, pagination } }
+        // 두 보드의 게시글을 합쳐서 저장
+        const allPosts = [
+          ...(announcementsRes.data?.posts || []),
+          ...(communityRes.data?.posts || [])
+        ];
 
-  const saveReports = useCallback((newReports) => {
-    setReports(newReports);
-    localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(newReports));
+        // Backend 데이터 형식을 Frontend 형식으로 변환
+        const formattedPosts = allPosts.map(post => ({
+          id: post.id,
+          type: post.board === 'announcement' ? POST_TYPES.ANNOUNCEMENT : POST_TYPES.COMMUNITY,
+          category: null, // TODO: 카테고리 추가 필요
+          title: post.title,
+          content: post.content,
+          author: {
+            id: post.author_id,
+            name: post.author_name,
+            email: post.author_email,
+            picture: post.author_picture
+          },
+          createdAt: post.created_at,
+          updatedAt: post.updated_at,
+          comments: [], // 상세 조회 시 로드
+          attachments: [],
+          reportCount: 0,
+          isHidden: false
+        }));
+
+        setPosts(formattedPosts);
+
+        // 관리자인 경우 신고 목록도 로드 (에러 무시)
+        try {
+          const reportsRes = await communityService.getReports();
+          setReports(reportsRes.data || []);
+        } catch (err) {
+          // 권한이 없는 경우 에러 무시
+          console.log('Reports not loaded (admin only)');
+        }
+      } catch (err) {
+        console.error('Failed to load community data:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
   // API 로직을 useCommunityAPI 훅으로 분리
-  const api = useCommunityAPI(posts, setPosts, savePosts, reports, saveReports);
+  const api = useCommunityAPI(posts, setPosts, reports, setReports);
 
   const value = {
     posts,
     reports,
+    loading,
+    error,
     ...api,
     POST_TYPES,
     CATEGORIES,

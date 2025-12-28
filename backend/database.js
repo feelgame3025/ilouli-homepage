@@ -134,10 +134,33 @@ db.exec(`
     target_type TEXT NOT NULL,
     target_id INTEGER NOT NULL,
     reason TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    handled_by INTEGER,
+    handled_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (handled_by) REFERENCES users(id) ON DELETE SET NULL
   )
 `);
+
+// community_reports 테이블에 status, handled_by, handled_at 컬럼 추가 (마이그레이션)
+try {
+  db.exec(`ALTER TABLE community_reports ADD COLUMN status TEXT DEFAULT 'pending'`);
+} catch (e) {
+  // 이미 존재하면 무시
+}
+
+try {
+  db.exec(`ALTER TABLE community_reports ADD COLUMN handled_by INTEGER`);
+} catch (e) {
+  // 이미 존재하면 무시
+}
+
+try {
+  db.exec(`ALTER TABLE community_reports ADD COLUMN handled_at DATETIME`);
+} catch (e) {
+  // 이미 존재하면 무시
+}
 
 // 커뮤니티 인덱스
 try {

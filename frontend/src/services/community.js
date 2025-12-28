@@ -46,6 +46,9 @@ export const getPostById = async (postId) => {
   return response.json();
 };
 
+// Alias for consistency with requested API
+export const getPost = getPostById;
+
 // POST /api/community/posts - 게시글 작성
 export const createPost = async (board, title, content) => {
   const response = await fetch(
@@ -102,6 +105,25 @@ export const deletePost = async (postId) => {
   return response.json();
 };
 
+// GET /api/community/posts/:id/comments - 댓글 조회
+export const getComments = async (postId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/community/posts/${postId}`,
+    {
+      method: 'GET',
+      headers: getAuthHeaders()
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to fetch comments');
+  }
+
+  const result = await response.json();
+  return result.data?.comments || [];
+};
+
 // POST /api/community/posts/:id/comments - 댓글 작성
 export const createComment = async (postId, content, parentId = null) => {
   const response = await fetch(
@@ -109,7 +131,7 @@ export const createComment = async (postId, content, parentId = null) => {
     {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ content, parentId })
+      body: JSON.stringify({ content, parent_id: parentId })
     }
   );
 
@@ -121,20 +143,57 @@ export const createComment = async (postId, content, parentId = null) => {
   return response.json();
 };
 
+// DELETE /api/community/comments/:id - 댓글 삭제
+export const deleteComment = async (commentId) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/community/comments/${commentId}`,
+    {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to delete comment');
+  }
+
+  return response.json();
+};
+
 // POST /api/community/posts/:id/report - 게시글 신고
-export const reportPost = async (postId, type, reason) => {
+export const reportPost = async (postId, reason) => {
   const response = await fetch(
     `${API_BASE_URL}/api/community/posts/${postId}/report`,
     {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ type, reason })
+      body: JSON.stringify({ target_type: 'post', reason })
     }
   );
 
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.error || 'Failed to report post');
+  }
+
+  return response.json();
+};
+
+// POST /api/community/posts/:id/report - 댓글 신고
+export const reportComment = async (commentId, reason) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/community/posts/${commentId}/report`,
+    {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ target_type: 'comment', reason })
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to report comment');
   }
 
   return response.json();
@@ -177,6 +236,9 @@ export const updateReportStatus = async (reportId, status) => {
 
   return response.json();
 };
+
+// Alias for handleReport
+export const handleReport = updateReportStatus;
 
 // PUT /api/community/posts/:id/hide - 게시글 숨김 (관리자 전용)
 export const hidePost = async (postId) => {

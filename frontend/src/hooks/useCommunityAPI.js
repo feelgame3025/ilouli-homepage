@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
 import { POST_TYPES, CATEGORIES, REPORT_STATUS } from '../contexts/CommunityContext';
+import * as communityService from '../services/community';
 
 /**
  * CommunityContext에서 사용하는 API 로직을 추출한 훅
- * Mock 데이터 기반 구현 (localStorage)
+ * Backend API 기반 구현
  */
-export const useCommunityAPI = (posts, setPosts, savePosts, reports, saveReports) => {
+export const useCommunityAPI = (posts, setPosts, reports, setReports) => {
   // 공지사항 목록 조회
   const getAnnouncements = useCallback(() => {
     return posts
@@ -37,209 +38,199 @@ export const useCommunityAPI = (posts, setPosts, savePosts, reports, saveReports
   }, [posts]);
 
   // 글 작성
-  const createPost = useCallback((type, title, content, author, category = null, files = []) => {
-    const newPost = {
-      id: `post-${Date.now()}`,
-      type,
-      category: type === POST_TYPES.COMMUNITY ? (category || CATEGORIES.GENERAL) : null,
-      title,
-      content,
-      author: { id: author.id, name: author.name },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      comments: [],
-      attachments: files,
-      reportCount: 0,
-      isHidden: false
-    };
-    savePosts([newPost, ...posts]);
-    return newPost;
-  }, [posts, savePosts]);
+  const createPost = useCallback(async (type, title, content, author, category = null, files = []) => {
+    try {
+      const board = type === POST_TYPES.ANNOUNCEMENT ? 'announcement' : 'free';
+      const result = await communityService.createPost(board, title, content);
+
+      // 로컬 상태 업데이트
+      setPosts(prev => [result.data, ...prev]);
+      return result.data;
+    } catch (error) {
+      console.error('Failed to create post:', error);
+      throw error;
+    }
+  }, [setPosts]);
 
   // 글 수정
-  const updatePost = useCallback((postId, title, content, userId) => {
-    const post = posts.find(p => p.id === postId);
-    if (!post) throw new Error('Post not found');
-    if (post.author.id !== userId) throw new Error('Not authorized');
+  const updatePost = useCallback(async (postId, title, content, userId) => {
+    try {
+      const result = await communityService.updatePost(postId, title, content);
 
-    const updatedPosts = posts.map(p =>
-      p.id === postId
-        ? { ...p, title, content, updatedAt: new Date().toISOString() }
-        : p
-    );
-    savePosts(updatedPosts);
-  }, [posts, savePosts]);
+      // 로컬 상태 업데이트
+      setPosts(prev => prev.map(p =>
+        p.id === postId
+          ? { ...p, title, content, updatedAt: new Date().toISOString() }
+          : p
+      ));
+      return result.data;
+    } catch (error) {
+      console.error('Failed to update post:', error);
+      throw error;
+    }
+  }, [setPosts]);
 
   // 글 삭제
-  const deletePost = useCallback((postId, userId, isAdmin) => {
-    const post = posts.find(p => p.id === postId);
-    if (!post) throw new Error('Post not found');
-    if (post.author.id !== userId && !isAdmin) throw new Error('Not authorized');
+  const deletePost = useCallback(async (postId, userId, isAdmin) => {
+    try {
+      await communityService.deletePost(postId);
 
-    const updatedPosts = posts.filter(p => p.id !== postId);
-    savePosts(updatedPosts);
-  }, [posts, savePosts]);
+      // 로컬 상태 업데이트
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      throw error;
+    }
+  }, [setPosts]);
 
   // 댓글 작성
-  const addComment = useCallback((postId, content, author) => {
-    const newComment = {
-      id: `comment-${Date.now()}`,
-      content,
-      author: { id: author.id, name: author.name },
-      createdAt: new Date().toISOString()
-    };
+  const addComment = useCallback(async (postId, content, author) => {
+    try {
+      const result = await communityService.createComment(postId, content);
 
-    const updatedPosts = posts.map(p =>
-      p.id === postId
-        ? { ...p, comments: [...p.comments, newComment] }
-        : p
-    );
-    savePosts(updatedPosts);
-    return newComment;
-  }, [posts, savePosts]);
+      // 로컬 상태 업데이트
+      setPosts(prev => prev.map(p =>
+        p.id === postId
+          ? { ...p, comments: [...(p.comments || []), result.data] }
+          : p
+      ));
+      return result.data;
+    } catch (error) {
+      console.error('Failed to add comment:', error);
+      throw error;
+    }
+  }, [setPosts]);
 
   // 댓글 삭제
-  const deleteComment = useCallback((postId, commentId, userId, isAdmin) => {
-    const post = posts.find(p => p.id === postId);
-    if (!post) throw new Error('Post not found');
+  const deleteComment = useCallback(async (postId, commentId, userId, isAdmin) => {
+    try {
+      await communityService.hideComment(commentId);
 
-    const comment = post.comments.find(c => c.id === commentId);
-    if (!comment) throw new Error('Comment not found');
-    if (comment.author.id !== userId && !isAdmin) throw new Error('Not authorized');
-
-    const updatedPosts = posts.map(p =>
-      p.id === postId
-        ? { ...p, comments: p.comments.filter(c => c.id !== commentId) }
-        : p
-    );
-    savePosts(updatedPosts);
-  }, [posts, savePosts]);
+      // 로컬 상태 업데이트
+      setPosts(prev => prev.map(p =>
+        p.id === postId
+          ? { ...p, comments: p.comments.filter(c => c.id !== commentId) }
+          : p
+      ));
+    } catch (error) {
+      console.error('Failed to delete comment:', error);
+      throw error;
+    }
+  }, [setPosts]);
 
   // 게시글 신고
-  const reportPost = useCallback((postId, reason, reporter) => {
-    const post = posts.find(p => p.id === postId);
-    if (!post) throw new Error('Post not found');
+  const reportPost = useCallback(async (postId, reason, reporter) => {
+    try {
+      const result = await communityService.reportPost(postId, 'post', reason);
 
-    // 이미 신고했는지 확인
-    const alreadyReported = reports.find(
-      r => r.postId === postId && r.reporter.id === reporter.id && r.type === 'post'
-    );
-    if (alreadyReported) throw new Error('Already reported');
+      // 로컬 상태 업데이트
+      setPosts(prev => prev.map(p =>
+        p.id === postId ? { ...p, reportCount: (p.reportCount || 0) + 1 } : p
+      ));
 
-    const newReport = {
-      id: `report-${Date.now()}`,
-      type: 'post',
-      postId,
-      postTitle: post.title,
-      reason,
-      reporter: { id: reporter.id, name: reporter.name },
-      author: post.author,
-      status: REPORT_STATUS.PENDING,
-      createdAt: new Date().toISOString()
-    };
-
-    saveReports([newReport, ...reports]);
-
-    // 게시글의 신고 횟수 증가
-    const updatedPosts = posts.map(p =>
-      p.id === postId ? { ...p, reportCount: (p.reportCount || 0) + 1 } : p
-    );
-    savePosts(updatedPosts);
-
-    return newReport;
-  }, [posts, reports, savePosts, saveReports]);
+      return result.data;
+    } catch (error) {
+      console.error('Failed to report post:', error);
+      throw error;
+    }
+  }, [setPosts]);
 
   // 댓글 신고
-  const reportComment = useCallback((postId, commentId, reason, reporter) => {
-    const post = posts.find(p => p.id === postId);
-    if (!post) throw new Error('Post not found');
-
-    const comment = post.comments.find(c => c.id === commentId);
-    if (!comment) throw new Error('Comment not found');
-
-    // 이미 신고했는지 확인
-    const alreadyReported = reports.find(
-      r => r.commentId === commentId && r.reporter.id === reporter.id && r.type === 'comment'
-    );
-    if (alreadyReported) throw new Error('Already reported');
-
-    const newReport = {
-      id: `report-${Date.now()}`,
-      type: 'comment',
-      postId,
-      commentId,
-      commentContent: comment.content.substring(0, 50),
-      reason,
-      reporter: { id: reporter.id, name: reporter.name },
-      author: comment.author,
-      status: REPORT_STATUS.PENDING,
-      createdAt: new Date().toISOString()
-    };
-
-    saveReports([newReport, ...reports]);
-    return newReport;
-  }, [posts, reports, saveReports]);
+  const reportComment = useCallback(async (postId, commentId, reason, reporter) => {
+    try {
+      const result = await communityService.reportPost(postId, 'comment', reason);
+      return result.data;
+    } catch (error) {
+      console.error('Failed to report comment:', error);
+      throw error;
+    }
+  }, []);
 
   // 신고 목록 조회 (관리자용)
-  const getReports = useCallback((status = null) => {
-    return reports
-      .filter(r => !status || r.status === status)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [reports]);
+  const getReports = useCallback(async (status = null) => {
+    try {
+      const result = await communityService.getReports(status);
+
+      // 로컬 상태 업데이트
+      if (setReports) {
+        setReports(result.data || []);
+      }
+      return result.data || [];
+    } catch (error) {
+      console.error('Failed to fetch reports:', error);
+      throw error;
+    }
+  }, [setReports]);
 
   // 신고 처리 (관리자용)
-  const handleReport = useCallback((reportId, action, isAdmin) => {
+  const handleReport = useCallback(async (reportId, action, isAdmin) => {
     if (!isAdmin) throw new Error('Not authorized');
 
-    const report = reports.find(r => r.id === reportId);
-    if (!report) throw new Error('Report not found');
+    try {
+      // 먼저 신고 정보를 로컬에서 찾음
+      const report = reports.find(r => r.id === reportId);
+      if (!report) throw new Error('Report not found');
 
-    let newStatus;
-    if (action === 'dismiss') {
-      newStatus = REPORT_STATUS.DISMISSED;
-    } else if (action === 'hide') {
-      newStatus = REPORT_STATUS.ACTIONED;
-      // 게시글 숨김 처리
-      if (report.type === 'post') {
-        const updatedPosts = posts.map(p =>
-          p.id === report.postId ? { ...p, isHidden: true } : p
-        );
-        savePosts(updatedPosts);
-      } else if (report.type === 'comment') {
-        // 댓글 삭제
-        const updatedPosts = posts.map(p =>
-          p.id === report.postId
-            ? { ...p, comments: p.comments.filter(c => c.id !== report.commentId) }
-            : p
-        );
-        savePosts(updatedPosts);
+      let newStatus;
+      if (action === 'dismiss') {
+        newStatus = REPORT_STATUS.DISMISSED;
+      } else if (action === 'hide') {
+        newStatus = REPORT_STATUS.ACTIONED;
+        // 게시글/댓글 숨김 처리
+        if (report.type === 'post') {
+          await communityService.hidePost(report.postId);
+          setPosts(prev => prev.map(p =>
+            p.id === report.postId ? { ...p, isHidden: true } : p
+          ));
+        } else if (report.type === 'comment' && report.commentId) {
+          await communityService.hideComment(report.commentId);
+          setPosts(prev => prev.map(p =>
+            p.id === report.postId
+              ? { ...p, comments: p.comments.filter(c => c.id !== report.commentId) }
+              : p
+          ));
+        }
+      } else if (action === 'delete') {
+        newStatus = REPORT_STATUS.ACTIONED;
+        // 게시글 완전 삭제
+        if (report.type === 'post') {
+          await communityService.deletePost(report.postId);
+          setPosts(prev => prev.filter(p => p.id !== report.postId));
+        }
+      } else {
+        newStatus = REPORT_STATUS.REVIEWED;
       }
-    } else if (action === 'delete') {
-      newStatus = REPORT_STATUS.ACTIONED;
-      // 게시글 완전 삭제
-      if (report.type === 'post') {
-        const updatedPosts = posts.filter(p => p.id !== report.postId);
-        savePosts(updatedPosts);
+
+      // 신고 상태 업데이트
+      await communityService.updateReportStatus(reportId, newStatus);
+
+      // 로컬 상태 업데이트
+      if (setReports) {
+        setReports(prev => prev.map(r =>
+          r.id === reportId ? { ...r, status: newStatus, reviewedAt: new Date().toISOString() } : r
+        ));
       }
-    } else {
-      newStatus = REPORT_STATUS.REVIEWED;
+    } catch (error) {
+      console.error('Failed to handle report:', error);
+      throw error;
     }
-
-    const updatedReports = reports.map(r =>
-      r.id === reportId ? { ...r, status: newStatus, reviewedAt: new Date().toISOString() } : r
-    );
-    saveReports(updatedReports);
-  }, [posts, reports, savePosts, saveReports]);
+  }, [reports, setPosts, setReports]);
 
   // 숨긴 게시글 복원 (관리자용)
-  const restorePost = useCallback((postId, isAdmin) => {
+  const restorePost = useCallback(async (postId, isAdmin) => {
     if (!isAdmin) throw new Error('Not authorized');
 
-    const updatedPosts = posts.map(p =>
-      p.id === postId ? { ...p, isHidden: false, reportCount: 0 } : p
-    );
-    savePosts(updatedPosts);
-  }, [posts, savePosts]);
+    try {
+      // API에서 복원 기능이 없으므로, 프론트엔드에서만 처리
+      // 실제로는 백엔드에 복원 API가 필요함
+      setPosts(prev => prev.map(p =>
+        p.id === postId ? { ...p, isHidden: false, reportCount: 0 } : p
+      ));
+    } catch (error) {
+      console.error('Failed to restore post:', error);
+      throw error;
+    }
+  }, [setPosts]);
 
   // 숨겨진 게시글 조회 (관리자용)
   const getHiddenPosts = useCallback(() => {

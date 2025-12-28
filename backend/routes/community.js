@@ -352,21 +352,144 @@ router.get('/reports', authMiddleware, (req, res) => {
     return res.status(403).json({ success: false, error: 'Admin access required' });
   }
 
+  const { status } = req.query;
+
   try {
-    const reports = db.prepare(`
+    let query = `
       SELECT
         r.*,
         u.name as reporter_name,
-        u.email as reporter_email
+        u.email as reporter_email,
+        h.name as handler_name,
+        h.email as handler_email
       FROM community_reports r
       JOIN users u ON r.user_id = u.id
-      ORDER BY r.created_at DESC
-    `).all();
+      LEFT JOIN users h ON r.handled_by = h.id
+    `;
 
-    res.json({ success: true, data: reports });
+    const params = [];
+    if (status) {
+      query += ' WHERE r.status = ?';
+      params.push(status);
+    }
+
+    query += ' ORDER BY r.created_at DESC';
+
+    const reports = db.prepare(query).all(...params);
+
+    // 신고된 게시글/댓글 정보 추가
+    const reportsWithContent = reports.map(report => {
+      let content = null;
+      if (report.target_type === 'post') {
+        content = db.prepare('SELECT id, title, content FROM community_posts WHERE id = ?').get(report.target_id);
+      } else if (report.target_type === 'comment') {
+        content = db.prepare('SELECT id, content, post_id FROM community_comments WHERE id = ?').get(report.target_id);
+      }
+      return { ...report, target_content: content };
+    });
+
+    res.json({ success: true, data: reportsWithContent });
   } catch (err) {
     console.error('Get reports error:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch reports' });
+  }
+});
+
+// PUT /api/community/reports/:id - 신고 처리 (관리자 전용)
+router.put('/reports/:id', authMiddleware, (req, res) => {
+  if (req.user.tier !== 'admin') {
+    return res.status(403).json({ success: false, error: 'Admin access required' });
+  }
+
+  const { id } = req.params;
+  const { status, action } = req.body; // status: 'approved', 'rejected', 'pending', action: 'delete_target', 'warn_user', 'ignore'
+  const adminId = req.user.id;
+
+  if (!status) {
+    return res.status(400).json({ success: false, error: 'Status is required' });
+  }
+
+  if (!['pending', 'approved', 'rejected'].includes(status)) {
+    return res.status(400).json({ success: false, error: 'Invalid status' });
+  }
+
+  try {
+    // 신고 조회
+    const report = db.prepare('SELECT * FROM community_reports WHERE id = ?').get(id);
+    if (!report) {
+      return res.status(404).json({ success: false, error: 'Report not found' });
+    }
+
+    // 신고 처리
+    db.prepare(`
+      UPDATE community_reports
+      SET status = ?, handled_by = ?, handled_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(status, adminId, id);
+
+    // 신고 승인 시 추가 액션 처리
+    if (status === 'approved' && action) {
+      if (action === 'delete_target') {
+        // 신고된 게시글/댓글 삭제
+        if (report.target_type === 'post') {
+          db.prepare('DELETE FROM community_posts WHERE id = ?').run(report.target_id);
+        } else if (report.target_type === 'comment') {
+          db.prepare('DELETE FROM community_comments WHERE id = ?').run(report.target_id);
+        }
+      }
+      // 추가 액션: warn_user, ignore 등은 필요시 구현
+    }
+
+    // 업데이트된 신고 조회
+    const updatedReport = db.prepare(`
+      SELECT
+        r.*,
+        u.name as reporter_name,
+        u.email as reporter_email,
+        h.name as handler_name,
+        h.email as handler_email
+      FROM community_reports r
+      JOIN users u ON r.user_id = u.id
+      LEFT JOIN users h ON r.handled_by = h.id
+      WHERE r.id = ?
+    `).get(id);
+
+    res.json({ success: true, data: updatedReport });
+  } catch (err) {
+    console.error('Update report error:', err);
+    res.status(500).json({ success: false, error: 'Failed to update report' });
+  }
+});
+
+// GET /api/community/posts/:id/comments - 댓글 목록 조회 (선택적 엔드포인트)
+router.get('/posts/:id/comments', optionalAuth, (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // 게시글 존재 확인
+    const post = db.prepare('SELECT id FROM community_posts WHERE id = ?').get(id);
+    if (!post) {
+      return res.status(404).json({ success: false, error: 'Post not found' });
+    }
+
+    // 댓글 조회 (대댓글 포함)
+    const comments = db.prepare(`
+      SELECT
+        c.*,
+        u.id as author_id,
+        u.name as author_name,
+        u.email as author_email,
+        u.picture as author_picture
+      FROM community_comments c
+      JOIN users u ON c.user_id = u.id
+      WHERE c.post_id = ?
+      ORDER BY c.created_at ASC
+    `).all(id);
+
+    res.json({ success: true, data: comments });
+  } catch (err) {
+    console.error('Get comments error:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch comments' });
   }
 });
 
