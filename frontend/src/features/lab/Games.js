@@ -945,11 +945,19 @@ const GoStop = ({ onBack }) => {
           newFieldCards = newFieldCards.filter(f => f.id !== matched.id);
           newCollected[drawnCard.type].push(drawnCard);
           newCollected[matched.type].push(matched);
-        } else if (drawnMatches.length >= 2) {
+        } else if (drawnMatches.length === 2) {
+          // 2장 매칭 - 첫 번째 카드 선택 (TODO: 선택 UI 추가 가능)
           const matched = drawnMatches[0];
           newFieldCards = newFieldCards.filter(f => f.id !== matched.id);
           newCollected[drawnCard.type].push(drawnCard);
           newCollected[matched.type].push(matched);
+        } else if (drawnMatches.length === 3) {
+          // 3장 매칭 - 싹쓸이! 모든 카드 획득
+          drawnMatches.forEach(matched => {
+            newFieldCards = newFieldCards.filter(f => f.id !== matched.id);
+            newCollected[matched.type].push(matched);
+          });
+          newCollected[drawnCard.type].push(drawnCard);
         }
       }
 
@@ -1079,11 +1087,24 @@ const GoStop = ({ onBack }) => {
           const drawnMatches = newFieldCards.filter(f => f.month === drawnCard.month);
           if (drawnMatches.length === 0) {
             newFieldCards.push(drawnCard);
-          } else {
+          } else if (drawnMatches.length === 1) {
             const matched = drawnMatches[0];
             newFieldCards = newFieldCards.filter(f => f.id !== matched.id);
             newCollected[drawnCard.type].push(drawnCard);
             newCollected[matched.type].push(matched);
+          } else if (drawnMatches.length === 2) {
+            // 2장 매칭 - 첫 번째 카드 선택
+            const matched = drawnMatches[0];
+            newFieldCards = newFieldCards.filter(f => f.id !== matched.id);
+            newCollected[drawnCard.type].push(drawnCard);
+            newCollected[matched.type].push(matched);
+          } else if (drawnMatches.length === 3) {
+            // 3장 매칭 - 싹쓸이! 모든 카드 획득
+            drawnMatches.forEach(matched => {
+              newFieldCards = newFieldCards.filter(f => f.id !== matched.id);
+              newCollected[matched.type].push(matched);
+            });
+            newCollected[drawnCard.type].push(drawnCard);
           }
         }
 
