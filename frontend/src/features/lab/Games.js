@@ -749,6 +749,9 @@ const GoStop = ({ onBack }) => {
   const [showMatchEffect, setShowMatchEffect] = useState(false);
   const [matchEffectText, setMatchEffectText] = useState('매칭!');
 
+  // 카드 선택 상태 (바닥에 2장 있을 때)
+  const [pendingSelection, setPendingSelection] = useState(null);
+
   useEffect(() => {
     gameSound.init();
   }, []);
@@ -837,14 +840,14 @@ const GoStop = ({ onBack }) => {
 
   // 카드 선택
   const selectCard = (card) => {
-    if (!isPlayerTurn || canStop || playingCard) return;
+    if (!isPlayerTurn || canStop || playingCard || pendingSelection) return;
     setSelectedCard(card);
     gameSound.playClick();
   };
 
   // 더블클릭으로 바로 카드 내기
   const handleDoubleClick = (card) => {
-    if (!isPlayerTurn || canStop || playingCard) return;
+    if (!isPlayerTurn || canStop || playingCard || pendingSelection) return;
     setSelectedCard(card);
     setTimeout(() => playCardWithAnimation(card), 50);
   };
@@ -875,7 +878,7 @@ const GoStop = ({ onBack }) => {
   };
 
   // 실제 카드 처리 로직
-  const processPlayCard = (card, matchingCards) => {
+  const processPlayCard = (card, matchingCards, selectedFloorCard = null) => {
     let newFieldCards = [...fieldCards];
     let newCollected = JSON.parse(JSON.stringify(playerCollected));
     let newHand = playerHand.filter(c => c.id !== card.id);
@@ -892,15 +895,29 @@ const GoStop = ({ onBack }) => {
       setShowMatchEffect(true);
       gameSound.playMatch();
     } else if (matchingCards.length === 2) {
-      // 2장 매칭 - 하나 선택 (자동으로 첫 번째 선택)
-      const matched = matchingCards[0];
-      newFieldCards = fieldCards.filter(f => f.id !== matched.id);
-      newCollected[card.type].push(card);
-      newCollected[matched.type].push(matched);
-      setShowMatchEffect(true);
-      gameSound.playMatch();
+      // 2장 매칭 - 선택 필요
+      if (!selectedFloorCard) {
+        // 선택 UI 표시
+        setPendingSelection({
+          playedCard: card,
+          matchingCards: matchingCards,
+          newHand: newHand
+        });
+        setPlayingCard(null);
+        setMatchedCards([]);
+        setMessage('가져갈 카드를 선택하세요');
+        return; // 여기서 멈추고 사용자 선택 대기
+      } else {
+        // 선택된 카드로 매칭
+        const matched = selectedFloorCard;
+        newFieldCards = fieldCards.filter(f => f.id !== matched.id);
+        newCollected[card.type].push(card);
+        newCollected[matched.type].push(matched);
+        setShowMatchEffect(true);
+        gameSound.playMatch();
+      }
     } else if (matchingCards.length === 3) {
-      // 3장 매칭 - 모두 가져오기
+      // 3장 매칭 - 모두 가져오기 (뻑)
       newFieldCards = fieldCards.filter(f => f.month !== card.month);
       newCollected[card.type].push(card);
       matchingCards.forEach(m => newCollected[m.type].push(m));
@@ -968,6 +985,22 @@ const GoStop = ({ onBack }) => {
   // 카드 내기 버튼용
   const playCard = () => {
     playCardWithAnimation(selectedCard);
+  };
+
+  // 바닥 카드 선택 핸들러 (2장 매칭 시)
+  const handleFloorCardSelection = (selectedFloorCard) => {
+    if (!pendingSelection) return;
+
+    gameSound.playClick();
+    const { playedCard, matchingCards, newHand } = pendingSelection;
+
+    // 선택한 카드로 다시 처리
+    setPlayerHand(newHand);
+    setPendingSelection(null);
+    setMessage('처리 중...');
+
+    // 선택된 카드로 매칭 처리
+    processPlayCard(playedCard, matchingCards, selectedFloorCard);
   };
 
   // 컴퓨터 턴 (애니메이션 포함)
@@ -1156,9 +1189,10 @@ const GoStop = ({ onBack }) => {
 
     return (
       <div
-        className={`hwatu-card-new ${size} ${card.type} ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''} ${isPlaying ? 'playing' : ''} ${isMatched ? 'matched' : ''}`}
+        className={`hwatu-card-new ${size} ${card.type} ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''} ${isPlaying ? 'playing' : ''} ${isMatched ? 'matched' : ''} ${onClick && !isDisabled ? 'clickable' : ''}`}
         onClick={onClick}
         onDoubleClick={onDoubleClick}
+        style={onClick && !isDisabled ? { cursor: 'pointer' } : {}}
       >
         <div className="hwatu-card-inner">
           <div className="hwatu-image-container">
@@ -1377,19 +1411,31 @@ const GoStop = ({ onBack }) => {
                 <div className="empty-field">바닥에 카드가 없습니다</div>
               ) : (
                 <div className="hwatu-cards-grid">
-                  {fieldCards.map(card => (
-                    <HwatuCard
-                      key={card.id}
-                      card={card}
-                      size="small"
-                      isMatched={matchedCards.includes(card.id)}
-                    />
-                  ))}
+                  {fieldCards.map(card => {
+                    const isSelectableCard = pendingSelection &&
+                      pendingSelection.matchingCards.some(mc => mc.id === card.id);
+
+                    return (
+                      <HwatuCard
+                        key={card.id}
+                        card={card}
+                        size="small"
+                        isMatched={matchedCards.includes(card.id)}
+                        isSelected={isSelectableCard}
+                        onClick={isSelectableCard ? () => handleFloorCardSelection(card) : undefined}
+                      />
+                    );
+                  })}
                 </div>
               )}
               {showMatchEffect && (
                 <div className="match-effect-overlay">
                   <span className="match-text">{matchEffectText}</span>
+                </div>
+              )}
+              {pendingSelection && (
+                <div className="selection-hint">
+                  👆 가져갈 카드를 클릭하세요 (2장 중 1장 선택)
                 </div>
               )}
             </div>
@@ -1468,7 +1514,7 @@ const GoStop = ({ onBack }) => {
             <div className="section-header">
               <h2>내 패</h2>
               <span className="hand-count">{playerHand.length}장</span>
-              <span className="hand-hint">더블클릭으로 바로 내기</span>
+              {!pendingSelection && <span className="hand-hint">더블클릭으로 바로 내기</span>}
             </div>
             <div className="hwatu-cards-grid hand-grid">
               {playerHand.map(card => (
@@ -1476,14 +1522,14 @@ const GoStop = ({ onBack }) => {
                   key={card.id}
                   card={card}
                   isSelected={selectedCard?.id === card.id}
-                  isDisabled={!isPlayerTurn || canStop || playingCard}
+                  isDisabled={!isPlayerTurn || canStop || playingCard || pendingSelection}
                   isPlaying={playingCard?.id === card.id}
                   onClick={() => selectCard(card)}
                   onDoubleClick={() => handleDoubleClick(card)}
                 />
               ))}
             </div>
-            {selectedCard && !canStop && !playingCard && (
+            {selectedCard && !canStop && !playingCard && !pendingSelection && (
               <button onClick={playCard} className="play-card-btn">
                 🎴 카드 내기
               </button>

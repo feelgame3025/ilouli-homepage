@@ -7,74 +7,80 @@
  * 새로운 룰을 추가하거나 수정할 때 이 파일만 편집하면 됩니다.
  *
  * 구조:
- * 1. HWATU_IMAGE_MAP - 화투 이미지 매핑
- * 2. CARD_TYPES - 카드 종류 정의
- * 3. CARD_SUBTYPES - 카드 서브타입 정의
+ * 0. HWATU_IMAGE_MAP - 화투 이미지 매핑
+ * 1. CARD_TYPES - 카드 종류 정의
+ * 2. CARD_SUBTYPES - 카드 서브타입 정의
+ * 3. MONTH_INFO - 월별 정보
  * 4. HWATU_DECK - 48장 카드 데이터
  * 5. SCORING_RULES - 점수 계산 규칙
- * 6. SPECIAL_RULES - 특수 규칙
- * 7. MATCHING_RULES - 매칭 규칙
+ * 6. MATCHING_RULES - 매칭 규칙
+ * 7. SPECIAL_RULES - 특수 규칙
+ * 8. MULTIPLIER_RULES - 배율 계산 시스템
+ * 9. GO_STOP_RULES - 고/스톱 선택 규칙
+ * 10. Final Score Calculation - 최종 점수 계산 함수들
+ * 11. GAME_SETTINGS - 게임 설정
+ * 12. Utility Functions - 유틸리티 함수들
  */
 
 // ===================================================================
 // 0. 화투 이미지 매핑 (Hwatu Image Map)
 // ===================================================================
 export const HWATU_IMAGE_MAP = {
-  '1-1': '1766365648113-246585907.png',
-  '1-2': '1766365648040-398829771.png',
-  '1-3': '1766365647990-957864677.png',
-  '1-4': '1766365647901-991381946.png',
-  '2-1': '1766365648299-896721373.png',
-  '2-2': '1766365648264-567946987.png',
-  '2-3': '1766365648281-422771943.png',
-  '2-4': '1766365648146-136778318.png',
-  '3-1': '1766365648007-26931206.png',
-  '3-2': '1766365648061-457781584.png',
-  '3-3': '1766365648096-895991008.png',
-  '3-4': '1766365647920-205705528.png',
-  '4-1': '1766365648213-442459374.png',
-  '4-2': '1766365648129-211245955.png',
-  '4-3': '1766365648162-58848333.png',
-  '4-4': '1766365648246-955995828.png',
-  '5-1': '1766365647802-768277004.png',
-  '5-2': '1766365647936-615083179.png',
-  '5-3': '1766365647975-673220710.png',
-  '5-4': '1766365648079-717804224.png',
-  '6-1': '1766365648179-819603995.png',
-  '6-2': '1766365648229-284854545.png',
-  '6-3': '1766365648195-217754773.png',
-  '6-4': '1766365648315-903974657.png',
-  '7-1': '1766365647954-486907208.png',
-  '7-2': '1766365647885-332796171.png',
-  '7-3': '1766365647859-981807374.png',
-  '7-4': '1766365648024-379925920.png',
-  '8-1': '1766365648470-903551197.png',
-  '8-2': '1766365648518-775832240.png',
-  '8-3': '1766365648485-208944818.png',
-  '8-4': '1766365648437-74352903.png',
-  '9-1': '1766365648656-182981457.png',
-  '9-2': '1766365648622-253389898.png',
-  '9-3': '1766365648605-469820217.png',
-  '9-4': '1766365648553-51756069.png',
-  '10-1': '1766365648367-911477294.png',
-  '10-2': '1766365648422-610609444.png',
-  '10-3': '1766365648386-728581906.png',
-  '10-4': '1766365648502-932841805.png',
-  '11-1': '1766365648588-806626211.png',
-  '11-2': '1766365648570-323944655.png',
-  '11-3': '1766365648536-891418201.png',
-  '11-4': '1766365648639-790562712.png',
-  '12-1': '1766365648403-709711113.png',
-  '12-2': '1766365648334-202283624.png',
-  '12-3': '1766365648349-721958801.png',
-  '12-4': '1766365648454-752753178.png',
+  '1-1': '1767313961055-593956290.png',  // 62K
+  '1-2': '1767313960978-907622088.png',  // 59K
+  '1-3': '1767313960932-771676234.png',  // 27K
+  '1-4': '1767313960863-667088177.png',  // 35K
+  '2-1': '1767313961234-239039929.png',  // 107K
+  '2-2': '1767313961202-874397884.png',  // 106K
+  '2-3': '1767313961214-671014154.png',  // 73K
+  '2-4': '1767313961084-93804246.png',   // 86K
+  '3-1': '1767313960950-857072578.png',  // 119K
+  '3-2': '1767313961005-815162896.png',  // 119K
+  '3-3': '1767313961044-542049277.png',  // 112K
+  '3-4': '1767313960879-395724033.png',  // 103K
+  '4-1': '1767313961151-140243789.png',  // 95K
+  '4-2': '1767313961068-119198447.png',  // 63K
+  '4-3': '1767313961103-820602257.png',  // 57K
+  '4-4': '1767313961187-72022859.png',   // 55K
+  '5-1': '1767313960787-346504025.png',  // 105K
+  '5-2': '1767313960892-141324195.png',  // 62K
+  '5-3': '1767313960919-426003686.png',  // 57K
+  '5-4': '1767313961020-362303704.png',  // 56K
+  '6-1': '1767313961118-273954114.png',  // 111K
+  '6-2': '1767313961175-912393657.png',  // 86K
+  '6-3': '1767313961133-483871705.png',  // 90K
+  '6-4': '1767313961247-678341460.png',  // 72K
+  '7-1': '1767313960908-71867874.png',   // 111K
+  '7-2': '1767313960850-8394750.png',    // 76K
+  '7-3': '1767313960819-14746724.png',   // 83K
+  '7-4': '1767313960967-189073140.png',  // 83K
+  '8-1': '1767313961396-9017818.png',    // 39K
+  '8-2': '1767313961432-161892793.png',  // 60K
+  '8-3': '1767313961407-23032721.png',   // 11K
+  '8-4': '1767313961371-639202696.png',  // 11K
+  '9-1': '1767313961540-802075219.png',  // 105K
+  '9-2': '1767313961515-942460763.png',  // 90K
+  '9-3': '1767313961494-777949904.png',  // 77K
+  '9-4': '1767313961459-853720886.png',  // 79K
+  '10-1': '1767313961309-156171942.png', // 141K
+  '10-2': '1767313961363-856430695.png', // 107K
+  '10-3': '1767313961327-816524851.png', // 105K
+  '10-4': '1767313961420-166464883.png', // 94K
+  '11-1': '1767313961482-528321818.png', // 95K
+  '11-2': '1767313961470-195154952.png', // 45K
+  '11-3': '1767313961447-517248176.png', // 37K
+  '11-4': '1767313961525-326287760.png', // 41K
+  '12-1': '1767313961348-409931881.png', // 102K
+  '12-2': '1767313961263-366817945.png', // 78K
+  '12-3': '1767313961275-982195685.png', // 48K
+  '12-4': '1767313961384-993638532.png', // 90K
 };
 
 // 이미지 URL 생성 함수
 export const getHwatuImageUrl = (month, index) => {
   const key = `${month}-${index}`;
   const filename = HWATU_IMAGE_MAP[key];
-  return filename ? `https://api.ilouli.com/api/files/view/${filename}` : null;
+  return filename ? `/assets/hwatu/${filename}` : null;
 };
 
 // ===================================================================
@@ -556,7 +562,364 @@ export const SPECIAL_RULES = [
 ];
 
 // ===================================================================
-// 8. 게임 설정 (Game Settings)
+// 8. 특수 액션 - 흔들기/폭탄 (Special Actions - Shaking/Bomb)
+// ===================================================================
+/**
+ * 특수 액션 규칙
+ * - 흔들기: 같은 월 3장 보유 시 선언 가능, 이기면 2배
+ * - 폭탄: 초기 손패에 같은 월 4장 보유 시 자동 발동, 이기면 2배
+ */
+export const SPECIAL_ACTIONS = {
+  흔들기: {
+    id: 'heundeulgi',
+    name: '흔들기',
+    nameEn: 'Shaking',
+    condition: '같은 월 3장 보유',
+    multiplier: 2,
+    description: '같은 월의 패를 3장 가지고 있을 때 선언. 이기면 2배',
+    isOptional: true, // 선택적 발동
+    triggerPhase: 'onPlay', // 패를 낼 때 선택
+    /**
+     * 흔들기 가능한 월 찾기
+     * @param {Array} handCards - 손패
+     * @returns {Array} 흔들기 가능한 월 배열
+     */
+    checkFn: (handCards) => {
+      const monthCounts = {};
+      handCards.forEach(c => {
+        monthCounts[c.month] = (monthCounts[c.month] || 0) + 1;
+      });
+      return Object.entries(monthCounts)
+        .filter(([month, count]) => count >= 3)
+        .map(([month]) => parseInt(month));
+    }
+  },
+  폭탄: {
+    id: 'poktan',
+    name: '폭탄',
+    nameEn: 'Bomb',
+    condition: '같은 월 4장 보유 (초기 손패)',
+    multiplier: 2,
+    description: '처음 손패에 같은 월 4장이 있으면 자동 발동. 이기면 2배',
+    isOptional: false, // 자동 발동
+    triggerPhase: 'onDeal', // 게임 시작 시 자동 체크
+    /**
+     * 폭탄 발동 가능한 월 찾기
+     * @param {Array} handCards - 초기 손패
+     * @returns {Array} 폭탄 발동 가능한 월 배열
+     */
+    checkFn: (handCards) => {
+      const monthCounts = {};
+      handCards.forEach(c => {
+        monthCounts[c.month] = (monthCounts[c.month] || 0) + 1;
+      });
+      return Object.entries(monthCounts)
+        .filter(([month, count]) => count === 4)
+        .map(([month]) => parseInt(month));
+    }
+  }
+};
+
+// ===================================================================
+// 9. 배율 계산 시스템 (Multiplier System)
+// ===================================================================
+/**
+ * 배율은 곱셈 방식으로 누적됩니다.
+ * 예: 흔들기(2배) + 폭탄(2배) = 4배
+ */
+export const MULTIPLIER_RULES = {
+  // 선언 배율
+  heundeulgi: {
+    name: '흔들기',
+    multiplier: 2,
+    stackable: true,
+    description: '같은 월 3장 공개. 여러 월 가능 (각각 2배씩 곱셈)',
+  },
+  bomb: {
+    name: '폭탄',
+    multiplier: 2,
+    stackable: true,
+    description: '같은 월 4장 한 손에 보유. 여러 월 가능 (각각 2배씩 곱셈)',
+  },
+
+  // 게임 중 배율
+  ppuk: {
+    name: '뻑',
+    multiplier: 2,
+    stackable: true,
+    description: '3번 뻑 발생 시 배율 적용',
+  },
+  ssul: {
+    name: '쓸',
+    multiplier: 2,
+    stackable: true,
+    description: '싹쓸이 배율',
+  },
+
+  // 패배 배율 (상대가 이길 때 적용)
+  gwangBak: {
+    name: '광박',
+    multiplier: 2,
+    condition: '광 0장으로 패배',
+    description: '상대가 광패를 하나도 못 먹었을 때',
+  },
+  piBak: {
+    name: '피박',
+    multiplier: 2,
+    condition: '피 7장 미만으로 패배',
+    description: '상대가 피를 7장 미만으로 먹었을 때',
+  },
+  meongBak: {
+    name: '멍박',
+    multiplier: 2,
+    condition: '열끗 0장으로 패배',
+    description: '상대가 열끗을 하나도 못 먹었을 때',
+  },
+
+  // 연속 배율
+  goCount: {
+    name: '고 횟수',
+    multiplierPerGo: 1,
+    description: '고를 외칠 때마다 +1점 (배율 아님)',
+  },
+};
+
+// ===================================================================
+// 9. 고/스톱 선택 규칙 (Go/Stop Decision Rules)
+// ===================================================================
+/**
+ * 고/스톱 결정 규칙
+ * - 최소 7점 달성 시 스톱 선택 가능
+ * - 먼저 7점 달성한 사람은 +3점 보너스
+ * - 고 선택 시 매 고마다 +1점
+ * - 고 후 상대가 먼저 점수 내면 배율 적용됨
+ */
+export const GO_STOP_RULES = {
+  minScore: 7,  // 최소 7점부터 스톱 가능
+  firstWinBonus: 3,  // 먼저 7점 달성 시 추가 3점
+  goBonus: 1,  // 고 선언마다 +1점
+  maxGo: 3,    // 최대 3고까지 (선택적 규칙)
+
+  // 고 선택 시 리스크
+  goRisk: {
+    description: '고 선언 후 상대가 먼저 점수 도달하면 배율 적용',
+    penalty: 'multiplied',
+    detail: '상대가 나중에 이기면 모든 배율이 상대 점수에 적용됨',
+  },
+
+  // 스톱 조건
+  stopConditions: {
+    normal: {
+      minScore: 7,
+      bonus: 0,
+      description: '일반적인 스톱',
+    },
+    firstWin: {
+      minScore: 7,
+      bonus: 3,
+      description: '먼저 7점 달성 시 +3점',
+    },
+  },
+};
+
+/**
+ * 스톱 가능 여부 확인
+ * @param {number} score - 현재 점수
+ * @param {boolean} isFirstWin - 먼저 7점 달성 여부
+ * @returns {boolean}
+ */
+export const canStop = (score, isFirstWin = false) => {
+  return score >= GO_STOP_RULES.minScore;
+};
+
+/**
+ * 고 보너스 계산
+ * @param {number} goCount - 고를 외친 횟수
+ * @returns {number} 고 보너스 점수
+ */
+export const calculateGoBonus = (goCount) => {
+  return goCount * GO_STOP_RULES.goBonus;
+};
+
+/**
+ * 스톱 시 최종 점수 계산
+ * @param {number} baseScore - 기본 점수
+ * @param {number} goCount - 고 횟수
+ * @param {boolean} isFirstWin - 먼저 승리 여부
+ * @returns {number}
+ */
+export const calculateStopScore = (baseScore, goCount = 0, isFirstWin = false) => {
+  let total = baseScore;
+
+  // 고 보너스
+  total += calculateGoBonus(goCount);
+
+  // 먼저 승리 보너스
+  if (isFirstWin) {
+    total += GO_STOP_RULES.firstWinBonus;
+  }
+
+  return total;
+};
+
+// ===================================================================
+// 10. 최종 점수 계산 (Final Score Calculation)
+// ===================================================================
+/**
+ * 패배 조건 체크 함수들
+ */
+export const isGwangBak = (capturedCards) => {
+  const gwang = capturedCards.filter(c => c.type === '광');
+  return gwang.length === 0;
+};
+
+export const isPiBak = (capturedCards) => {
+  const piCount = capturedCards.reduce((sum, c) => sum + c.piCount, 0);
+  return piCount < 7;
+};
+
+export const isMeongBak = (capturedCards) => {
+  const yeol = capturedCards.filter(c => c.type === '열끗');
+  return yeol.length === 0;
+};
+
+/**
+ * 배율 계산
+ * @param {Object} gameState - 게임 상태
+ * @param {Object} opponent - 상대방 정보
+ * @returns {number} 최종 배율
+ */
+export const calculateMultiplier = (gameState, opponent = null) => {
+  let multiplier = 1;
+
+  // 1. 흔들기 배율 (여러 번 가능)
+  if (gameState.heundeulgiCount > 0) {
+    multiplier *= Math.pow(2, gameState.heundeulgiCount);
+  }
+
+  // 2. 폭탄 배율 (여러 번 가능)
+  if (gameState.bombCount > 0) {
+    multiplier *= Math.pow(2, gameState.bombCount);
+  }
+
+  // 3. 뻑 배율 (3번 이상 시)
+  if (gameState.ppukCount >= 3) {
+    const ppukMultiplierCount = Math.floor(gameState.ppukCount / 3);
+    multiplier *= Math.pow(2, ppukMultiplierCount);
+  }
+
+  // 4. 쓸 배율
+  if (gameState.ssulCount > 0) {
+    multiplier *= Math.pow(2, gameState.ssulCount);
+  }
+
+  // 5. 상대 벌칙 배율 (상대가 박 당한 경우)
+  if (opponent && opponent.captured) {
+    if (isGwangBak(opponent.captured)) {
+      multiplier *= 2;
+    }
+    if (isPiBak(opponent.captured)) {
+      multiplier *= 2;
+    }
+    if (isMeongBak(opponent.captured)) {
+      multiplier *= 2;
+    }
+  }
+
+  return multiplier;
+};
+
+/**
+ * 최종 점수 계산 (배율 포함)
+ * @param {Object} gameState - 게임 상태 { capturedCards, goCount, heundeulgiCount, bombCount, ppukCount, ssulCount }
+ * @param {Object} opponent - 상대방 정보 { captured }
+ * @param {boolean} isFirstWin - 먼저 승리 여부
+ * @returns {Object} { baseScore, goBonus, firstWinBonus, multiplier, finalScore, breakdown }
+ */
+export const calculateFinalScore = (gameState, opponent = null, isFirstWin = false) => {
+  // 1. 기본 점수 계산 (SCORING_RULES 사용)
+  const scoreResult = calculateScore(gameState.capturedCards);
+  let baseScore = scoreResult.total;
+
+  // 2. 고 보너스
+  const goBonus = calculateGoBonus(gameState.goCount || 0);
+  baseScore += goBonus;
+
+  // 3. 먼저 승리 보너스
+  const firstWinBonus = isFirstWin ? GO_STOP_RULES.firstWinBonus : 0;
+  baseScore += firstWinBonus;
+
+  // 4. 배율 계산
+  const multiplier = calculateMultiplier(gameState, opponent);
+
+  // 5. 최종 점수
+  const finalScore = baseScore * multiplier;
+
+  // 6. 상세 내역
+  const breakdown = {
+    scoringRules: scoreResult.breakdown,
+    goBonus: goBonus,
+    firstWinBonus: firstWinBonus,
+    subtotal: baseScore,
+    multipliers: [],
+    finalScore: finalScore,
+  };
+
+  // 배율 상세
+  if (gameState.heundeulgiCount > 0) {
+    breakdown.multipliers.push({
+      name: '흔들기',
+      count: gameState.heundeulgiCount,
+      multiplier: Math.pow(2, gameState.heundeulgiCount),
+    });
+  }
+  if (gameState.bombCount > 0) {
+    breakdown.multipliers.push({
+      name: '폭탄',
+      count: gameState.bombCount,
+      multiplier: Math.pow(2, gameState.bombCount),
+    });
+  }
+  if (gameState.ppukCount >= 3) {
+    const count = Math.floor(gameState.ppukCount / 3);
+    breakdown.multipliers.push({
+      name: '뻑',
+      count: count,
+      multiplier: Math.pow(2, count),
+    });
+  }
+  if (gameState.ssulCount > 0) {
+    breakdown.multipliers.push({
+      name: '쓸',
+      count: gameState.ssulCount,
+      multiplier: Math.pow(2, gameState.ssulCount),
+    });
+  }
+  if (opponent && opponent.captured) {
+    if (isGwangBak(opponent.captured)) {
+      breakdown.multipliers.push({ name: '광박', multiplier: 2 });
+    }
+    if (isPiBak(opponent.captured)) {
+      breakdown.multipliers.push({ name: '피박', multiplier: 2 });
+    }
+    if (isMeongBak(opponent.captured)) {
+      breakdown.multipliers.push({ name: '멍박', multiplier: 2 });
+    }
+  }
+
+  return {
+    baseScore: scoreResult.total,
+    goBonus,
+    firstWinBonus,
+    subtotal: baseScore,
+    multiplier,
+    finalScore,
+    breakdown,
+  };
+};
+
+// ===================================================================
+// 11. 게임 설정 (Game Settings)
 // ===================================================================
 export const GAME_SETTINGS = {
   players: {
@@ -582,7 +945,7 @@ export const GAME_SETTINGS = {
 };
 
 // ===================================================================
-// 9. 유틸리티 함수 (Utility Functions)
+// 12. 유틸리티 함수 (Utility Functions)
 // ===================================================================
 
 /**
@@ -643,8 +1006,19 @@ export default {
   SCORING_RULES,
   MATCHING_RULES,
   SPECIAL_RULES,
+  SPECIAL_ACTIONS,
+  MULTIPLIER_RULES,
+  GO_STOP_RULES,
   GAME_SETTINGS,
   calculateScore,
   canMatch,
   getMatchingScenario,
+  canStop,
+  calculateGoBonus,
+  calculateStopScore,
+  isGwangBak,
+  isPiBak,
+  isMeongBak,
+  calculateMultiplier,
+  calculateFinalScore,
 };
