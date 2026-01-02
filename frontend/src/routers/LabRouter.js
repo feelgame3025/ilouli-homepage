@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { USER_TIERS } from '../contexts/AuthContext';
 import TestZone from '../features/lab/TestZone';
 import FileUpload from '../features/lab/FileUpload';
+import Games from '../features/lab/Games';
 import Profile from '../features/auth/Profile';
 import Login from '../features/auth/Login';
 import ProtectedRoute from '../shared/ProtectedRoute';
@@ -24,6 +25,14 @@ const LabRouter = () => {
         element={
           <ProtectedRoute requiredTiers={[USER_TIERS.ADMIN, USER_TIERS.FAMILY]}>
             <FileUpload />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/games"
+        element={
+          <ProtectedRoute requiredTiers={[USER_TIERS.ADMIN, USER_TIERS.FAMILY]}>
+            <Games />
           </ProtectedRoute>
         }
       />
