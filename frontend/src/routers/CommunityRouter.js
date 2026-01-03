@@ -5,24 +5,34 @@ import Games from '../features/lab/Games';
 import Profile from '../features/auth/Profile';
 import Login from '../features/auth/Login';
 import ProtectedRoute from '../shared/ProtectedRoute';
+import SubMenu from '../shared/SubMenu';
+
+const menuItems = [
+  { path: '/announcements', label: '공지사항', icon: '📢' },
+  { path: '/free-board', label: '자유게시판', icon: '💬' },
+  { path: '/games', label: '게임', icon: '🎮' },
+];
 
 const CommunityRouter = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/announcements" replace />} />
-      <Route path="/announcements" element={<Community defaultTab="announcements" />} />
-      <Route path="/free-board" element={<Community defaultTab="community" />} />
-      <Route path="/games" element={<Games />} />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="/login" element={<Login />} />
-    </Routes>
+    <>
+      <SubMenu items={menuItems} />
+      <Routes>
+        <Route path="/" element={<Navigate to="/announcements" replace />} />
+        <Route path="/announcements" element={<Community defaultTab="announcements" />} />
+        <Route path="/free-board" element={<Community defaultTab="community" />} />
+        <Route path="/games" element={<Games />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/login" element={<Login />} />
+      </Routes>
+    </>
   );
 };
 
