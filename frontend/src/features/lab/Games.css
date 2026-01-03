@@ -853,7 +853,7 @@
 .start-game-btn {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #F37022 0%, #00c7be 100%);
+  background: linear-gradient(135deg, #F37022 0%, #FFB800 100%);
   color: white;
   border: none;
   border-radius: 980px;
@@ -865,7 +865,7 @@
 
 .start-game-btn:hover {
   transform: scale(1.02);
-  box-shadow: 0 6px 24px rgba(0, 113, 227, 0.35);
+  box-shadow: 0 6px 24px rgba(243, 112, 34, 0.35);
 }
 
 /* 규칙 카드 */
