@@ -1,6 +1,6 @@
 .sub-menu {
   background: #ffffff;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   position: sticky;
   top: 44px;
   z-index: 90;
@@ -61,22 +61,22 @@
 /* 다크 모드 지원 */
 @media (prefers-color-scheme: dark) {
   .sub-menu {
-    background: #1d1d1f;
-    border-bottom-color: #333;
+    background: #2c2c2e;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
   }
 
   .sub-menu-item {
-    color: #e5e5e5;
+    color: rgba(255, 255, 255, 0.85);
   }
 
   .sub-menu-item:hover {
     color: #ffffff;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .sub-menu-item.active {
     color: #ffffff;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
   }
 }
 
