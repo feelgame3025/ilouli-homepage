@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ilouli.com 색상 팔레트 - Hermès Orange Theme</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #FFFAF6;
+      color: #1d1d1f;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #F37022;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+    }
+
+    .section {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .section h2 {
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #FEF3E7;
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .color-card {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .color-preview {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .color-preview.light-bg {
+      color: #1d1d1f;
+      text-shadow: none;
+    }
+
+    .color-info {
+      padding: 15px;
+      background: white;
+    }
+
+    .color-name {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .color-hex {
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 14px;
+      color: #666;
+      background: #f5f5f5;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .color-usage {
+      font-size: 12px;
+      color: #888;
+      margin-top: 8px;
+    }
+
+    .demo-section {
+      margin-top: 20px;
+    }
+
+    .demo-button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 980px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #F37022;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #E5651A;
+    }
+
+    .btn-secondary {
+      background: #FEF3E7;
+      color: #F37022;
+    }
+
+    .btn-secondary:hover {
+      background: #FDE5CC;
+    }
+
+    .demo-submenu {
+      background: #FFFAF6;
+      padding: 15px 20px;
+      border-radius: 12px;
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      border: 1px solid rgba(243, 112, 34, 0.1);
+    }
+
+    .demo-submenu-item {
+      padding: 10px 16px;
+      border-radius: 980px;
+      font-size: 13px;
+      color: #1d1d1f;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .demo-submenu-item:hover {
+      background: rgba(0, 0, 0, 0.06);
+    }
+
+    .demo-submenu-item.active {
+      background: rgba(243, 112, 34, 0.1);
+      color: #F37022;
+      font-weight: 500;
+    }
+
+    .reference {
+      margin-top: 40px;
+      padding: 20px;
+      background: #FEF3E7;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .reference a {
+      color: #F37022;
+      text-decoration: none;
+    }
+
+    .reference a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ilouli.com 색상 팔레트</h1>
+    <p class="subtitle">Hermès Orange Theme - 에르메스 시그니처 오렌지 기반</p>
+
+    <!-- 메인 컬러 -->
+    <div class="section">
+      <h2>메인 컬러 (Primary Colors)</h2>
+      <div class="color-grid">
+        <div class="color-card">
+          <div class="color-preview" style="background: #F37022;">
+            Aa
+          </div>
+          <div class="color-info">
+            <div class="color-name">Hermès Orange</div>
+            <span class="color-hex">#F37022</span>
+            <div class="color-usage">메인 강조색, 버튼, 링크</div>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-preview" style="background: #E5651A;">
+            Aa
+          </div>
+          <div class="color-info">
+            <div class="color-name">Hover Orange</div>
+            <span class="color-hex">#E5651A</span>
+            <div class="color-usage">호버 상태</div>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-preview" style="background: #D15A15;">
+            Aa
+          </div>
+          <div class="color-info">
+            <div class="color-name">Active Orange</div>
+            <span class="color-hex">#D15A15</span>
+            <div class="color-usage">클릭/액티브 상태</div>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-preview" style="background: #FF8A4C;">
+            Aa
+          </div>
+          <div class="color-info">
+            <div class="color-name">Light Orange</div>
+            <span class="color-hex">#FF8A4C</span>
+            <div class="color-usage">다크모드 강조색</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 배경 컬러 -->
+    <div class="section">
+      <h2>배경 컬러 (Background Colors)</h2>
+      <div class="color-grid">
+        <div class="color-card">
+          <div class="color-preview light-bg" style="background: #FFFAF6;">
+            Aa
+          </div>
+          <div class="color-info">
+            <div class="color-name">Cream White</div>
+            <span class="color-hex">#FFFAF6</span>
+            <div class="color-usage">서브메뉴 배경, 페이지 배경</div>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-preview light-bg" style="background: #FEF3E7;">
+            Aa
+          </div>
+          <div class="color-info">
+            <div class="color-name">Peach Cream</div>
+            <span class="color-hex">#FEF3E7</span>
+            <div class="color-usage">옅은 강조 배경, 카드 배경</div>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-preview light-bg" style="background: #FDE5CC;">
+            Aa
+          </div>
+          <div class="color-info">
+            <div class="color-name">Light Peach</div>
+            <span class="color-hex">#FDE5CC</span>
+            <div class="color-usage">호버 배경</div>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-preview light-bg" style="background: #FFFFFF;">
+            Aa
+          </div>
+          <div class="color-info">
+            <div class="color-name">Pure White</div>
+            <span class="color-hex">#FFFFFF</span>
+            <div class="color-usage">카드, 콘텐츠 영역</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 텍스트 컬러 -->
+    <div class="section">
+      <h2>텍스트 컬러 (Text Colors)</h2>
+      <div class="color-grid">
+        <div class="color-card">
+          <div class="color-preview" style="background: #1d1d1f;">
+            Aa
+          </div>
+          <div class="color-info">
+            <div class="color-name">Primary Text</div>
+            <span class="color-hex">#1d1d1f</span>
+            <div class="color-usage">주요 텍스트</div>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-preview" style="background: #666666;">
+            Aa
+          </div>
+          <div class="color-info">
+            <div class="color-name">Secondary Text</div>
+            <span class="color-hex">#666666</span>
+            <div class="color-usage">보조 텍스트</div>
+          </div>
+        </div>
+
+        <div class="color-card">
+          <div class="color-preview" style="background: #C94F0B;">
+            Aa
+          </div>
+          <div class="color-info">
+            <div class="color-name">Orange Text</div>
+            <span class="color-hex">#C94F0B</span>
+            <div class="color-usage">뱃지, 강조 텍스트</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 데모 -->
+    <div class="section">
+      <h2>컴포넌트 데모</h2>
+
+      <h3 style="margin: 20px 0 10px;">버튼</h3>
+      <div class="demo-section">
+        <button class="demo-button btn-primary">Primary Button</button>
+        <button class="demo-button btn-secondary">Secondary Button</button>
+      </div>
+
+      <h3 style="margin: 30px 0 10px;">서브메뉴</h3>
+      <div class="demo-submenu">
+        <a href="#" class="demo-submenu-item active">콘텐츠 도구</a>
+        <a href="#" class="demo-submenu-item">스토리보드</a>
+        <a href="#" class="demo-submenu-item">영상 제작</a>
+      </div>
+    </div>
+
+    <!-- 참고 -->
+    <div class="reference">
+      <p><strong>Reference:</strong> Hermès Brand Color</p>
+      <p><a href="https://www.brandcolorcode.com/hermes" target="_blank">brandcolorcode.com/hermes</a></p>
+      <p style="margin-top: 10px; font-size: 14px; color: #888;">
+        원본 블로그: <a href="https://m.blog.naver.com/flott2017/221164842832" target="_blank">네이버 블로그</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
