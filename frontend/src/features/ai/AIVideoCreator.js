@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
 import './AIVideoCreator.css';
 import {
   convertImageToVideo,
@@ -12,11 +11,6 @@ import {
 import ImageUpscaler from './ImageUpscaler';
 
 const AIVideoCreator = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [activeTab, setActiveTab] = useState(() => {
-    const tabParam = searchParams.get('tab');
-    return ['upscale', 'img2video'].includes(tabParam) ? tabParam : 'upscale';
-  });
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
 
@@ -30,39 +24,6 @@ const AIVideoCreator = () => {
   const [convertMessage, setConvertMessage] = useState('');
   const [videoResult, setVideoResult] = useState(null);
   const fileInputRef = useRef(null);
-
-  // URL 파라미터 변경 시 탭 업데이트
-  useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    if (['upscale', 'img2video'].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, [searchParams]);
-
-  // 탭 변경 핸들러
-  const handleTabChange = (tabId, disabled) => {
-    if (disabled) return;
-    setActiveTab(tabId);
-    setSearchParams({ tab: tabId });
-  };
-
-  // 탭별 설정
-  const tabs = [
-    { id: 'upscale', name: '이미지 업스케일링', icon: '🔍', description: '저해상도 → 고해상도' },
-    { id: 'img2video', name: '이미지 영상', icon: '🎞️', description: '정적 이미지를 영상으로' },
-  ];
-
-  // 탭별 페이지 정보
-  const tabInfo = {
-    upscale: {
-      title: '이미지 업스케일링',
-      subtitle: '저해상도 이미지를 고품질 고해상도로 변환합니다.'
-    },
-    img2video: {
-      title: '이미지 영상 변환',
-      subtitle: '정적인 이미지를 자연스러운 영상으로 변환합니다.'
-    }
-  };
 
   // Image to Video 핸들러
   const handleImageUpload = (e) => {
@@ -158,38 +119,18 @@ const AIVideoCreator = () => {
 
   return (
     <div className="ai-video-creator">
-      {/* 탭 네비게이션 */}
-      <div className="tab-navigation">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`tab-nav-btn ${activeTab === tab.id ? 'active' : ''} ${tab.disabled ? 'disabled' : ''}`}
-            onClick={() => handleTabChange(tab.id, tab.disabled)}
-            disabled={tab.disabled}
-          >
-            <span className="tab-icon">{tab.icon}</span>
-            <span className="tab-name">{tab.name}</span>
-            {tab.disabled && <span className="coming-soon-badge">준비중</span>}
-          </button>
-        ))}
+      {/* 이미지 업스케일링 */}
+      <div className="tool-section">
+        <ImageUpscaler />
       </div>
 
-      {/* 페이지 헤더 */}
-      <header className="page-header">
-        <h1>{tabInfo[activeTab].title}</h1>
-        <p>{tabInfo[activeTab].subtitle}</p>
-      </header>
-
-      {/* 이미지 업스케일링 탭 */}
-      {activeTab === 'upscale' && (
-        <div className="tab-content">
-          <ImageUpscaler />
-        </div>
-      )}
-
-      {/* 이미지 영상 탭 */}
-      {activeTab === 'img2video' && (
-        <div className="tab-content">
+      {/* 이미지 영상 변환 */}
+      <div className="tool-section img2video-section">
+        <header className="section-header">
+          <h2>🎞️ 이미지 영상 변환</h2>
+          <p>정적인 이미지를 자연스러운 영상으로 변환합니다.</p>
+        </header>
+        <div className="img2video-content">
           {/* 이미지 업로드 섹션 */}
           {!videoResult && (
             <section className="input-section">
@@ -305,7 +246,7 @@ const AIVideoCreator = () => {
           )}
 
           {/* 변환 진행 상태 */}
-          {isGenerating && activeTab === 'img2video' && (
+          {isGenerating && (
             <section className="progress-section convert-progress">
               <h2>영상 변환 중...</h2>
               <div className="progress-bar-container">
@@ -324,7 +265,7 @@ const AIVideoCreator = () => {
           )}
 
           {/* 에러 메시지 */}
-          {error && activeTab === 'img2video' && (
+          {error && (
             <div className="error-message">
               <span className="error-icon">⚠️</span>
               {error}
@@ -433,7 +374,7 @@ const AIVideoCreator = () => {
             </section>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
