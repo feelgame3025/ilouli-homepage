@@ -531,7 +531,7 @@
 }
 
 .login-btn:active {
-  background-color: #D15A15;
+  background-color: #1D4ED8;
   transform: scale(0.98);
 }
 
@@ -915,7 +915,7 @@
 }
 
 .mark-all-read:hover {
-  background: rgba(243, 112, 34, 0.1);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .notification-list {
@@ -960,11 +960,11 @@
 }
 
 .notification-item.unread {
-  background: rgba(243, 112, 34, 0.05);
+  background: rgba(59, 130, 246, 0.05);
 }
 
 .notification-item.unread:hover {
-  background: rgba(243, 112, 34, 0.1);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .notification-type-icon {

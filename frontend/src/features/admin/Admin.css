@@ -103,7 +103,7 @@
 }
 
 .users-table tbody tr.current-user {
-  background-color: #FEF3E7;
+  background-color: #EFF6FF;
 }
 
 .you-badge {
@@ -440,8 +440,8 @@
 }
 
 .report-type.post {
-  background-color: #FEF3E7;
-  color: #D15A15;
+  background-color: #EFF6FF;
+  color: #1D4ED8;
 }
 
 .report-type.comment {
@@ -462,8 +462,8 @@
 }
 
 .status-reviewed {
-  background-color: #FEF3E7;
-  color: #D15A15;
+  background-color: #EFF6FF;
+  color: #1D4ED8;
 }
 
 .status-dismissed {
@@ -569,8 +569,8 @@
 
 .restore-btn {
   padding: 0.5rem 1rem;
-  background-color: #FEF3E7;
-  color: #D15A15;
+  background-color: #EFF6FF;
+  color: #1D4ED8;
   border: none;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -1016,7 +1016,7 @@
 .key-guide {
   margin-bottom: 1.25rem;
   padding: 1rem;
-  background-color: #FEF3E7;
+  background-color: #EFF6FF;
   border: 1px solid #FDE5CC;
   border-radius: 10px;
 }
@@ -1031,7 +1031,7 @@
 .guide-title {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #D15A15;
+  color: #1D4ED8;
 }
 
 .guide-link {
@@ -1070,7 +1070,7 @@
 
 .pricing-label {
   font-weight: 600;
-  color: #D15A15;
+  color: #1D4ED8;
   margin-right: 0.5rem;
 }
 
@@ -1143,8 +1143,8 @@
 }
 
 .category-badge.category-인증 {
-  background-color: #FEF3E7;
-  color: #D15A15;
+  background-color: #EFF6FF;
+  color: #1D4ED8;
 }
 
 .category-badge.category-사용자 {
@@ -1182,8 +1182,8 @@
 }
 
 .method-badge.method-get {
-  background-color: #FEF3E7;
-  color: #D15A15;
+  background-color: #EFF6FF;
+  color: #1D4ED8;
 }
 
 .method-badge.method-post {
@@ -1293,8 +1293,8 @@
 }
 
 .api-status-in-progress {
-  background-color: #FEF3E7;
-  color: #D15A15;
+  background-color: #EFF6FF;
+  color: #1D4ED8;
 }
 
 .priority-badge {

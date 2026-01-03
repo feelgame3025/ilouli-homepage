@@ -827,7 +827,7 @@
 
 .bet-chip.active {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 6px 20px rgba(243, 112, 34, 0.3);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
 }
 
 .bet-chip.active .chip-icon,
@@ -865,7 +865,7 @@
 
 .start-game-btn:hover {
   transform: scale(1.02);
-  box-shadow: 0 6px 24px rgba(243, 112, 34, 0.35);
+  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.35);
 }
 
 /* 규칙 카드 */
@@ -1761,7 +1761,7 @@
 
 .play-again-btn:hover {
   transform: scale(1.02);
-  box-shadow: 0 6px 24px rgba(243, 112, 34, 0.35);
+  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.35);
 }
 
 /* ==================== 포커 ==================== */

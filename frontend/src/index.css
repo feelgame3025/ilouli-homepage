@@ -147,7 +147,7 @@ a:hover {
 
 /* Selection */
 ::selection {
-  background-color: rgba(243, 112, 34, 0.15);
+  background-color: rgba(59, 130, 246, 0.15);
   color: var(--color-text-primary);
 }
 

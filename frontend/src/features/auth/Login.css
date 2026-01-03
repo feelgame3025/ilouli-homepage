@@ -232,8 +232,8 @@
   display: flex;
   gap: 12px;
   padding: 16px;
-  background: linear-gradient(135deg, #FFF5ED 0%, #FFE8D6 100%);
-  border: 1px solid #F9A870;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  border: 1px solid #93C5FD;
   border-radius: 12px;
   margin-bottom: 1.5rem;
 }
@@ -249,7 +249,7 @@
 
 .prompt-content strong {
   display: block;
-  color: #D15A15;
+  color: #1D4ED8;
   margin-bottom: 8px;
   font-size: 15px;
 }
