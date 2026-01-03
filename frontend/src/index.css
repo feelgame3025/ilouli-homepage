@@ -41,9 +41,9 @@
   --color-bg-tertiary: #fbfbfd;
   --color-surface: #fafafa;
 
-  --color-accent: #0071e3;          /* 주 강조색 */
-  --color-accent-hover: #0077ed;
-  --color-accent-active: #005bb5;
+  --color-accent: #F37022;          /* 주 강조색 (에르메스 오렌지) */
+  --color-accent-hover: #E5651A;
+  --color-accent-active: #D15A15;
 
   --color-success: #34c759;
   --color-warning: #ff9500;
@@ -147,7 +147,7 @@ a:hover {
 
 /* Selection */
 ::selection {
-  background-color: rgba(0, 113, 227, 0.2);
+  background-color: rgba(243, 112, 34, 0.15);
   color: var(--color-text-primary);
 }
 

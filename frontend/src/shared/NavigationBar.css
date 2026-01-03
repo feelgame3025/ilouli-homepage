@@ -271,7 +271,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0071e3 0%, #00c7be 100%);
+  background: linear-gradient(135deg, #F37022 0%, #00c7be 100%);
   color: white;
   font-size: 12px;
   font-weight: 600;
@@ -384,7 +384,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0071e3 0%, #00c7be 100%);
+  background: linear-gradient(135deg, #F37022 0%, #00c7be 100%);
   color: white;
   font-size: 18px;
   font-weight: 600;
@@ -422,8 +422,8 @@
   display: inline-block;
   font-size: 11px;
   font-weight: 500;
-  color: #0071e3;
-  background: rgba(0, 113, 227, 0.1);
+  color: #F37022;
+  background: rgba(243, 112, 34, 0.1);
   padding: 2px 8px;
   border-radius: 980px;
   margin-top: 2px;
@@ -478,8 +478,8 @@
 }
 
 .tier-btn.active {
-  background: #0071e3;
-  border-color: #0071e3;
+  background: #F37022;
+  border-color: #F37022;
   color: white;
   font-weight: 500;
 }
@@ -512,7 +512,7 @@
 /* Login Button */
 .login-btn {
   padding: 8px 16px;
-  background-color: #0071e3;
+  background-color: #F37022;
   color: #ffffff;
   border-radius: 980px;
   text-decoration: none;
@@ -527,11 +527,11 @@
 }
 
 .login-btn:hover {
-  background-color: #0077ed;
+  background-color: #E5651A;
 }
 
 .login-btn:active {
-  background-color: #005bb5;
+  background-color: #D15A15;
   transform: scale(0.98);
 }
 
@@ -690,7 +690,7 @@
   }
 
   .mobile-nav-panel .nav-link.active {
-    color: #0071e3;
+    color: #F37022;
     font-weight: 500;
   }
 
@@ -717,7 +717,7 @@
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease;
-    border-left: 3px solid #0071e3;
+    border-left: 3px solid #F37022;
     margin-left: 16px;
   }
 
@@ -850,7 +850,7 @@
 }
 
 .notification-btn.has-unread .notification-icon {
-  color: #0071e3;
+  color: #F37022;
 }
 
 .notification-badge {
@@ -905,7 +905,7 @@
 .mark-all-read {
   background: none;
   border: none;
-  color: #0071e3;
+  color: #F37022;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -915,7 +915,7 @@
 }
 
 .mark-all-read:hover {
-  background: rgba(0, 113, 227, 0.1);
+  background: rgba(243, 112, 34, 0.1);
 }
 
 .notification-list {
@@ -960,11 +960,11 @@
 }
 
 .notification-item.unread {
-  background: rgba(0, 113, 227, 0.05);
+  background: rgba(243, 112, 34, 0.05);
 }
 
 .notification-item.unread:hover {
-  background: rgba(0, 113, 227, 0.1);
+  background: rgba(243, 112, 34, 0.1);
 }
 
 .notification-type-icon {
@@ -980,7 +980,7 @@
 }
 
 .notification-item.unread .notification-type-icon {
-  background: #0071e3;
+  background: #F37022;
   color: white;
 }
 
@@ -1049,7 +1049,7 @@
 }
 
 .notification-footer a {
-  color: #0071e3;
+  color: #F37022;
   font-size: 13px;
   font-weight: 500;
   text-decoration: none;

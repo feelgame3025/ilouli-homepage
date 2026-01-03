@@ -103,7 +103,7 @@
 }
 
 .users-table tbody tr.current-user {
-  background-color: #f0f9ff;
+  background-color: #FEF3E7;
 }
 
 .you-badge {
@@ -319,8 +319,8 @@
 }
 
 .provider-google {
-  background-color: #e8f4fd;
-  color: #1a73e8;
+  background-color: #FEF3E7;
+  color: #F37022;
 }
 
 .provider-kakao {
@@ -440,8 +440,8 @@
 }
 
 .report-type.post {
-  background-color: #dbeafe;
-  color: #1d4ed8;
+  background-color: #FEF3E7;
+  color: #D15A15;
 }
 
 .report-type.comment {
@@ -462,8 +462,8 @@
 }
 
 .status-reviewed {
-  background-color: #dbeafe;
-  color: #1d4ed8;
+  background-color: #FEF3E7;
+  color: #D15A15;
 }
 
 .status-dismissed {
@@ -569,8 +569,8 @@
 
 .restore-btn {
   padding: 0.5rem 1rem;
-  background-color: #dbeafe;
-  color: #1d4ed8;
+  background-color: #FEF3E7;
+  color: #D15A15;
   border: none;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -580,7 +580,7 @@
 }
 
 .restore-btn:hover {
-  background-color: #bfdbfe;
+  background-color: #FDE5CC;
 }
 
 /* API Management Section */
@@ -1016,8 +1016,8 @@
 .key-guide {
   margin-bottom: 1.25rem;
   padding: 1rem;
-  background-color: #f0f9ff;
-  border: 1px solid #bae6fd;
+  background-color: #FEF3E7;
+  border: 1px solid #FDE5CC;
   border-radius: 10px;
 }
 
@@ -1031,19 +1031,19 @@
 .guide-title {
   font-weight: 600;
   font-size: 0.9rem;
-  color: #0369a1;
+  color: #D15A15;
 }
 
 .guide-link {
   font-size: 0.8rem;
-  color: #0284c7;
+  color: #F37022;
   text-decoration: none;
   font-weight: 500;
 }
 
 .guide-link:hover {
   text-decoration: underline;
-  color: #0369a1;
+  color: #D15A15;
 }
 
 .guide-steps {
@@ -1057,20 +1057,20 @@
   color: #334155;
   padding: 0.35rem 0;
   padding-left: 0.5rem;
-  border-left: 2px solid #7dd3fc;
+  border-left: 2px solid #FCAC70;
   margin-bottom: 0.25rem;
 }
 
 .guide-pricing {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px dashed #bae6fd;
+  border-top: 1px dashed #FDE5CC;
   font-size: 0.8rem;
 }
 
 .pricing-label {
   font-weight: 600;
-  color: #0369a1;
+  color: #D15A15;
   margin-right: 0.5rem;
 }
 
@@ -1143,8 +1143,8 @@
 }
 
 .category-badge.category-인증 {
-  background-color: #dbeafe;
-  color: #1d4ed8;
+  background-color: #FEF3E7;
+  color: #D15A15;
 }
 
 .category-badge.category-사용자 {
@@ -1182,8 +1182,8 @@
 }
 
 .method-badge.method-get {
-  background-color: #dbeafe;
-  color: #1d4ed8;
+  background-color: #FEF3E7;
+  color: #D15A15;
 }
 
 .method-badge.method-post {
@@ -1293,8 +1293,8 @@
 }
 
 .api-status-in-progress {
-  background-color: #dbeafe;
-  color: #1d4ed8;
+  background-color: #FEF3E7;
+  color: #D15A15;
 }
 
 .priority-badge {
