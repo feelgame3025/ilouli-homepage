@@ -1,6 +1,6 @@
 .sub-menu {
-  background: #FFFAF6;
-  border-bottom: 1px solid rgba(243, 112, 34, 0.1);
+  background: #FDF6F0;
+  border-bottom: 1px solid rgba(243, 112, 34, 0.08);
   position: sticky;
   top: 44px;
   z-index: 90;
@@ -11,8 +11,8 @@
   margin: 0 auto;
   padding: 0 22px;
   display: flex;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 4px;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
