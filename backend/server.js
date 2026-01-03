@@ -12,6 +12,7 @@ const notificationsRoutes = require('./routes/notifications');
 const communityRoutes = require('./routes/community');
 const adminRoutes = require('./routes/admin');
 const calendarRoutes = require('./routes/calendar');
+const audioRoutes = require('./routes/audio');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -43,6 +44,7 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/audio', audioRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
