@@ -9,7 +9,7 @@
 .sub-menu-inner {
   max-width: 980px;
   margin: 0 auto;
-  padding: 0 22px;
+  padding: 0 22px 0 44px;
   display: flex;
   justify-content: flex-start;
   gap: 4px;
@@ -87,7 +87,7 @@
   }
 
   .sub-menu-inner {
-    padding: 0 16px;
+    padding: 0 16px 0 24px;
     justify-content: flex-start;
   }
 
