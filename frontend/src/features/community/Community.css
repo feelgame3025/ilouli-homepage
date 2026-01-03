@@ -85,7 +85,7 @@
   display: block;
   margin-bottom: 1.5rem;
   padding: 0.75rem 1.5rem;
-  background-color: #FCAC70;
+  background-color: #1d1d1f;
   color: #ffffff;
   border: none;
   border-radius: 8px;
@@ -98,7 +98,7 @@
 }
 
 .write-btn:hover {
-  background-color: #F37022;
+  background-color: #333333;
 }
 
 /* Write Form */
@@ -226,7 +226,7 @@
 
 .post-badge.announcement {
   background-color: #FEF3E7;
-  color: #E5651A;
+  color: #2563EB;
 }
 
 .post-item-meta {
@@ -516,7 +516,7 @@
 
 .post-badge.category-discussion {
   background-color: #FEF3E7;
-  color: #E5651A;
+  color: #2563EB;
 }
 
 .post-badge.category-showcase {

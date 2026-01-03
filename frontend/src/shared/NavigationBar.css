@@ -271,7 +271,7 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #F37022 0%, #00c7be 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
   color: white;
   font-size: 12px;
   font-weight: 600;
@@ -384,7 +384,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #F37022 0%, #00c7be 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
   color: white;
   font-size: 18px;
   font-weight: 600;
@@ -422,8 +422,8 @@
   display: inline-block;
   font-size: 11px;
   font-weight: 500;
-  color: #F37022;
-  background: rgba(243, 112, 34, 0.1);
+  color: #3B82F6;
+  background: rgba(59, 130, 246, 0.1);
   padding: 2px 8px;
   border-radius: 980px;
   margin-top: 2px;
@@ -478,8 +478,8 @@
 }
 
 .tier-btn.active {
-  background: #F37022;
-  border-color: #F37022;
+  background: #3B82F6;
+  border-color: #3B82F6;
   color: white;
   font-weight: 500;
 }
@@ -512,7 +512,7 @@
 /* Login Button */
 .login-btn {
   padding: 8px 16px;
-  background-color: #F37022;
+  background-color: #3B82F6;
   color: #ffffff;
   border-radius: 980px;
   text-decoration: none;
@@ -527,7 +527,7 @@
 }
 
 .login-btn:hover {
-  background-color: #E5651A;
+  background-color: #2563EB;
 }
 
 .login-btn:active {
@@ -690,7 +690,7 @@
   }
 
   .mobile-nav-panel .nav-link.active {
-    color: #F37022;
+    color: #3B82F6;
     font-weight: 500;
   }
 
@@ -717,7 +717,7 @@
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease;
-    border-left: 3px solid #F37022;
+    border-left: 3px solid #3B82F6;
     margin-left: 16px;
   }
 
@@ -850,7 +850,7 @@
 }
 
 .notification-btn.has-unread .notification-icon {
-  color: #F37022;
+  color: #3B82F6;
 }
 
 .notification-badge {
@@ -905,7 +905,7 @@
 .mark-all-read {
   background: none;
   border: none;
-  color: #F37022;
+  color: #3B82F6;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -980,7 +980,7 @@
 }
 
 .notification-item.unread .notification-type-icon {
-  background: #F37022;
+  background: #3B82F6;
   color: white;
 }
 
@@ -1049,7 +1049,7 @@
 }
 
 .notification-footer a {
-  color: #F37022;
+  color: #3B82F6;
   font-size: 13px;
   font-weight: 500;
   text-decoration: none;

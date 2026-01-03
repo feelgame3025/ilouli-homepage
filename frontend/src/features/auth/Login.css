@@ -269,7 +269,7 @@
 .open-browser-btn {
   flex: 1;
   padding: 12px 16px;
-  background: #F37022;
+  background: #3B82F6;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -280,14 +280,14 @@
 }
 
 .open-browser-btn:hover {
-  background: #E5651A;
+  background: #2563EB;
 }
 
 .copy-url-btn {
   padding: 12px 16px;
   background: #fff;
-  color: #F37022;
-  border: 1px solid #F37022;
+  color: #3B82F6;
+  border: 1px solid #3B82F6;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -296,7 +296,7 @@
 }
 
 .copy-url-btn:hover {
-  background: #FFF5ED;
+  background: #EFF6FF;
 }
 
 /* Login Tabs */
