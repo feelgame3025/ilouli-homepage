@@ -580,7 +580,7 @@
 }
 
 .restore-btn:hover {
-  background-color: #FDE5CC;
+  background-color: #DBEAFE;
 }
 
 /* API Management Section */
@@ -1017,7 +1017,7 @@
   margin-bottom: 1.25rem;
   padding: 1rem;
   background-color: #EFF6FF;
-  border: 1px solid #FDE5CC;
+  border: 1px solid #BFDBFE;
   border-radius: 10px;
 }
 
@@ -1064,7 +1064,7 @@
 .guide-pricing {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
-  border-top: 1px dashed #FDE5CC;
+  border-top: 1px dashed #BFDBFE;
   font-size: 0.8rem;
 }
 
